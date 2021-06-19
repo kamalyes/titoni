@@ -1,0 +1,31 @@
+- test_login_succeed:
+        path: /user/login
+        request:
+            data:
+                password: '155666'
+                username: yuyq
+            headers:
+                content-type: application/x-www-form-urlencoded; charset=UTF-8
+                user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+                    (KHTML, like Gecko) Chrome/91.0.4472.101 Safari/537.36
+            method: POST
+        validate:
+        -   equal_status_code: 200
+        -   equal_content_type: application/json;charset=UTF-8
+        -   equal_content: {"data":"登录成功！！！","errorCode":"","errorMsg":""}
+
+- test_loggin_error:
+        path: /user/login
+        request:
+            data:
+                password: '155666'
+                username: yuyq
+            headers:
+                content-type: application/x-www-form-urlencoded; charset=UTF-8
+                user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+                    (KHTML, like Gecko) Chrome/91.0.4472.101 Safari/537.36
+            method: POST
+        validate:
+        -   equal_status_code: 200
+        -   equal_content_type: application/json;charset=UTF-8
+        -   equal_content: {"data":null,"errorCode":-1,"errorMsg":"账号密码不匹配！"}

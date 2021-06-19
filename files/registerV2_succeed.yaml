@@ -1,0 +1,37 @@
+registerv2:
+    accept: '*/*'
+    accept-encoding: gzip
+    accept-language: zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-CN;q=0.6
+    content-type: application/x-www-form-urlencoded; charset=UTF-8
+    desc: 描述信息
+    postData:
+        mimeType: application/x-www-form-urlencoded; charset=UTF-8
+        params:
+        -   name: username
+            value: Interface_test
+        -   name: password
+            value: '12356789'
+        -   name: repassword
+            value: '12356789'
+        -   name: verifyCode
+            value: '2020'
+        size: 77
+        text: username=Interface_test&password=12356789&repassword=12356789&verifyCode=2020
+    referer: https://www.wanandroid.com/blog/show/2
+    relevance:
+        rel_data: 关联的数据参数
+        rel_type: 关联数据-Json/FromData格式
+    request:
+        cookies: ${cookies}
+        httpVersion: HTTP/1.1
+        method: POST
+        url: https://www.wanandroid.com/user/registerV2
+    response:
+        check_type: check_json
+        expected_code: 200
+        expected_content: '{''size'': 252, ''mimeType'': ''application/json;charset=UTF-8'',
+            ''base64'': ''eyJkYXRhIjp7ImFkbWluIjpmYWxzZSwiY2hhcHRlclRvcHMiOltdLCJjb2luQ291bnQiOjAsImNvbGxlY3RJZHMiOltdLCJlbWFpbCI6IiIsImljb24iOiIiLCJpZCI6MTAyMTkxLCJuaWNrbmFtZSI6IkludGVyZmFjZV90ZXN0IiwicGFzc3dvcmQiOiIiLCJwdWJsaWNOYW1lIjoiSW50ZXJmYWNlX3Rlc3QiLCJ0b2tlbiI6IiIsInR5cGUiOjAsInVzZXJuYW1lIjoiSW50ZXJmYWNlX3Rlc3QifSwiZXJyb3JDb2RlIjowLCJlcnJvck1zZyI6IiJ9'',
+            ''text'': ''{"data":{"admin":false,"chapterTops":[],"coinCount":0,"collectIds":[],"email":"","icon":"","id":102191,"nickname":"Interface_test","password":"","publicName":"Interface_test","token":"","type":0,"username":"Interface_test"},"errorCode":0,"errorMsg":""}''}'
+        expected_text: OK
+    user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
+        like Gecko) Chrome/91.0.4472.101 Safari/537.36
