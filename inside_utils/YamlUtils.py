@@ -7,11 +7,13 @@
 # Desc: 对yaml格式的配置文件的操作
 # Date： 2020/7/15 16:15
 '''
-import sys,yaml
+import sys
+import yaml
+import shutil
 sys.path.append('../')
 from inside_utils.Loader import Loader
 from inside_utils.LogUtils import Logger
-from inside_utils.JsonPath import JsonPath
+from inside_utils.Processor import JsonPath
 
 class YamlHandle(object):
     def __init__(self):
@@ -43,22 +45,26 @@ class YamlHandle(object):
             self.logger.exception('没有获取到对应的值，key：{}, data：{}'.format(keyword, params))
         return params
 
-    def saveData(self,file_path,obj,method=None):
+    def saveData(self,file_path,obj,safe_control=None):
         """
         保存数据 暂不支持复杂类型
         :param obj
-        :param method global -->全量 temp--> 临时
+        :param safe_control 安全模式 默认启用状态
         :return:
         """
-        old = Loader.yamlFile(file_path)
-        if old !=None:
-            for k,v in obj.items():
-                if k in old:
-                    self.logger.error("该变量值已被占用")
-                else:
-                    self.writeOjb(file_path, obj, method)
+        old_data = Loader.yamlFile(file_path)
+        if old_data is None:
+            self.writeOjb(file_path, obj, "w")
         else:
-            self.writeOjb(file_path, obj, method)
+            for key,value in obj.items():
+                if key in old_data.keys() and safe_control is False:
+                    bak_filepath = file_path+".bak"
+                    self.logger.warning("键值：%s已存在，生成备份数据：%s"%(key,bak_filepath.split("\\")[-1]))
+                    shutil.copy(file_path, bak_filepath)
+                    old_data.update(obj)
+                    self.writeOjb(file_path, old_data, "w")
+                else:
+                    self.writeOjb(file_path,obj,"a")
 
 YamlHandle = YamlHandle()
 
@@ -66,6 +72,6 @@ if __name__ == '__main__':
     import os
     from BaseSetting import Route
     file_path = os.path.join(Route.getPath("user_variables"),"global.yaml")
-    YamlHandle.writeOjb(file_path,{"case_info":{"test_list":{"accept":"test"}}},"w")
-    YamlHandle.saveData(file_path,{"case_info":"test_list"},"a")
+    YamlHandle.writeOjb(file_path,{"case_info":{"test_list":{"accept":"old_data"}}},"w")
+    YamlHandle.saveData(file_path,{"case_info":"test_list"},False)
     YamlHandle.getValue(file_path,"$.case_info.test_list")

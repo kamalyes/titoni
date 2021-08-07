@@ -7,68 +7,28 @@
 # Date： 2021/6/6 0:37
 '''
 import sys
-from typing import Dict, Text
-from urllib.parse import unquote
+import json
+import allure
+import requests
 sys.path.append('../')
-import requests,allure
+from typing import Dict, Text
+from requests_toolbelt import MultipartEncoder
 requests.packages.urllib3.disable_warnings()
 from inside_utils.LogUtils import Logger
-from requests_toolbelt import MultipartEncoder
+from inside_utils.Initialize import Env
+from inside_utils.AllureUtils import setTag
 
 class Httpx(object):
     def __init__(self):
         self.logger = Logger.writeLog()
         self.session = requests.session()
-        self.params_method = ['get','head','patch','delete','options']
-        self.data_method = ['post','put']
+        self.text_plain = ['get','head','patch','options']
+        self.json_method = ['post','put','delete']
 
-    def jsonToXwwwForm(self, post_data)->Text:
-        """
-        将origin dict转换为x-www-form-urlencoded
-        Args:
-            post_data (dict):{"a": 1, "b":2}
-        Returns:
-            str:a=1&b=2
-        """
-        if isinstance(post_data, dict):
-            return "&".join(["{}={}".format(key, value) for key, value in post_data.items()])
-        else:
-            return post_data
-
-    def xwwwFormToJson(self, post_data)->Dict:
-        """
-        将x-www-form-urlencoded转换为origin dict
-        Args:
-            post_data (str): a=1&b=2
-        Returns:
-            dict: {"a":1, "b":2}
-        """
-        if isinstance(post_data, str):
-            converted_dict = {}
-            for k_v in post_data.split("&"):
-                try:
-                    key, value = k_v.split("=")
-                except ValueError:
-                    raise Exception("Invalid x_www_form_urlencoded data format: {}".format(post_data))
-                converted_dict[key] = unquote(value)
-            return converted_dict
-        else:
-            return post_data
-
-    def listToJson(self, origin_list)->Dict:
-        """
-        将list数据转化为json
-        Args:
-            origin_list (list)[{"name": "v", "value": "1"}, {"name": "w", "value": "2"}]
-        Returns:
-            dict:{"v": "1", "w": "2"}
-        """
-        return {item["name"]: item.get("value") for item in origin_list}
-
-    def sendApi(self,method, url,
-            params=None, data=None, headers:Dict=None, cookies=None, files=None,
+    def sendApi(self, method, url,
+            params=None, data=None, headers=None, cookies=None, files=None,
             auth=None, timeout=None, allow_redirects=True, proxies=None,
-            hooks=None, stream=None, verify=None, cert=None, json=None):
+            hooks=None, stream=None, verify=None, cert=None, json=None,animation=False,seesion=False):
         """
         数据请求
         :param method: 请求方式
@@ -82,20 +42,59 @@ class Httpx(object):
         :param timeout: (可选)等待服务器发送的时间
         :param allow_redirects: (可选)默认为True
         :param proxies: 代理:(可选)字典映射协议或协议和主机名到代理的URL。
-        :param hooks:
+        :param hookspip:
         :param stream: 是否立即下载响应 内容。 默认为“假”。
         :param verify: (可选)一个布尔值，它控制我们是否进行验证服务器的TLS证书，或字符串，在本地开发或测试期间可能有用。
         :param cert: (可选)if String, ssl客户端证书文件(.pem)的路径。  如果Tuple， ('cert'， 'key')对
         :param json:
+        :param animation: 自动模式（需要传list）
+        :param seesion 会话保持开关
         return Response <Response> 对象
         """
-        req_info = {"method":method.lower(),"url":url,"headers":headers,"files":files,
-                  "data":data,"json":json,"params":params,"auth":auth,
-                  "cookies":cookies,"hooks":hooks,"proxies":proxies,"timeout":timeout}
-        allure.attach(req_info)
-        resp = self.session.request(method=method.lower(),url=url,headers=headers,data=data,json=json,
-                                   params=params,auth=auth,cookies=cookies,hooks=hooks,proxies=proxies,timeout=timeout)
-        return resp
+        if animation is True and data is not None:
+            allures,headers,response = {}, {}, {}
+            for index in range(len(data)):
+                try:
+                    for key in data[index].keys():
+                        print(key)
+                        if key == 'headers':
+                            headers.update(data[index][key])
+                        elif key == 'allures':
+                            allures.update(data[index][key])
+                        elif key == 'response':
+                            response = data[index][key]
+                        elif key == 'json':
+                            params = data[index][key]
+                except Exception as e:
+                    pass
+            # print(allures,headers,params,request,response,json)
+            setTag(allures) # 打标签
+        if method and url is not None:
+            response = self.session.request(method=method.lower(), url=url, headers=headers,
+                                            data=data, json=json, params=params, files=files, stream=stream, verify=verify,
+                                            auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
+                                            timeout=timeout)
+
+            req_url = self.getUrl(response)
+            req_raw = self.getRaw(response)
+            req_text = self.getText(response)
+            req_headers = self.getHeaders(response)
+            req_encoding = self.getEncoding(response)
+            req_httpxd = self.getHttpxd(response)
+            req_reason = self.getReason(response)
+            req_timeout = self.getResponseTime(response)
+            [self.logger.info(index) for index in [req_url, req_httpxd, req_timeout,req_raw, req_text, req_headers, req_encoding, req_reason]]
+            return response
+
+            if seesion is True:
+                self.closeSession()
+
+    def closeSession(self):
+        self.session.close()
+        try:
+            del self.session.cookies['JSESSIONID']
+        except Exception:
+            pass
 
     def uploadFile(self,method,url,file_path,data=None):
         """
@@ -186,7 +185,15 @@ class Httpx(object):
         :param response:
         :return:
         """
-        return response.text
+        try:
+            response_text = json.dumps(str(response.text), ensure_ascii=False, indent=4)
+        except json.decoder.JSONDecodeError:  # only python3
+            try:
+                response_text = response.text
+            except UnicodeEncodeError:
+                # print(response.content.decode("utf-8","ignore").replace('\xa9', ''))
+                response_text = response.content
+        return response_text
 
     def getRaw(self, response):
         """
@@ -217,4 +224,5 @@ Httpx = Httpx()
 if __name__ == '__main__':
     from BaseSetting import Route
     file_path =  Route.joinPath("debug","test_change_type.json")
-    print(Httpx.uploadFile(url="https://yuyanqing.cn", file_path=file_path, method="single"))
+    # print(Httpx.uploadFile(url="https://yuyanqing.cn", file_path=file_path, method="single"))
+    print(Httpx.sendApi(url="http://localhost:8001/#network",method="post",headers={'Authorization': Env.getAuth()["Authorization"]}))

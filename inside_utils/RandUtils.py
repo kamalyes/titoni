@@ -2,14 +2,17 @@
 #!/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
 '''
-@File  : RandUtils.py
-@Author: YuYanQing
-@Desc  : 随机文本(id/姓名/邮箱/身份证/列表/浮点型/验证码)
-@Date  : 2020/10/11 15:01
+# File  : RandUtils.py
+# Author: YuYanQing
+# Desc  : 随机文本(id/姓名/邮箱/身份证/列表/浮点型/验证码)
+# Date  : 2020/10/11 15:01
 '''
-import sys,uuid,random,string
-from random import choice
+import sys
+import uuid
+import random
+import string
 sys.path.append('../')
+from random import choice
 from inside_utils.LogUtils import Logger
 
 class RandValue(object):
@@ -21,7 +24,7 @@ class RandValue(object):
         :param emailtype: 邮箱类型
         :param count:     所生成的数量
         :param maxnum:    邮箱地址最大长度
-        :param temp       临时存储生成的字符  temp_str转化list为str
+        :param temp:      临时存储生成的字符  temp_str转化list为str
         :return: email_list 最终输出的邮箱集合
         """
         temp = []
@@ -49,7 +52,7 @@ class RandValue(object):
             temp.clear()
             email_list.append(temp_str + emailtype)
             count +=1
-        self.logger.info("成功生成%s个，%s个前缀，且类型为%s邮箱地址%s"%(count,maxnum,emailtype,email_list))
+        # self.logger.info("成功生成%s个，%s个前缀，且类型为%s邮箱地址%s"%(count,maxnum,emailtype,email_list))
         return email_list
 
     def getVerifi(self,maxnum,radcount):
@@ -74,7 +77,7 @@ class RandValue(object):
             myslice = random.sample(code_list, maxnum)  # 从list中随机获取6个元素，作为一个片断返回
             verifi_code.append(''.join(myslice))  # list to string
             count += 1
-        self.logger.info("成功生成%s个%s位长度的字符：%s"%(radcount,maxnum,verifi_code))
+        # self.logger.info("成功生成%s个%s位长度的字符：%s"%(radcount,maxnum,verifi_code))
         return verifi_code
 
     def getPhone(self,radcount):
@@ -91,7 +94,7 @@ class RandValue(object):
             cell =random.choice(prelist) + "".join(random.choice("0123456789") for i in range(8))
             phone_num.append(''.join(cell))  # list to string
             count +=1
-        self.logger.info("成功生成%s个手机号%s"%(radcount,phone_num))
+        # self.logger.info("成功生成%s个手机号%s"%(radcount,phone_num))
         return phone_num
 
     def getName(self,radcount,length):
@@ -129,7 +132,7 @@ class RandValue(object):
             name = "".join(random.choice(fames) for i in range(length))
             name_list.append(sur+name)
             count +=1
-        self.logger.info("成功生成%s个名字%s"%(radcount,name_list))
+        # self.logger.info("成功生成%s个名字%s"%(radcount,name_list))
         return name_list
 
     def getStrList(self,length):
@@ -137,7 +140,7 @@ class RandValue(object):
         numbers = ''.join(map(str, [i for i in range(10) if i != 4]))  # 数字
         init_chars = ''.join(numbers)
         sample_list = random.sample(init_chars, length)
-        self.logger.info("成功生成数字列表：%s"%(sample_list))
+        # self.logger.info("成功生成数字列表：%s"%(sample_list))
         return sample_list
 
     def getStr(self,num_length):
@@ -151,13 +154,32 @@ class RandValue(object):
         except ValueError:
             raise AssertionError("从a-zA-Z0-9生成指定数量的随机字符失败！长度参数有误  %s" % num_length)
         num = ''.join(random.sample(string.ascii_letters + string.digits, num_length))
-        self.logger.info("成功生成随机字符：%s"%(num))
+        # self.logger.info("成功生成随机字符：%s"%(num))
+        return num
+
+    def getInt(self,data):
+        """
+        获取随机int数据
+        :param data: 开始值,结束值 例如：1,5 输出：1
+        :return:
+        """
+        try:
+            start_num, end_num = data.split(",")
+            start_num = int(start_num)
+            end_num = int(end_num)
+        except ValueError:
+            raise AssertionError("调用随机整数失败%s" % data)
+        if start_num <= end_num:
+            num = random.randint(start_num, end_num)
+        else:
+            num = random.randint(end_num, start_num)
+        # self.logger.info("成功生成随机整型数据：%s"%(num))
         return num
 
     def getFloat(self,data):
         """
         获取随机浮点数据
-        :param data: 开始值,结束值,浮点数 例如：1,5,,3 输出：1.123
+        :param data: 开始值,结束值,浮点数 例如：1,5,3 输出：1.123
         :return:
         """
         try:
@@ -172,17 +194,17 @@ class RandValue(object):
         else:
             num = random.uniform(end_num, start_num)
         num = round(num, accuracy)
-        self.logger.info("成功生成随机浮点数据：%s"%(num))
+        # self.logger.info("成功生成随机浮点数据：%s"%(num))
         return num
 
-    def generateUuid(self):
+    def getUuid(self):
         """
         基于MAC地址+时间戳+随机数来生成GUID
         :param:
         :return:
         """
         str_uuid =  str(uuid.uuid1()).upper()
-        self.logger.info("成功生成随机浮点数据：%s"%(str_uuid))
+        # self.logger.info("成功生成随机uuid：%s"%(str_uuid))
         return str_uuid
 
     def getUserAgent(self):
@@ -197,11 +219,12 @@ class RandValue(object):
 RandValue = RandValue()
 
 if __name__ == '__main__':
-    RandValue.getEmail(emailtype="@qq.com", maxnum=10, rad_count=5)
-    RandValue.getVerifi(maxnum=6,radcount=2)
-    RandValue.getPhone(radcount=6)
-    RandValue.getName(length=2,radcount=10)
-    RandValue.getStrList(length=5)
-    RandValue.getStr(5)
-    RandValue.getFloat("1,5,6")
-    RandValue.generateUuid()
+    print(RandValue.getEmail(emailtype="@qq.com", maxnum=10, rad_count=5))
+    print(RandValue.getVerifi(maxnum=6, radcount=2))
+    print(RandValue.getPhone(radcount=6))
+    print(RandValue.getName(length=2, radcount=10))
+    print(RandValue.getStrList(length=5))
+    print(RandValue.getStr(5))
+    print(RandValue.getInt("1,5"))
+    print(RandValue.getFloat("1,5,6"))
+    print(RandValue.getUuid())

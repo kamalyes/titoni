@@ -2,17 +2,22 @@
 #!/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
 '''
-# FileName： DirTools.py
+# FileName： FolderUtils.py
 # Author : YuYanQing
-# Desc: PyCharm
+# Desc: 文件管理
 # Date： 2020/5/6 19:15
 '''
-import os,shutil,zipfile
-from utils.LogHander import Logger
+import os
+import sys
+import shutil
+import zipfile
+sys.path.append('../')
+from BaseSetting import Route
+from inside_utils.LogUtils import Logger
 
-class DocProcess(object):
+class FileHander(object):
     def __init__(self):
-        self.logger = Logger().writeLog()
+        self.logger = Logger.writeLog()
         
     def getCurrentPath(self):
         """
@@ -189,13 +194,13 @@ class DocProcess(object):
 
     def makeFile(self,file_path):
         """
-        创建多级文件夹(注意这里必须上级文件夹存在才可以)
+        递归创建多级文件夹
         :param file_path:
         :return:
         """
         try:
             if not os.path.exists(file_path):
-                os.makedirs(file_path)
+                os.makedirs(file_path, exist_ok=True)
                 if os.path.exists(file_path):
                     self.logger.info("目录：%s 创建成功！！！" % (file_path))
             else:
@@ -203,12 +208,44 @@ class DocProcess(object):
         except Exception as FileNotFoundError:
             self.logger.error(FileNotFoundError)
 
+    def depthScanFile(self,catalog,file_type):
+        """
+        过滤xxx目录下所有的xx格式文件
+        :param catalog: 指定目录
+        :param file_type 类型
+        :return:
+        """
+        file_list = os.listdir(catalog)
+        yaml_files = []
+        for index in range(len(file_list)):
+            name, suffix = os.path.splitext(file_list[index])
+            # 判断文件类型
+            if suffix.replace(".","").lower() == file_type:
+                yaml_files.append("%s\\%s"%(catalog,file_list[index]))
+        return yaml_files
+
+    def readFileType(self,file_path):
+        """
+        获取文件类型
+        :param file_path:
+        :return:
+        """
+        if file_path is None or os.path.isfile(file_path) == False:
+            raise "Please check whether the file path or file name exists"
+        else:
+            head, tail = os.path.split(file_path)
+            name, suffix = os.path.splitext(tail)
+            return suffix.lower()
+
+FileHander = FileHander()
+
 if __name__ == '__main__':
-    DocProcess = DocProcess()
-    file_path =r"D:\Work_Spaces\PyCharm_Project\YamlInterfaceTest\Result"
-    DocProcess.tarFile(method="allfile",file_path=file_path,target_path="aaaa.gzip")
-    DocProcess.getFileState(file_path)
-    DocProcess.copyFile(file_path,file_path)
-    DocProcess.removeFile(file_path)
-    DocProcess.makeFile(file_path)
-    DocProcess.getDirList(file_path)
+    # file_path =r"..\result"
+    # FileHander.tarFile(method="allfile",file_path=file_path,target_path="tarFile.gzip")
+    # FileHander.getFileState(file_path)
+    # FileHander.copyFile(file_path,file_path)
+    # FileHander.removeFile(file_path)
+    # FileHander.makeFile(file_path)
+    # FileHander.getDirList(file_path)
+    print(FileHander.depthScanFile(Route.getPath("user_variables"), "yaml"))
+    print(FileHander.readFileType(os.path.join(Route.getPath("user_variables"), "global.yaml")))

@@ -7,9 +7,10 @@
 # Desc: 企业微信机器人
 # Date： 2021/2/15 11:15
 '''
+import json
 import base64
 import hashlib
-import json,requests
+import requests
 from pathlib import Path
 class FileUploadError(Exception): pass
 class WechatRobot:

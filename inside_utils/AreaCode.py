@@ -2,10 +2,10 @@
 #!/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
 '''
-@File  : AreaCode.py
-@Author: YuYanQing
-@Desc  : 地区代码
-@Date  : 2020/10/16 15:01
+# File  : AreaCode.py
+# Author: YuYanQing
+# Desc  : 地区代码
+# Date  : 2020/10/16 15:01
 '''
 
 # 十五位身份证号表达式

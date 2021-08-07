@@ -7,9 +7,17 @@
 # Desc: 钉钉机器人
 # Date： 2021/2/15 11:15
 '''
-import re,sys,json,time
-import logging,requests,urllib
-import hmac,base64,hashlib,queue
+import re
+import sys
+import json
+import time
+import logging
+import requests
+import urllib
+import hmac
+import base64
+import hashlib
+import queue
 _ver = sys.version_info
 is_py3 = (_ver[0] == 3)
 try:
@@ -70,9 +78,9 @@ class DingtalkChatbot(object):
         """
         encode_url = quote_plus(url)
         if self.pc_slide:
-            final_link = 'dingtalk://dingtalkclient/page/link?url={}&pc_slide=true'.format(encode_url)
+            final_link = 'dingtalk://dingtalkclient/service/link?url={}&pc_slide=true'.format(encode_url)
         else:
-            final_link = 'dingtalk://dingtalkclient/page/link?url={}&pc_slide=false'.format(encode_url)
+            final_link = 'dingtalk://dingtalkclient/service/link?url={}&pc_slide=false'.format(encode_url)
         return final_link
 
     def send_text(self, msg, is_at_all=False, at_mobiles=[], at_dingtalk_ids=[], is_auto_at=True):

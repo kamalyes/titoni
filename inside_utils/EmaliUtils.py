@@ -7,7 +7,8 @@
 # Desc:   邮件发送
 # Date： 2020/5/6 19:27
 '''
-import sys,smtplib
+import sys
+import smtplib
 sys.path.append('../')
 from email.header import Header
 from email.mime.image import MIMEImage

@@ -7,12 +7,13 @@
 # Desc: 日志处理
 # Date： 2020/7/15 16:15
 '''
-import os,sys
+import os
+import sys
 sys.path.append('../')
 import time,logging,shutil
 import datetime,BaseSetting
 
-class Logger:
+class Logger(object):
     def __init__(self):
         """
         初始化目录
@@ -78,10 +79,10 @@ class Logger:
             timeArray = os.stat(dirpath).st_mtime
             if timeArray < re_date_unix:
                 if index!=0:
-                    print("过期的文件：%s" % (dirpath))
+                    # print("过期的文件：%s" % (dirpath))
                     shutil.rmtree(dirpath, ignore_errors=True)
-            else:
-                print("不满足条件的文件：%s" % (dirpath))
+            # else:
+                # print("不满足条件的文件：%s" % (dirpath))
             index +=1
 
 Logger = Logger()

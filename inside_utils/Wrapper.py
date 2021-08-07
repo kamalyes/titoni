@@ -6,6 +6,7 @@
 # Desc: 语法糖（装饰器模块）
 # Date： 2021/7/5 11:37
 '''
+import time
 from inside_utils.LogUtils import Logger
 from functools import (wraps, WRAPPER_ASSIGNMENTS, WRAPPER_UPDATES)
 logger = Logger.writeLog()
@@ -24,7 +25,7 @@ def countTime(model):
             elapsed_time = time.time() - start_time
             if elapsed_time<3:
                 logger.info('%s-总耗时：%s(正常范围内)' % (model, elapsed_time))
-            elif elapsed_time>5 and elapsed_time<10:
+            elif elapsed_time>5 and elapsed_time<15:
                 logger.warning('%s-总耗时：%s(需要注意)' % (model, elapsed_time))
             else:
                 logger.error('%s-总耗时：%s(超时)' % (model, elapsed_time))

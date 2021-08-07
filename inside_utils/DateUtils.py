@@ -4,12 +4,13 @@
 '''
 # FileName： DateUtils.py
 # Author : YuYanQing
-# Desc: 时间获取类
+# Desc: 日期处理类库
 # Date： 2020/9/17 19:05
 '''
-import time,datetime
+import time
+import datetime
 
-class TimeUtil(object):
+class Moment(object):
     def getTime(self,layout)->str:
         """
         获取时间
@@ -86,13 +87,22 @@ class TimeUtil(object):
         time_stamp = int(time.mktime(singletime))
         return time_stamp
 
+    def setSleepTime(self,timestamp):
+        """
+        休眠xx时间
+        :param timestamp:
+        :return:
+        """
+        time.sleep(timestamp)
+
+Moment = Moment()
+
 if __name__ == "__main__":
-    TimeUtil = TimeUtil()
-    print(TimeUtil.getTime("%Y-%m-%d %H:%M:%S"))
-    print(TimeUtil.getTime("10timestamp"))
-    print(TimeUtil.getTime("13timestamp"))
-    print(TimeUtil.computeDate(10))
-    print(TimeUtil.computeDate(-6))
-    print(TimeUtil.timestampToDate(1603282677.5209892))
-    print(TimeUtil.getEveryDay("2020-06-05", "2020-07-01"))
-    print(TimeUtil.getSingletime("2020-06-01 18:50:00"))
+    print(Moment.getTime("%Y-%m-%d %H:%M:%S"))
+    print(Moment.getTime("10timestamp"))
+    print(Moment.getTime("13timestamp"))
+    print(Moment.computeDate(10))
+    print(Moment.computeDate(-6))
+    print(Moment.timestampToDate(1603282677.5209892))
+    print(Moment.getEveryDay("2020-06-05", "2020-07-01"))
+    print(Moment.getSingletime("2020-06-01 18:50:00"))
