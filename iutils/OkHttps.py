@@ -10,10 +10,12 @@ import sys
 import json
 import allure
 import requests
+sys.path.append('../')
 from urllib import parse
 from typing import Dict, Text
 from requests_toolbelt import MultipartEncoder
 requests.packages.urllib3.disable_warnings()
+from iutils.Initialize import Env
 from iutils.LogUtils import Logger
 from iutils.AllureUtils import setTag
 from iutils.Assertion import assertEqual
@@ -25,7 +27,33 @@ class Httpx(object):
         self.text_plain = ['get','head','patch','options']
         self.json_method = ['post','put','delete']
 
-    def sendApi(self, method, url,
+    def getData(self,data, allures_=None, headers_=None, request_=None, validations=None):
+        """
+        获取allures配置、headers、校验值
+        :param data: config+子用例 list
+        :param allures_: allure配置
+        :param headers_: 头部信息
+        :param request_: 请求method及url
+        :param validations: 校验值
+        :return:
+        """
+        if isinstance(data, list):
+            for es in range(len(data)):
+                if isinstance(data[es], list):
+                    self.getData(data[es], allures_, headers_,request_, validations)
+                elif isinstance(data[es], dict):
+                    for key, value in data[es].items():
+                        if key == 'headers':
+                            headers_.update(data[es][key])
+                        elif key == 'request':
+                            request_.update(data[es][key])
+                        elif key == 'allures':
+                            allures_.update(data[es][key])
+                        elif key == 'validations':
+                            validations = data[es][key]
+        return allures_, headers_, request_, validations
+
+    def sendApi(self, method=None, url=None,
                 params=None, data=None, headers=None, cookies=None, files=None,
                 auth=None, timeout=None, allow_redirects=True, proxies=None,
                 hooks=None, stream=None, verify=None, cert=None, json=None,
@@ -57,71 +85,68 @@ class Httpx(object):
         :param seesion_ 会话保持开关
         return Response <Response> 对象
         """
-        allures_, headers_, validations_ = {}, {}, {}
-        if aided is True and isinstance(esdata,(list)):
-            for index in range(len(esdata)):
-                try:
-                    for key in esdata[index].keys():
-                        print(key)
-                        if key == 'headers':
-                            headers_.update(esdata[index][key])
-                        elif key == 'allures':
-                            allures_.update(esdata[index][key])
-                        elif key == 'validations':
-                            validations_ = esdata[index][key]
-                except Exception as e:
-                    pass #主要是避免有些键值不存在 类似于catch
-            setTag(allures_) # 打标签
-        if method and url is not None:
-            if hook_header is not None:
-                headers.update(hook_header)
-            with allure.step("网络请求"):
-                allure.attach(name="Request Url", body=str(url))
-                allure.attach(name="Request Headers", body=str(headers))
-                if params is not None:
-                    allure.attach(name="Query String Parametrize", body=str(params))
-                elif data is not None:
-                    allure.attach(name="Query String Parametrize", body=str(data))
-                elif json is not None:
-                    allure.attach(name="Query String Parametrize", body=str(json))
-                elif validations_ is not None:
-                    allure.attach(name="Assert Parametrize", body=str(validations_))
-                elif assert_data is not None:
-                    allure.attach(name="Assert Parametrize", body=str(assert_data))
+        if esdata is not None:
+            allures,headers_,request_,validations=self.getData(esdata,{},{},{},{})
+            setTag(allures) # 打标签
+        if auto is True and isinstance(request_,dict) and len(request_.keys())>1: # 读取Yaml中request字段
             try:
-                response = self.session.request(method=method.lower(), url=url, headers=headers,
-                                                data=data, json=json, params=params, files=files, stream=stream, verify=verify,
-                                                auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
-                                                timeout=timeout)
-            except UnicodeEncodeError:
-                # fix:UnicodeEncodeError: 'latin-1' codec can't encode characters in position
-                # 223-226: xxx is not valid Latin-1. Use body.encode('utf-8')
-                # if you want to send it encoded in UTF-8.
-                response = self.session.request(method=method.lower(), url=url, headers=headers,
-                                                data=data.encode("utf-8").decode("latin1"), json=json, params=params, files=files, stream=stream,
-                                                verify=verify,
-                                                auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
-                                                timeout=timeout)
-
-            req_code = self.getStatusCode(response)
-            req_text = self.getText(response)
-            req_headers = self.getHeaders(response)
-            req_encoding = self.getEncoding(response)
-            req_httpxd = self.getHttpxd(response)
-            req_timeout = self.getResponseTime(response)
-            req_datas = {"ResponseCode":[req_code,self.getNotice(req_code)], "ResponseTime":req_timeout,"ResponseText":req_text}
-            with allure.step("响应结果"):
-                {allure.attach(name="%s"%(str(key)), body=str(value).strip()) for key,value in req_datas.items()}
-            if validations_ !={} and assert_data is None: # Yaml中声明了 但是case中没有声明
-                assertEqual(validations=validations_,code=req_code,text=req_text,time=req_timeout)
-            elif validations_ =={} and assert_data is not None: # Yaml中未定义 但是case中声明
-                assertEqual(validations=assert_data,code=req_code,text=req_text,time=req_timeout)
-            elif validations_ !={} and assert_data is not None: # 若二者都有则以最后定义的为主
-                assertEqual(validations=assert_data,code=req_code,text=req_text,time=req_timeout)
-            else: # 若yaml中没有声明要校验 且case中也没有则return 结果集给自行调用
-                return response
-            if seesion_ is True:
-                self.closeSession()
+                method = request_.get("method")
+                # ToDo url这里需要根据address 反转得到dns地址进行拼接为正确的url
+                url = request_.get("url")
+            except KeyError:
+                pass
+        if headers is not None:
+            headers_.update(headers)
+        if hook_header is not None:
+            headers_.update(hook_header)
+        with allure.step("网络请求"):
+            allure.attach(name="Request Url", body=str(url))
+            allure.attach(name="Request Method", body=str(method))
+            allure.attach(name="Request Headers", body=str(headers_))
+            if params is not None:
+                allure.attach(name="Query String Parametrize", body=str(params))
+            elif data is not None:
+                allure.attach(name="Query Data Parametrize", body=str(data))
+            elif json is not None:
+                allure.attach(name="Query Json Parametrize", body=str(json))
+            elif validations is not None:
+                allure.attach(name="Assert Parametrize", body=str(validations))
+            elif assert_data is not None:
+                allure.attach(name="Assert Parametrize", body=str(assert_data))
+        print(headers_)
+        try:
+            response = self.session.request(method=method.lower(), url=url, headers=headers_,
+                                            data=data, json=json, params=params, files=files, stream=stream, verify=verify,
+                                            auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
+                                            timeout=timeout)
+        except UnicodeEncodeError:
+            # fix:UnicodeEncodeError: 'latin-1' codec can't encode characters in position
+            # 223-226: xxx is not valid Latin-1. Use body.encode('utf-8')
+            # if you want to send it encoded in UTF-8.
+            response = self.session.request(method=method.lower(), url=url, headers=headers_,
+                                            data=data.encode("utf-8").decode("latin1"), json=json, params=params, files=files, stream=stream,
+                                            verify=verify,
+                                            auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
+                                            timeout=timeout)
+        req_code = self.getStatusCode(response)
+        req_text = self.getText(response)
+        req_headers = self.getHeaders(response)
+        req_encoding = self.getEncoding(response)
+        req_httpxd = self.getHttpxd(response)
+        req_timeout = self.getResponseTime(response)
+        req_content = self.getContent(response)
+        req_datas = {"ResponseCode":[req_code,self.getNotice(req_code)], "ResponseTime":req_timeout,"ResponseText":req_text}
+        with allure.step("响应结果"):
+            {allure.attach(name="%s"%(str(key)), body=str(value).strip()) for key,value in req_datas.items()}
+        if validations !={} and assert_data is None: # Yaml中声明了 但是case中没有声明
+            assertEqual(validations=validations,code=req_code,content=req_content,text=req_text,time=req_timeout)
+        elif validations =={} and assert_data is not None: # Yaml中未定义 但是case中声明
+            assertEqual(validations=assert_data,code=req_code,content=req_content,text=req_text,time=req_timeout)
+        elif validations !={} and assert_data is not None: # 若二者都有则以最后定义的为主
+            assertEqual(validations=assert_data,code=req_code,content=req_content,text=req_text,time=req_timeout)
+        return response
+        if seesion_ is True:
+            self.closeSession()
 
     def closeSession(self):
         self.session.close()
@@ -229,6 +254,17 @@ class Httpx(object):
                 response_text = response.content
         return response_text
 
+    def getContent(self,response):
+        """
+        获取Content
+        :param response:
+        :return:
+        """
+        try:
+            return json.loads(response.content)
+        except json.decoder.JSONDecodeError:
+            return None
+
     def getRaw(self, response):
         """
         获取返回的raw结果
@@ -305,4 +341,4 @@ if __name__ == '__main__':
     from BaseSetting import Route
     file_path =  Route.joinPath("debug","test_change_type.json")
     # print(Httpx.uploadFile(url="https://yuyanqing.cn", file_path=file_path, method="single"))
-    print(Httpx.sendApi(url="http://localhost:8001/#network",method="post",headers={'Authorization': Env.getAuth()["Authorization"]}))
+    print(Httpx.sendApi(url="http://localhost:8001/#network",method="post",hook_header={"test":"aaa"},headers={'Authorization': Env.getAuth()["Authorization"]}))
