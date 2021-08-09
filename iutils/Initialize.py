@@ -50,7 +50,7 @@ class Env(object):
         """
         try:
 
-            return str(self.getHost("awen")+Loader.yamlFile(Route.joinPath(self.global_dir,"manager_path.yaml"))[adders])
+            return str(Loader.yamlFile(Route.joinPath(self.global_dir,"manager_path.yaml"))[adders])
         except Exception as e:
             self.logger.error("键值：%s未在%s中定义"%(adders,self.global_dir))
 

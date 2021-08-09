@@ -30,7 +30,6 @@ class Loader(object):
         :return:
         """
         try:
-            print("LoadingYamlFile：",file_path)
             if FileHander.readFileType(file_path) in(".yaml",".yml"):
                 with open(file_path, 'r', encoding='utf-8') as file:
                     return yaml.safe_load(file.read())
