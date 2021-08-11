@@ -117,39 +117,42 @@ class Httpx(object):
                 allure.attach(name="Assert Parametrize", body=str(validations))
             elif assert_data is not None:
                 allure.attach(name="Assert Parametrize", body=str(assert_data))
-        try:
-            response = self.session.request(method=method.lower(), url=url, headers=headers_,
-                                            data=data, json=json, params=params, files=files, stream=stream, verify=verify,
-                                            auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
-                                            timeout=timeout)
-        except UnicodeEncodeError:
-            # fix:UnicodeEncodeError: 'latin-1' codec can't encode characters in position
-            # 223-226: xxx is not valid Latin-1. Use body.encode('utf-8')
-            # if you want to send it encoded in UTF-8.
-            response = self.session.request(method=method.lower(), url=url, headers=headers_,
-                                            data=data.encode("utf-8").decode("latin1"), json=json, params=params, files=files, stream=stream,
-                                            verify=verify,
-                                            auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
-                                            timeout=timeout)
-        req_code = self.getStatusCode(response)
-        req_text = self.getText(response)
-        req_headers = self.getHeaders(response)
-        req_encoding = self.getEncoding(response)
-        req_httpxd = self.getHttpxd(response)
-        req_timeout = self.getResponseTime(response)
-        req_content = self.getContent(response)
-        req_datas = {"ResponseCode":[req_code,self.getNotice(req_code)], "ResponseTime":req_timeout,"ResponseText":req_text}
-        with allure.step("响应结果：{}".format(urlparse(url).path) if allure_setup is None else "响应结果：{}".format(allure_setup)):
-            {allure.attach(name="%s"%(str(key)), body=str(value).strip()) for key,value in req_datas.items()}
-        if validations !={} and assert_data is None: # Yaml中声明了 但是case中没有声明
-            assertEqual(validations=validations,code=req_code,content=req_content,text=req_text,time=req_timeout)
-        elif validations =={} and assert_data is not None: # Yaml中未定义 但是case中声明
-            assertEqual(validations=assert_data,code=req_code,content=req_content,text=req_text,time=req_timeout)
-        elif validations !={} and assert_data is not None: # 若二者都有则以最后定义的为主
-            assertEqual(validations=assert_data,code=req_code,content=req_content,text=req_text,time=req_timeout)
-        return response
-        if seesion_ is True:
-            self.closeSession()
+        if method.lower() not in self.text_plain+self.json_method:
+            raise Exception("暂不支持：{}方式请求！！！".format(method.lower()))
+        else:
+            try:
+                response = self.session.request(method=method.lower(), url=url, headers=headers_,
+                                                data=data, json=json, params=params, files=files, stream=stream, verify=verify,
+                                                auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
+                                                timeout=timeout)
+            except UnicodeEncodeError:
+                # fix:UnicodeEncodeError: 'latin-1' codec can't encode characters in position
+                # 223-226: xxx is not valid Latin-1. Use body.encode('utf-8')
+                # if you want to send it encoded in UTF-8.
+                response = self.session.request(method=method.lower(), url=url, headers=headers_,
+                                                data=data.encode("utf-8").decode("latin1"), json=json, params=params, files=files, stream=stream,
+                                                verify=verify,
+                                                auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
+                                                timeout=timeout)
+            req_code = self.getStatusCode(response)
+            req_text = self.getText(response)
+            req_headers = self.getHeaders(response)
+            req_encoding = self.getEncoding(response)
+            req_httpxd = self.getHttpxd(response)
+            req_timeout = self.getResponseTime(response)
+            req_content = self.getContent(response)
+            req_datas = {"ResponseCode":[req_code,self.getNotice(req_code)], "ResponseTime":req_timeout,"ResponseText":req_text}
+            with allure.step("响应结果：{}".format(urlparse(url).path) if allure_setup is None else "响应结果：{}".format(allure_setup)):
+                {allure.attach(name="%s"%(str(key)), body=str(value).strip()) for key,value in req_datas.items()}
+            if validations !={} and assert_data is None: # Yaml中声明了 但是case中没有声明
+                assertEqual(validations=validations,code=req_code,content=req_content,text=req_text,time=req_timeout)
+            elif validations =={} and assert_data is not None: # Yaml中未定义 但是case中声明
+                assertEqual(validations=assert_data,code=req_code,content=req_content,text=req_text,time=req_timeout)
+            elif validations !={} and assert_data is not None: # 若二者都有则以最后定义的为主
+                assertEqual(validations=assert_data,code=req_code,content=req_content,text=req_text,time=req_timeout)
+            return response
+            if seesion_ is True:
+                self.closeSession()
 
     def closeSession(self):
         self.session.close()
