@@ -13,6 +13,7 @@ import requests
 sys.path.append('../')
 from urllib import parse
 from typing import Dict, Text
+from urllib.parse import urlparse
 from requests_toolbelt import MultipartEncoder
 requests.packages.urllib3.disable_warnings()
 from iutils.Initialize import Env
@@ -58,7 +59,7 @@ class Httpx(object):
                 auth=None, timeout=None, allow_redirects=True, proxies=None,
                 hooks=None, stream=None, verify=None, cert=None, json=None,
                 esdata=None, auto=False, aided=False, seesion_=False,
-                assert_data=None, hook_header=None):
+                assert_data=None, hook_header=None,allure_setup=None):
         """
         数据请求
         :param method: 请求方式
@@ -83,11 +84,14 @@ class Httpx(object):
         :param assert_data: 手动效验
         :param hook_header 头部钩子 用于更新部分键值 （扩展）
         :param seesion_ 会话保持开关
+        :param allure_setup: allure中的准备文案
         return Response <Response> 对象
         """
         if esdata is not None:
             allures,headers_,request_,validations=self.getData(esdata,{},{},{},{})
             setTag(allures) # 打标签
+        else:
+            headers_,validations = {},{}
         if auto is True and isinstance(request_,dict) and len(request_.keys())>1: # 读取Yaml中request字段
             try:
                 method = request_.get("method")
@@ -97,9 +101,9 @@ class Httpx(object):
                 pass
         if headers is not None:
             headers_.update(headers)
-        if hook_header is not None:
+        if hook_header is not None and isinstance(headers_,dict) :
             headers_.update(hook_header)
-        with allure.step("网络请求"):
+        with allure.step("网络请求：{}".format(urlparse(url).path) if allure_setup is None else "网络请求：{}".format(allure_setup)):
             allure.attach(name="Request Url", body=str(url))
             allure.attach(name="Request Method", body=str(method))
             allure.attach(name="Request Headers", body=str(headers_))
@@ -113,7 +117,6 @@ class Httpx(object):
                 allure.attach(name="Assert Parametrize", body=str(validations))
             elif assert_data is not None:
                 allure.attach(name="Assert Parametrize", body=str(assert_data))
-        print(headers_)
         try:
             response = self.session.request(method=method.lower(), url=url, headers=headers_,
                                             data=data, json=json, params=params, files=files, stream=stream, verify=verify,
@@ -136,7 +139,7 @@ class Httpx(object):
         req_timeout = self.getResponseTime(response)
         req_content = self.getContent(response)
         req_datas = {"ResponseCode":[req_code,self.getNotice(req_code)], "ResponseTime":req_timeout,"ResponseText":req_text}
-        with allure.step("响应结果"):
+        with allure.step("响应结果：{}".format(urlparse(url).path) if allure_setup is None else "响应结果：{}".format(allure_setup)):
             {allure.attach(name="%s"%(str(key)), body=str(value).strip()) for key,value in req_datas.items()}
         if validations !={} and assert_data is None: # Yaml中声明了 但是case中没有声明
             assertEqual(validations=validations,code=req_code,content=req_content,text=req_text,time=req_timeout)
