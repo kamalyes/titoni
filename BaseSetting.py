@@ -8,7 +8,6 @@
 # Date： 2020/7/15 16:15
 '''
 import os
-import time
 
 class Route(object):
     def __init__(self):
@@ -18,6 +17,7 @@ class Route(object):
         self.workspaces = os.path.abspath(os.path.dirname(__file__))
         self.path = {"output": "output",
                      "config": "config",
+                     "debug": "debug",
                      "allure_result": "allure_result",
                      "allure_report": "allure_report",
                      "test_path": r"testings",
@@ -36,10 +36,13 @@ class Route(object):
         :param keyword:
         :return:
         """
-        if keyword == "workspaces":
-            return self.workspaces
-        else:
-            return os.path.join(self.workspaces, self.path[keyword])
+        try:
+            if keyword == "workspaces":
+                return self.workspaces
+            else:
+                return os.path.join(self.workspaces, self.path[keyword])
+        except KeyError:
+            raise KeyError("全局路径中未配置%s"%(keyword))
 
     def joinPath(self,file_path,file_name):
         """

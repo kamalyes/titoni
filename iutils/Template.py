@@ -65,7 +65,7 @@ class Template(metaclass=TemplateMeta):
                 >>> general_data = Loader.jsonFile(Route.joinPath("test_json","test_datakit.json"))
                 >>> replace_str = {"name": "test0001_name","pic": "test_0001_pic",
                                "randSample":"test_rand_sample","src":"test_0001_src","randLetters":"test_rand_letters"}
-                >>> print(Template(general_data).subStitute(replace_str,["test0001_name","test_0001_pic"]))
+                >>> Template(general_data).subStitute(replace_str,["test0001_name","test_0001_pic"])
         :return:
         """
         def convert(mo):

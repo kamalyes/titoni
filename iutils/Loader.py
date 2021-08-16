@@ -23,15 +23,24 @@ except AttributeError:
     pass
 
 class Loader(object):
-    def yamlFile(self,file_path=None):
+    def yamlFile(self,file_path=None,safe_loads=True):
         """
         加载yaml文件(做特殊兼容处理、自动引入目录：test_json)
         :param file_path: 文件路径
+        :param safe_loads: 安全加载 默认开启
+        Example::
+            >>> from BaseSetting import Route
+            >>> yaml_data = Loader.yamlFile(Route.joinPath("test_yaml","test_not_exists.yaml"))
+            >>> yaml_data = Loader.yamlFile(Route.joinPath("test_yaml","test_helper.yaml"),False)
+            >>> json_data = Loader.jsonFile(Route.joinPath("test_json","test_datakit.json"))
+            >>> print("%s\n%s\n"%(yaml_data,json_data))
         :return:
         """
-        if not os.path.exists(file_path):
+        if not os.path.exists(file_path) and safe_loads is False:
             with open(file_path, 'w', encoding='utf-8') as file:
                 file.close()
+        elif not os.path.exists(file_path) and safe_loads is True:
+            raise Warning("本地没有这个文件，且未授权自动创建！！！")
         if FileHander.readFileType(file_path) in (".yaml", ".yml"):
             with open(file_path, 'r', encoding='utf-8') as file:
                 return yaml.safe_load(file.read())
@@ -147,10 +156,3 @@ class Loader(object):
             time.sleep(refresh_sec)
 
 Loader = Loader()
-
-if __name__ == '__main__':
-    from BaseSetting import Route
-    yaml_data = Loader.yamlFile(Route.joinPath("test_yaml","boss_pronew.yaml"))
-    json_data = Loader.jsonFile(Route.joinPath("debug","test_change_type.json"))
-    csv_data = Loader.csvFile(Route.joinPath("test_csv","order_sn.csv"))
-    print("%s\n%s\n%s"%(yaml_data,json_data,csv_data[0]))

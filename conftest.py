@@ -7,7 +7,9 @@
 # Date： 2021/7/6 0:37
 '''
 import os
+import sys
 import time
+sys.path.append('./')
 from BaseSetting import Route
 from iutils.YamlUtils import YamlHandle
 

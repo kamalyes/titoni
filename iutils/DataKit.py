@@ -74,14 +74,3 @@ def conversType(dict_map:dict,disable_data:list=[]) -> dict:
         return json.dumps(dict_map,ensure_ascii=False).replace('\\"','"').replace('"{',"{").replace('}"',"}") # 临时打个补丁 后续若报错则需再次做兼容
     else:
         raise TypeError("传入的参数不是dict类型 %s" % (type(dict_map)))
-
-# TODO: 将{$.xx.xx[xx]:value,xx,xx}格式数据进行重组
-def dataRegroup(old_data: dict, temp={}) ->dict:
-    """
-    重组数据
-    :param old_data:
-    :return:
-    """
-    if isinstance(old_data,dict):
-        for k,v in old_data.items():
-            print(k,v)

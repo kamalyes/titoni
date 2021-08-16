@@ -17,6 +17,10 @@ class Moment(object):
         :param time_type: 现在的时间now， 其他时间else_time
         :param layout: 10timestamp， 13timestamp,  else  时间类型
         :return:
+        Example::
+            >>> Moment.getTime("%Y-%m-%d %H:%M:%S")
+            >>> Moment.getTime("10timestamp")
+            >>> Moment.getTime("13timestamp")
         """
         tim = datetime.datetime.now()
         temp = tim.strftime('%Y-%m-%d %H:%M:%S')
@@ -38,6 +42,9 @@ class Moment(object):
         """
         日期偏移
         :param day_interval: 想要偏移的天数
+        Example::
+            >>> Moment.computeDate(10)
+            >>> Moment.computeDate(-6)
         :return
         """
         today = datetime.date.today()
@@ -50,7 +57,9 @@ class Moment(object):
         """
         时间戳格式化为xxx年xx月xx日
         :return timestamp_to_date
-        :param
+        :param timestamp
+        Example::
+            >>> Moment.timestampToDate(1603282677.5209892)
         :return:
         """
         if not isinstance(timestamp, (int, float)):
@@ -65,6 +74,8 @@ class Moment(object):
         中间时差计算
         :param start: 开始日期
         :param end:   结束日期
+        Example::
+            >>> Moment.getEveryDay("2020-06-05", "2020-07-01")
         :return
         """
         date_list = []
@@ -81,6 +92,8 @@ class Moment(object):
         """
         单个日期初始化时间戳年月日时分秒、转化为时间戳
         :param singletime:
+        Example::
+            >>> Moment.getSingletime("2020-06-01 18:50:00")
         :return
         """
         singletime = time.strptime(singletime, '%Y-%m-%d %H:%M:%S')
@@ -96,13 +109,3 @@ class Moment(object):
         time.sleep(timestamp)
 
 Moment = Moment()
-
-if __name__ == "__main__":
-    print(Moment.getTime("%Y-%m-%d %H:%M:%S"))
-    print(Moment.getTime("10timestamp"))
-    print(Moment.getTime("13timestamp"))
-    print(Moment.computeDate(10))
-    print(Moment.computeDate(-6))
-    print(Moment.timestampToDate(1603282677.5209892))
-    print(Moment.getEveryDay("2020-06-05", "2020-07-01"))
-    print(Moment.getSingletime("2020-06-01 18:50:00"))

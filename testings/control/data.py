@@ -5,5 +5,10 @@
 # FileName： data.py
 # Author : YuYanQing
 # Desc:  变量池
-# Date： 2021/8/11 13:55
+# Date： 2021/8/19 9:46
 '''
+from iutils.Loader import Loader
+from testings.control.path import APPLICATION_PATH
+
+APPLICATION = Loader.yamlFile(APPLICATION_PATH)
+DB_CONFIG = APPLICATION["database"]

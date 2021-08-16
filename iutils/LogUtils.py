@@ -8,8 +8,6 @@
 # Date： 2020/7/15 16:15
 '''
 import os
-import sys
-sys.path.append('../')
 import time,logging,shutil
 import datetime,BaseSetting
 

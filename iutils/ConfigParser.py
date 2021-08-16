@@ -7,7 +7,6 @@
 # Desc: ini配置文件处理
 # Date： 2021/8/1 21:20
 '''
-
 import configparser
 from iutils.LogUtils import Logger
 logger = Logger.write_log()#调用日志模块
