@@ -19,3 +19,12 @@ class TestHelper():
 
     def test_helper_test_post(self):
         Httpx.sendApi(auto=True, esdata=[config,test_setup["search_002"]])
+
+    def test_helper_single_url(self):
+        Httpx.sendApi(auto=True, esdata=[config,test_setup["search_003"]])
+
+    def test_helper_error_url(self):
+        Httpx.sendApi(auto=True, esdata=[config,test_setup["search_005"]])
+
+    def test_helper_error_url_(self):
+        Httpx.sendApi(auto=True, esdata=[config,test_setup["search_006"]])

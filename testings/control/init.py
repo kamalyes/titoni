@@ -17,7 +17,7 @@ class Envision(object):
 
     def getYaml(self,file_name):
         """
-        读取Yaml_Case
+        读取Yaml
         :param file_name:
         :return:
         """
@@ -25,7 +25,7 @@ class Envision(object):
 
     def getJson(self,file_name):
         """
-        读取Yaml_Case
+        读取Json
         :param file_name:
         :return:
         """
@@ -33,11 +33,19 @@ class Envision(object):
 
     def getCsv(self,file_name):
         """
-        读取Yaml_Case
+        读取Csv
         :param file_name:
         :return:
         """
         return Loader.csvFile(Route.joinPath("test_csv", file_name))
+
+    def getImg(self,file_name):
+        """
+        读取Image
+        :param file_name:
+        :return:
+        """
+        return Loader.csvFile(Route.joinPath("test_img", file_name))
 
 Envision = Envision()
 

@@ -7,6 +7,7 @@
 # Date： 2021/6/6 0:37
 '''
 import os
+import re
 import json
 import allure
 import requests
@@ -15,7 +16,6 @@ from uuid import uuid4
 from typing import Text
 from urllib.parse import urlparse
 from requests_toolbelt import MultipartEncoder
-from testings.control.variables import Global
 requests.packages.urllib3.disable_warnings()
 from BaseSetting import Route
 from iutils.Loader import Loader
@@ -24,6 +24,8 @@ from iutils.Helper import randData
 from iutils.AllureUtils import setTag
 from iutils.Processor import JsonPath
 from iutils.Assertion import assertEqual
+from testings.control.path import DNS_PATH,ADDRESS_PATH # 需对应的配置
+from testings.control.variables import Global
 
 class Httpx(object):
     def __init__(self):
@@ -31,6 +33,8 @@ class Httpx(object):
         self.session = requests.session()
         self.text_plain = ['get', 'head', 'patch', 'options']
         self.json_method = ['post', 'put', 'delete']
+        self.dns_pro = Loader.yamlFile(DNS_PATH) # 域名配置
+        self.address_pro = Loader.yamlFile(ADDRESS_PATH) # url地址配置
         self.headers = Loader.yamlFile(os.path.join(Route.getPath("config"), "norm_headers.yaml"))
 
     def getData(self, data, allures_=None, headers_=None, request_=None, validations=None, extracts=None):
@@ -65,8 +69,8 @@ class Httpx(object):
     def saveData(self,enter_data,target_data):
         """
         存储变量
-        :param enter_data
-        :param target_data
+        :param enter_data 返回值
+        :param target_data 对应的目标节点
         :return:
         """
         if isinstance(enter_data,dict) and isinstance(target_data,dict):
@@ -119,8 +123,12 @@ class Httpx(object):
         if auto is True and isinstance(request_, dict) and len(request_.keys()) > 1:  # 读取Yaml中request字段
             try:
                 method = request_.get("method")
-                # ToDo url这里需要根据address 反转得到dns地址进行拼接为正确的url
+                # 根据dns+address 反转得到dns地址进行拼接为正确的url
                 url = request_.get("url")
+                if isinstance(url,list) and len(url)==2:
+                    url = self.urlJoint(self.dns_pro.get(url[0]),self.address_pro.get(url[1]))
+                elif isinstance(url,list) and len(url)==1:
+                    raise KeyError("自动模式下必须要先配置Host及Url或者仅传入Path，且为List例如：\n[host,url_path]")
                 json = randData(request_.get("json"))
                 data = randData(request_.get("data"))
                 params = randData(request_.get("params"))
@@ -161,6 +169,10 @@ class Httpx(object):
             raise Exception("暂不支持：{}方式请求！！！".format(method.lower()))
         else:
             try:
+                if re.match(r'^https?:/{2}\w.+$', url):
+                    pass
+                else:
+                    raise Exception("%s-不是有效Url！！！"%(url))
                 response = self.session.request(method=method.lower(), url=url, headers=headers_,
                                                 data=data, json=json, params=params, files=files, stream=stream,
                                                 verify=verify,
@@ -200,9 +212,9 @@ class Httpx(object):
             elif validations != {} and assert_data is not None:  # 若二者都有则以最后定义的为主
                 assertEqual(validations=assert_data, code=req_code, content=req_content, text=req_text,
                             time=req_timeout)
-            return response
             if seesion_ is True:
                 self.closeSession()
+            return response
 
     def closeSession(self):
         self.session.close()

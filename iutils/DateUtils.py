@@ -17,10 +17,6 @@ class Moment(object):
         :param time_type: 现在的时间now， 其他时间else_time
         :param layout: 10timestamp， 13timestamp,  else  时间类型
         :return:
-        Example::
-            >>> Moment.getTime("%Y-%m-%d %H:%M:%S")
-            >>> Moment.getTime("10timestamp")
-            >>> Moment.getTime("13timestamp")
         """
         tim = datetime.datetime.now()
         temp = tim.strftime('%Y-%m-%d %H:%M:%S')
@@ -38,28 +34,31 @@ class Moment(object):
             tim = tim.strftime(layout)
         return tim
 
-    def computeDate(self, day_interval):
+    def computeDate(self, days=0,seconds=0, microseconds=0,
+                milliseconds=0, minutes=0, hours=0, weeks=0,custom=None):
         """
         日期偏移
-        :param day_interval: 想要偏移的天数
-        Example::
-            >>> Moment.computeDate(10)
-            >>> Moment.computeDate(-6)
-        :return
+        :param days:
+        :param seconds:
+        :param microseconds:
+        :param milliseconds:
+        :param minutes:
+        :param hours:
+        :param weeks:
+        :param custom：自定义
+        :return:
         """
-        today = datetime.date.today()
-        if isinstance(day_interval, int) and day_interval >= 0:
-            return today + datetime.timedelta(days=day_interval)
-        elif isinstance(day_interval, int) and day_interval < 0:
-            return today - datetime.timedelta(days=abs(day_interval))
+        if custom is not None:
+            today = datetime.datetime.strptime(custom,'%Y-%m-%d %H:%M:%S')
+        else:
+            today = datetime.datetime.now()
+        return (today + datetime.timedelta(days, seconds, microseconds, milliseconds, minutes, hours, weeks)).strftime('%Y-%m-%d %H:%M:%S')
 
     def timestampToDate(self, timestamp):
         """
         时间戳格式化为xxx年xx月xx日
         :return timestamp_to_date
-        :param timestamp
-        Example::
-            >>> Moment.timestampToDate(1603282677.5209892)
+        :param
         :return:
         """
         if not isinstance(timestamp, (int, float)):
@@ -74,8 +73,6 @@ class Moment(object):
         中间时差计算
         :param start: 开始日期
         :param end:   结束日期
-        Example::
-            >>> Moment.getEveryDay("2020-06-05", "2020-07-01")
         :return
         """
         date_list = []
@@ -92,8 +89,6 @@ class Moment(object):
         """
         单个日期初始化时间戳年月日时分秒、转化为时间戳
         :param singletime:
-        Example::
-            >>> Moment.getSingletime("2020-06-01 18:50:00")
         :return
         """
         singletime = time.strptime(singletime, '%Y-%m-%d %H:%M:%S')
@@ -108,4 +103,28 @@ class Moment(object):
         """
         time.sleep(timestamp)
 
+    def compareTime(self,time1,time2):
+        """
+        时间比较
+        :param time1:
+        :param time2:
+        :return:
+        """
+        time1 = datetime.datetime.strptime(time1,'%Y-%m-%d %H:%M:%S')
+        time2 = datetime.datetime.strptime(time2,'%Y-%m-%d %H:%M:%S')
+        if time1>time2:
+            return True
+        else:
+            return False
+
 Moment = Moment()
+
+if __name__ == "__main__":
+    print(Moment.getTime("%Y-%m-%d %H:%M:%S"))
+    print(Moment.getTime("10timestamp"))
+    print(Moment.getTime("13timestamp"))
+    print(Moment.computeDate(-6))
+    print(Moment.timestampToDate(1603282677.5209892))
+    print(Moment.getEveryDay("2020-06-05", "2020-07-01"))
+    print(Moment.getSingletime("2020-06-01 18:50:00"))
+    print(Moment.compareTime("2021-08-23 17:11:37", "2021-08-22 17:11:37"))

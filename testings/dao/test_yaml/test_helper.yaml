@@ -11,18 +11,20 @@ config:
     severity: normal
 - request:
     method: get
-    url:  https://www.so.com/s
+    url:  [localhost,8001]
 test_setup:
   search_001:
     allures:
       severity: critical
       description: 这是继承测试的用例描述
-      story: 搜索哈哈哈
+      story: 单条url
     headers:
       accept: application/json, text/plain, */*
       accept-encoding: gzip
       accept-language: zh-CN,zh;q=0.9
     request:
+      method: post
+      url:  https://www.so.com/s
       params: {"q": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
       data: {"AAAA": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
     validations:
@@ -33,35 +35,70 @@ test_setup:
     allures:
       severity: critical
       description: 这是继承测试的用例描述
-      story: 搜索哈哈哈
+      story: 合法的url配置
     headers:
       accept: application/json, text/plain, */*
       accept-encoding: gzip
       accept-language: zh-CN,zh;q=0.9
     request:
-      method: post
+      method: get
+      url:  [localhost,8001]
       params: {"q": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
       data: {"AAAA": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
     validations:
       expected_code: 200
       expected_content: {"code":200,"message":"","error":"","details":null}
       expected_time: 10
-  search_002:
+  search_003:
     allures:
       severity: critical
       description: 这是继承测试的用例描述
-      story: 自动存储变量
+      story: 单列表
     headers:
       accept: application/json, text/plain, */*
       accept-encoding: gzip
       accept-language: zh-CN,zh;q=0.9
     request:
-      method: post
+      method: get
+      url:  [localhost]
       params: {"q": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
       data: {"AAAA": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
-    extract:
-      test_var_name: "$.q"
-      test_var_name001: "$.AAAA"
+    validations:
+      expected_code: 200
+      expected_content: {"code":200,"message":"","error":"","details":null}
+      expected_time: 10
+  search_005:
+    allures:
+      severity: critical
+      description: 这是继承测试的用例描述
+      story: 错误url
+    headers:
+      accept: application/json, text/plain, */*
+      accept-encoding: gzip
+      accept-language: zh-CN,zh;q=0.9
+    request:
+      method: get
+      url:  localhost
+      params: {"q": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
+      data: {"AAAA": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
+    validations:
+      expected_code: 200
+      expected_content: {"code":200,"message":"","error":"","details":null}
+      expected_time: 10
+  search_006:
+    allures:
+      severity: critical
+      description: 这是继承测试的用例描述
+      story: 错误url001
+    headers:
+      accept: application/json, text/plain, */*
+      accept-encoding: gzip
+      accept-language: zh-CN,zh;q=0.9
+    request:
+      method: get
+      url:  https
+      params: {"q": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
+      data: {"AAAA": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
     validations:
       expected_code: 200
       expected_content: {"code":200,"message":"","error":"","details":null}
