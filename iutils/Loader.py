@@ -7,12 +7,12 @@
 # Desc: 加载文件
 # Date： 2021/6/11 15:15
 '''
+import os
 import sys
 import csv
 import json
 import time
 import yaml
-sys.path.append('../')
 from typing import Text, Dict, List
 from iutils.FolderUtils import FileHander
 from iutils.Exceptions import FileFormatError
@@ -29,16 +29,12 @@ class Loader(object):
         :param file_path: 文件路径
         :return:
         """
-        try:
-            if FileHander.readFileType(file_path) in(".yaml",".yml"):
-                with open(file_path, 'r', encoding='utf-8') as file:
-                    return yaml.safe_load(file.read())
-        except FileNotFoundError as FileNotFound:
-            raise FileNotFound("YAML file: %s does not exist." % (file_path))
-        except TypeError as TyError:
-            raise TyError("The YAML file format is incorrect.")
-        except Exception:
-            raise Exception("File contents are incorrect")
+        if not os.path.exists(file_path):
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.close()
+        if FileHander.readFileType(file_path) in (".yaml", ".yml"):
+            with open(file_path, 'r', encoding='utf-8') as file:
+                return yaml.safe_load(file.read())
 
     def jsonFile(self,file_path=None) -> Dict:
         """
@@ -154,7 +150,7 @@ Loader = Loader()
 
 if __name__ == '__main__':
     from BaseSetting import Route
-    yaml_data = Loader.yamlFile(Route.joinPath("test_yaml","boss_product_new.yaml"))
+    yaml_data = Loader.yamlFile(Route.joinPath("test_yaml","boss_pronew.yaml"))
     json_data = Loader.jsonFile(Route.joinPath("debug","test_change_type.json"))
     csv_data = Loader.csvFile(Route.joinPath("test_csv","order_sn.csv"))
     print("%s\n%s\n%s"%(yaml_data,json_data,csv_data[0]))

@@ -7,10 +7,8 @@
 # Desc: 对yaml格式的配置文件的操作
 # Date： 2020/7/15 16:15
 '''
-import sys
 import yaml
 import shutil
-sys.path.append('../')
 from iutils.Loader import Loader
 from iutils.LogUtils import Logger
 from iutils.Processor import JsonPath
@@ -71,7 +69,7 @@ YamlHandle = YamlHandle()
 if __name__ == '__main__':
     import os
     from BaseSetting import Route
-    file_path = os.path.join(Route.getPath("user_variables"),"global.yaml")
+    file_path = os.path.join(Route.getPath("variables"),"global.yaml")
     YamlHandle.writeOjb(file_path,{"case_info":{"test_list":{"accept":"old_data"}}},"w")
     YamlHandle.saveData(file_path,{"case_info":"test_list"},False)
     YamlHandle.getValue(file_path,"$.case_info.test_list")

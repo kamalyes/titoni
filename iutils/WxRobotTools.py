@@ -19,10 +19,7 @@ class WechatRobot:
         self.webhook_address = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=' + self.key
 
     def do_request(self, data):
-        headers = {
-            'Content-Type': 'application/json; charset=utf-8'
-        }
-
+        headers = {'Content-Type': 'application/json; charset=utf-8'}
         resp = requests.post(self.webhook_address, headers=headers, data=json.dumps(data))
         return resp.json()
 
@@ -78,8 +75,6 @@ class WechatRobot:
         return self.do_request(data)
 
     def send_markdown(self, contents):
-        send_contents = ''
-
         if isinstance(contents, (list, tuple)):
             if len(contents) >= 1:
                 send_contents = contents[0] + '\n'

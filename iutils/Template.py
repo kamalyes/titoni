@@ -7,9 +7,7 @@
 # Date： 2021/6/6 0:37
 '''
 import re
-import sys
 from BaseSetting import Route
-sys.path.append('../')
 from iutils.Loader import Loader
 from iutils.DataKit import conversType
 
@@ -45,12 +43,29 @@ class Template(metaclass=TemplateMeta):
         if isinstance(template,dict):
             self.template = str(template)
 
+    def _invalid(self, mo):
+        i = mo.start('invalid')
+        lines = self.template[:i].splitlines(keepends=True)
+        if not lines:
+            colno = 1
+            lineno = 1
+        else:
+            colno = i - len(''.join(lines[:-1]))
+            lineno = len(lines)
+        error = self.template[int(colno)-3:len(str(self.template))]
+        raise ValueError('Invalid placeholder in string: line %d, col %d\n %s' %(lineno, colno, error))
+
     def subStitute(self,mapping,disable_data="",type=None):
         """
         合并数据
         :param mapping: 新的键值对
         :param disable_data:  无需参与类型转化的键值
         :param type:    转化类型 若不添加则转为Json 若=dict则转为dict类型
+        Example::
+                >>> general_data = Loader.jsonFile(Route.joinPath("test_json","test_datakit.json"))
+                >>> replace_str = {"name": "test0001_name","pic": "test_0001_pic",
+                               "randSample":"test_rand_sample","src":"test_0001_src","randLetters":"test_rand_letters"}
+                >>> print(Template(general_data).subStitute(replace_str,["test0001_name","test_0001_pic"]))
         :return:
         """
         def convert(mo):
@@ -60,14 +75,6 @@ class Template(metaclass=TemplateMeta):
             if mo.group('escaped') is not None:
                 return self.delimiter
             if mo.group('invalid') is not None:
-                self._invalid(mo)
+                self._invalid(mo,)
             raise ValueError('Unrecognized named group in pattern',self.pattern)
         return eval(self.pattern.sub(convert, self.template)) if type =="dict" and disable_data is "" else conversType(eval(self.pattern.sub(convert, self.template)),disable_data)
-
-if __name__ == '__main__':
-    general_data = Loader.jsonFile(Route.joinPath("test_json","create_virtual_product.json"))
-    replace_str = {'category_id': 15888, 'name': '自动化_虚拟商品7eN95a',
-                   'pic': 'http://file.vetscloud.com/2008e57c7feb8135f2754ba939a1bb41,http://file.vetscloud.com/830beab89f997daf4ff62d9c50dc98c5,http://file.vetscloud.com/3e62fed5130d6a9f8dd196b4719f4a6e,http://file.vetscloud.com/9db24b0c2c4a9d2edce96cabadc1a521,http://file.vetscloud.com/d55dc27a512ede0547e99d9fdb894e18',
-                   'selling_point': '', 'term_value': '2021-07-21 13:34:33', 'market_price': 157, 'retail_price': 157,
-                   'center_pic': 'http://file.vetscloud.com/0c97a173a6c78848a8fc554f7a65eab6'}
-    print(Template(general_data).subStitute(replace_str,["category_id","market_price"]))

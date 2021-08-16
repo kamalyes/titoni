@@ -1,0 +1,7 @@
+[console_scripts]
+PyTestReport.shell = pytestreport:shell
+PyTestReport.web = pytestreport:web
+
+[pytest11]
+pytestreport = pytestreport.PyTestReportPlug
+

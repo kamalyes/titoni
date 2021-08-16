@@ -7,8 +7,9 @@
 # Desc  : MySQL驱动类
 # Date  : 2020/10/15 9:11
 '''
-import pandas as pd
+import allure
 import pymysql
+import pandas as pd
 
 class MysqlTools(object) :
     def __init__(self,host,user,pass_word,database = None,port = 3306) :
@@ -54,7 +55,10 @@ class MysqlTools(object) :
         返回结果为pandas的DataFrame
         '''
         try :
-            return pd.read_sql_query(sql,self.conn)
+            pd_data = pd.read_sql_query(sql, self.conn)
+            with allure.step("Database query operation"):
+                allure.attach(name="{}".format(sql), body=str(pd_data).strip())
+            return pd_data
         except Exception as e :
             raise Exception('sql:%s,error:%s' % (sql,e))
 
@@ -66,6 +70,8 @@ class MysqlTools(object) :
         try :
             self.cur.execute(sql)
             self.conn.commit()
+            with allure.step("Database insert/update operation"):
+                allure.attach(name="{}".format(str(sql).split(" ")[0].title()), body=str(sql).strip())
         except Exception as e :
             raise Exception('sql:%s,error:%s' % (sql,e))
 

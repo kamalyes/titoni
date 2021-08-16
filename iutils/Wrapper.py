@@ -36,7 +36,6 @@ def countTime(model):
     return init_wrapper
 
 if __name__ == '__main__':
-    import time
     @countTime("（自定义模块名）")
     def add(num=100):
         """

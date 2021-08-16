@@ -6,29 +6,34 @@
 # Desc: request二次封装
 # Date： 2021/6/6 0:37
 '''
-import sys
+import os
 import json
 import allure
 import requests
-sys.path.append('../')
-from urllib import parse
-from typing import Dict, Text
+import filetype
+from uuid import uuid4
+from typing import Text
 from urllib.parse import urlparse
 from requests_toolbelt import MultipartEncoder
+from testings.control.variables import Global
 requests.packages.urllib3.disable_warnings()
-from iutils.Initialize import Env
+from BaseSetting import Route
+from iutils.Loader import Loader
 from iutils.LogUtils import Logger
+from iutils.Helper import randData
 from iutils.AllureUtils import setTag
+from iutils.Processor import JsonPath
 from iutils.Assertion import assertEqual
 
 class Httpx(object):
     def __init__(self):
         self.logger = Logger.writeLog()
         self.session = requests.session()
-        self.text_plain = ['get','head','patch','options']
-        self.json_method = ['post','put','delete']
+        self.text_plain = ['get', 'head', 'patch', 'options']
+        self.json_method = ['post', 'put', 'delete']
+        self.headers = Loader.yamlFile(os.path.join(Route.getPath("config"), "norm_headers.yaml"))
 
-    def getData(self,data, allures_=None, headers_=None, request_=None, validations=None):
+    def getData(self, data, allures_=None, headers_=None, request_=None, validations=None, extracts=None):
         """
         获取allures配置、headers、校验值
         :param data: config+子用例 list
@@ -36,12 +41,13 @@ class Httpx(object):
         :param headers_: 头部信息
         :param request_: 请求method及url
         :param validations: 校验值
+        :param extracts:
         :return:
         """
         if isinstance(data, list):
             for es in range(len(data)):
                 if isinstance(data[es], list):
-                    self.getData(data[es], allures_, headers_,request_, validations)
+                    self.getData(data[es], allures_, headers_, request_, validations, extracts)
                 elif isinstance(data[es], dict):
                     for key, value in data[es].items():
                         if key == 'headers':
@@ -52,14 +58,32 @@ class Httpx(object):
                             allures_.update(data[es][key])
                         elif key == 'validations':
                             validations = data[es][key]
-        return allures_, headers_, request_, validations
+                        elif key == "extract":
+                            extracts = data[es][key]
+        return allures_, headers_, request_, validations, extracts
+
+    def saveData(self,enter_data,target_data):
+        """
+        存储变量
+        :param enter_data
+        :param target_data
+        :return:
+        """
+        if isinstance(enter_data,dict) and isinstance(target_data,dict):
+            try:
+                for key,value in target_data.items():
+                    Global.setValue({key:JsonPath.find(enter_data, value)[0]})
+            except TypeError:
+                pass
+        else:
+            raise Warning("暂不支持该模式提取参数！！！")
 
     def sendApi(self, method=None, url=None,
                 params=None, data=None, headers=None, cookies=None, files=None,
                 auth=None, timeout=None, allow_redirects=True, proxies=None,
                 hooks=None, stream=None, verify=None, cert=None, json=None,
                 esdata=None, auto=False, aided=False, seesion_=False,
-                assert_data=None, hook_header=None,allure_setup=None):
+                assert_data=None, hook_header=None, allure_setup=None):
         """
         数据请求
         :param method: 请求方式
@@ -78,32 +102,48 @@ class Httpx(object):
         :param verify: (可选)一个布尔值，它控制我们是否进行验证服务器的TLS证书，或字符串，在本地开发或测试期间可能有用。
         :param cert: (可选)if String, ssl客户端证书文件(.pem)的路径。  如果Tuple， ('cert'， 'key')对
         :param json:
-        :param aided: 半自动模式
         :param esdata: 对接yaml中的config 基础数据
         :param auto: 全自动模式
+        :param aided: 半自动
         :param assert_data: 手动效验
         :param hook_header 头部钩子 用于更新部分键值 （扩展）
         :param seesion_ 会话保持开关
         :param allure_setup: allure中的准备文案
         return Response <Response> 对象
         """
-        if esdata is not None:
-            allures,headers_,request_,validations=self.getData(esdata,{},{},{},{})
-            setTag(allures) # 打标签
+        if auto is True or aided is True:
+            allures, headers_, request_, validations, extracts = self.getData(esdata, {}, {}, {}, {}, {})
+            setTag(allures)  # 打标签
         else:
-            headers_,validations = {},{}
-        if auto is True and isinstance(request_,dict) and len(request_.keys())>1: # 读取Yaml中request字段
+            headers_, validations, extracts = {}, {}, {}
+        if auto is True and isinstance(request_, dict) and len(request_.keys()) > 1:  # 读取Yaml中request字段
             try:
                 method = request_.get("method")
                 # ToDo url这里需要根据address 反转得到dns地址进行拼接为正确的url
                 url = request_.get("url")
+                json = randData(request_.get("json"))
+                data = randData(request_.get("data"))
+                params = randData(request_.get("params"))
+                if method == "get":  # 拦截不合法的数据
+                    data = json = None
+                else:
+                    params = None
             except KeyError:
                 pass
-        if headers is not None:
-            headers_.update(headers)
-        if hook_header is not None and isinstance(headers_,dict) :
+        try:
+            content_type = headers_["content-type"]
+        except Exception:
+            content_type = None
+        if json is not None and content_type is None:
+            headers_.update(self.headers["json_headers"])
+        elif params is not None and content_type is None:
+            headers_.update(self.headers["get_headers"])
+        elif data is not None and content_type is None:
+            headers_.update(self.headers["from_headers"])
+        if hook_header is not None and isinstance(headers_, dict):
             headers_.update(hook_header)
-        with allure.step("网络请求：{}".format(urlparse(url).path) if allure_setup is None else "网络请求：{}".format(allure_setup)):
+        with allure.step(
+                "网络请求：{}".format(urlparse(url).path) if allure_setup is None else "网络请求：{}".format(allure_setup)):
             allure.attach(name="Request Url", body=str(url))
             allure.attach(name="Request Method", body=str(method))
             allure.attach(name="Request Headers", body=str(headers_))
@@ -117,12 +157,13 @@ class Httpx(object):
                 allure.attach(name="Assert Parametrize", body=str(validations))
             elif assert_data is not None:
                 allure.attach(name="Assert Parametrize", body=str(assert_data))
-        if method.lower() not in self.text_plain+self.json_method:
+        if method.lower() not in self.text_plain + self.json_method:
             raise Exception("暂不支持：{}方式请求！！！".format(method.lower()))
         else:
             try:
                 response = self.session.request(method=method.lower(), url=url, headers=headers_,
-                                                data=data, json=json, params=params, files=files, stream=stream, verify=verify,
+                                                data=data, json=json, params=params, files=files, stream=stream,
+                                                verify=verify,
                                                 auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
                                                 timeout=timeout)
             except UnicodeEncodeError:
@@ -130,7 +171,8 @@ class Httpx(object):
                 # 223-226: xxx is not valid Latin-1. Use body.encode('utf-8')
                 # if you want to send it encoded in UTF-8.
                 response = self.session.request(method=method.lower(), url=url, headers=headers_,
-                                                data=data.encode("utf-8").decode("latin1"), json=json, params=params, files=files, stream=stream,
+                                                data=data.encode("utf-8").decode("latin1"), json=json, params=params,
+                                                files=files, stream=stream,
                                                 verify=verify,
                                                 auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
                                                 timeout=timeout)
@@ -141,15 +183,23 @@ class Httpx(object):
             req_httpxd = self.getHttpxd(response)
             req_timeout = self.getResponseTime(response)
             req_content = self.getContent(response)
-            req_datas = {"ResponseCode":[req_code,self.getNotice(req_code)], "ResponseTime":req_timeout,"ResponseText":req_text}
-            with allure.step("响应结果：{}".format(urlparse(url).path) if allure_setup is None else "响应结果：{}".format(allure_setup)):
-                {allure.attach(name="%s"%(str(key)), body=str(value).strip()) for key,value in req_datas.items()}
-            if validations !={} and assert_data is None: # Yaml中声明了 但是case中没有声明
-                assertEqual(validations=validations,code=req_code,content=req_content,text=req_text,time=req_timeout)
-            elif validations =={} and assert_data is not None: # Yaml中未定义 但是case中声明
-                assertEqual(validations=assert_data,code=req_code,content=req_content,text=req_text,time=req_timeout)
-            elif validations !={} and assert_data is not None: # 若二者都有则以最后定义的为主
-                assertEqual(validations=assert_data,code=req_code,content=req_content,text=req_text,time=req_timeout)
+            req_datas = {"ResponseCode": [req_code, self.getNotice(req_code)], "ResponseTime": req_timeout,
+                         "ResponseText": req_text}
+            # 提取变量
+            if req_content is not None and extracts is not None:
+                self.saveData(req_content,extracts)
+            with allure.step(
+                    "响应结果：{}".format(urlparse(url).path) if allure_setup is None else "响应结果：{}".format(allure_setup)):
+                {allure.attach(name="%s" % (str(key)), body=str(value).strip()) for key, value in req_datas.items()}
+            if validations != {} and assert_data is None:  # Yaml中声明了 但是case中没有声明
+                assertEqual(validations=validations, code=req_code, content=req_content, text=req_text,
+                            time=req_timeout)
+            elif validations == {} and assert_data is not None:  # Yaml中未定义 但是case中声明
+                assertEqual(validations=assert_data, code=req_code, content=req_content, text=req_text,
+                            time=req_timeout)
+            elif validations != {} and assert_data is not None:  # 若二者都有则以最后定义的为主
+                assertEqual(validations=assert_data, code=req_code, content=req_content, text=req_text,
+                            time=req_timeout)
             return response
             if seesion_ is True:
                 self.closeSession()
@@ -161,7 +211,27 @@ class Httpx(object):
         except Exception:
             pass
 
-    def uploadFile(self,method,url,file_path,data=None):
+    def setMultipartData(self,file_path):
+        """
+        重组流式上传文件的所需参数
+        :return:
+        """
+        # 获取文件类型
+        file_type = filetype.guess(file_path)
+        mime_type = file_type.mime
+        # 读取文件内容
+        with open(file_path, 'rb') as file:
+            file_handler = file.read()
+        # 获取boundary
+        boundary_value = uuid4().hex
+        boundary = '--{0}'.format(boundary_value)
+        # 组装文件
+        fields = {"file": (os.path.basename(file_path), file_handler, mime_type)}
+        encode_data = MultipartEncoder(fields, boundary)
+        content_type = encode_data.content_type
+        return encode_data,content_type
+
+    def uploadFile(self, method, url, hook_header, file_path:list, data=None):
         """
         上传文件
         :param method:
@@ -170,29 +240,27 @@ class Httpx(object):
         :param data:
         :return:
         """
+
         files = []
         if method == "single":
-            files = {"file":open(file_path,"rb")}
-            res = requests.post(url=url,files=files)
-        elif method =="double" or method == "add_data":
+            data = self.setMultipartData(file_path)
+            response = self.sendApi(method="post",url=url, hook_header=hook_header, headers={"content-type":data[1]}, data=data[0])
+        elif method == "double" or method == "add_data":
             for i in range(len(file_path)):
-                files.append(('file%s'%(i), (file_path[i], open(file_path[i], 'rb'))))
-            res = self.sendApi(method="post",url=url, data=data, files=files)
-        elif method == "stream":
-            data = MultipartEncoder(fields=data)
-            res = self.sendApi(method="post",url=url, data=data,headers={'Content-Type': data.content_type})
-        return res.text
+                files.append(('file%s' % (i), (file_path[i], open(file_path[i], 'rb'))))
+                response = self.sendApi(method="post", url=url, hook_header=hook_header, files=files, data=data)
+        return response
 
-    def urlJoint(self,host,address)->Text:
+    def urlJoint(self, host, address) -> Text:
         """
         拼接url
         :param host: 域名
         :param address: 地址
         :return:
         """
-        return "%s%s"%(host,address)
+        return "%s%s" % (host, address)
 
-    def getCookies(self,response,keyword):
+    def getCookies(self, response, keyword):
         """
         获取cookies
         :param response
@@ -204,7 +272,7 @@ class Httpx(object):
             cookie_value.update({keyword: value})
         return cookie_value
 
-    def getUrl(self,response):
+    def getUrl(self, response):
         """
         获取请求地址
         :param response:
@@ -212,7 +280,7 @@ class Httpx(object):
         """
         return response.url
 
-    def getStatusCode(self,response):
+    def getStatusCode(self, response):
         """
         获取返回的状态码
         :param response:
@@ -220,7 +288,7 @@ class Httpx(object):
         """
         return response.status_code
 
-    def getResponseTime(self,response):
+    def getResponseTime(self, response):
         """
         获取响应执行时间,单位s
         :param response:
@@ -228,7 +296,7 @@ class Httpx(object):
         """
         return response.elapsed.total_seconds()
 
-    def getEncoding(self,response):
+    def getEncoding(self, response):
         """
         获取编码
         :param response:
@@ -236,7 +304,7 @@ class Httpx(object):
         """
         return response.apparent_encoding
 
-    def getHttpxd(self,response):
+    def getHttpxd(self, response):
         """
         获取请求方式
         :param response:
@@ -244,7 +312,7 @@ class Httpx(object):
         """
         return response.request
 
-    def getText(self,response):
+    def getText(self, response):
         """
         获取返回的text结果
         :param response:
@@ -260,7 +328,7 @@ class Httpx(object):
                 response_text = response.content
         return response_text
 
-    def getContent(self,response):
+    def getContent(self, response):
         """
         获取Content
         :param response:
@@ -279,7 +347,7 @@ class Httpx(object):
         """
         return response.raw
 
-    def getReason(self,response):
+    def getReason(self, response):
         """
         获取请求状态
         :param response:
@@ -287,7 +355,7 @@ class Httpx(object):
         """
         return response.reason
 
-    def getHeaders(self,response):
+    def getHeaders(self, response):
         """
         获取headers
         :param response:
@@ -295,7 +363,7 @@ class Httpx(object):
         """
         return response.headers
 
-    def getNotice(self,code=None):
+    def getNotice(self, code=None):
         """
         根据穿过来的status_code返回相应的文案
         :param code:
@@ -341,10 +409,11 @@ class Httpx(object):
         }
         return msg.get(int(code), "暂没有录入这个状态，需进行添加")
 
+
 Httpx = Httpx()
 
 if __name__ == '__main__':
-    from BaseSetting import Route
-    file_path =  Route.joinPath("debug","test_change_type.json")
-    # print(Httpx.uploadFile(url="https://yuyanqing.cn", file_path=file_path, method="single"))
-    print(Httpx.sendApi(url="http://localhost:8001/#network",method="post",hook_header={"test":"aaa"},headers={'Authorization': Env.getAuth()["Authorization"]}))
+    print(Httpx.sendApi(url="http://localhost:8001/#network", method="get", hook_header={"test": "aaa"}))
+    enter_data = {"test_001": "${randSample()}","test_002": "srp","test_003": "chrome_address_bar","test_005": "${randLetters()}"}
+    target_data = {"test_001":"$.test_001"}
+    Httpx.saveData(enter_data=enter_data,target_data=target_data)

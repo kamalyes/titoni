@@ -23,6 +23,9 @@ def setTag(data):
     :param story:     二级标签 用于描述feature的用户场景，即测试需求
     :param title:     标题 用于描述用例名称
     :param description:  备注信息
+    Example::
+        >>> setTag({'feature': '一级标签', 'severity': 'blocker'})
+        >>> setTag([{'feature': '一级标签', 'severity': 'blocker'}, {'severity': 'critical（覆盖掉原有的blocker）', 'description': '这是用例描述', 'story': '正常创建三个平台货号的商品'}])
     :return:
     """
     if isinstance(data,list):
@@ -38,14 +41,6 @@ def setTag(data):
             allure.dynamic.severity(value)
         elif key == 'description':
             allure.dynamic.description(value)
-
-def singleSetTag(data):
-    """
-    单脚本使用
-    :param data: {'allures': {'severity': '', 'description': '', 'feature': '','title':'','description':''}}
-    :return:
-    """
-    [setTag({"allures":data[key]}) for key in data.keys() if key =="allures"]
 
 def delOldResult():
     if os.path.exists(allure_result):
@@ -65,9 +60,3 @@ def copyHistory():
 
 def runAllureServer():
     os.system("allure open {}".format(allure_report))
-
-if __name__ == '__main__':
-    from iutils.Loader import Loader
-    yaml_data = Loader.yamlFile(Route.joinPath("test_yaml", "boss_product_new.yaml"))["test_setup"]["new_succsed"]
-    setTag({'feature': '创建单独的子龙货号商品', 'severity': 'blocker'})
-    setTag([{'feature': '阿闻', 'severity': 'blocker'}, {'severity': 'blocker', 'description': '这是用例描述', 'story': '正常创建三个平台货号的商品'}])

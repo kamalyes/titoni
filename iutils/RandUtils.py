@@ -7,11 +7,9 @@
 # Desc  : 随机文本(id/姓名/邮箱/身份证/列表/浮点型/验证码)
 # Date  : 2020/10/11 15:01
 '''
-import sys
 import uuid
 import random
 import string
-sys.path.append('../')
 from random import choice
 from iutils.LogUtils import Logger
 
@@ -78,7 +76,10 @@ class RandValue(object):
             verifi_code.append(''.join(myslice))  # list to string
             count += 1
         # self.logger.info("成功生成%s个%s位长度的字符：%s"%(radcount,maxnum,verifi_code))
-        return verifi_code
+        if radcount > 1:
+            return verifi_code
+        else:
+            return verifi_code[0]
 
     def getPhone(self,radcount):
         """
@@ -149,13 +150,20 @@ class RandValue(object):
         :param num_length: 字符串长度
         :return:
         """
-        try:
-            num_length = int(num_length)
-        except ValueError:
-            raise AssertionError("从a-zA-Z0-9生成指定数量的随机字符失败！长度参数有误  %s" % num_length)
-        num = ''.join(random.sample(string.ascii_letters + string.digits, num_length))
-        # self.logger.info("成功生成随机字符：%s"%(num))
-        return num
+        str_list = [random.choice(string.digits + string.ascii_letters) for i in range(num_length)]
+        random_str = ''.join(str_list)
+        return random_str
+
+    def getNum(self,num_length):
+        """
+        从0-9生成指定数量的随机数字
+        :param num_length: 字符串长度
+        :return:
+        """
+        str_list = [random.choice(string.digits) for i in range(num_length)]
+        random_str = ''.join(str_list)
+        return random_str
+
 
     def getInt(self,data):
         """
@@ -220,11 +228,14 @@ RandValue = RandValue()
 
 if __name__ == '__main__':
     print(RandValue.getEmail(emailtype="@qq.com", maxnum=10, rad_count=5))
-    print(RandValue.getVerifi(maxnum=6, radcount=2))
+    print(RandValue.getVerifi(maxnum=6, radcount=1))
     print(RandValue.getPhone(radcount=6))
     print(RandValue.getName(length=2, radcount=10))
     print(RandValue.getStrList(length=5))
-    print(RandValue.getStr(5))
+    print(RandValue.getStr(256))
     print(RandValue.getInt("1,5"))
     print(RandValue.getFloat("1,5,6"))
     print(RandValue.getUuid())
+    print(RandValue.getNum(255))
+    print(str(RandValue.getStr(RandValue.getInt("1,22"))).title())
+    print(RandValue.getFloat("1,100,10"))

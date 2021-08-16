@@ -7,7 +7,6 @@
 # Desc: 封装执行shell语句方法
 # Date： 2020/7/15 16:15
 '''
-
 import subprocess
 
 class Shell:

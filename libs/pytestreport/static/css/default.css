@@ -1,0 +1,92 @@
+
+body        { font-family: verdana, arial, helvetica, sans-serif; font-size: 80%; color: #888888; }
+table       { font-size: 100%; }
+pre         { color: #888888; }
+p           { margin: 20px 0; }
+/* -- heading ---------------------------------------------------------------------- */
+.heading {
+    margin: 10px;
+}
+.heading .attribute {
+    margin-top: 1ex;
+    margin-bottom: 0;
+}
+
+/* -- css div popup ------------------------------------------------------------------------ */
+a.popup_link {
+}
+a.popup_link:hover {
+    color: red;
+}
+.popup_window {
+    display: none;
+    position: relative;
+    left: 0px;
+    top: 0px;
+    /*border: solid #627173 1px; */
+    padding: 10px;
+    background-color: #F9F9F9;
+    font-family: "Lucida Console", "Courier New", Courier, monospace;
+    text-align: left;
+    font-size: 8pt;
+    width: 100%;
+}
+
+/* -- report ------------------------------------------------------------------------ */
+tr {
+    height: 30px;
+    font-size: 14px;
+    text-align: center;
+}
+#show_detail_line {
+    margin-top: 3ex;
+    margin-bottom: 1ex;
+}
+#result_table {
+}
+#header_row {
+    font-weight: bold;
+    color: #888888;
+    background-color: #e4ecf3;
+    font-size: 16px;
+    height: 35px;
+}
+#result_table td {
+    border: 1px solid #b9b4b4a1;
+    padding: 2px;
+    word-wrap: break-word;
+}
+.middle-col {
+    border-left: 1px solid #d4cfcf8f;
+    border-right: 1px solid #d4cfcf8f;
+}
+.total-area {
+    width: 100%;
+    height: 50%;
+    text-align: center;
+    padding: 15px;
+}
+.table { table-layout: fixed; }
+#total_row  { font-weight: bold; }
+.passClass  { background-color: #00ff3733; }
+.failClass  { background-color: #eab2b73d; }
+.errorClass { background-color: #a3c8ec2e; }
+.skipClass { background-color: #40403f38; }
+.passCase   { color: #28a745b0; }
+.failCase   { color: #dc354596; font-weight: bold; }
+.errorCase  { color: #0c6cff91; font-weight: bold; }
+.skipCase  { color: #40403f9e; }
+.hiddenRow  { display: none; }
+.testcase   { margin-left: 2em; }
+
+/* -- ending ---------------------------------------------------------------------- */
+#ending {
+    min-height: 30px;
+}
+.github {
+    height: 135px;
+    width: 135px;
+    top: 0;
+    right: 0;
+    position: absolute;
+}

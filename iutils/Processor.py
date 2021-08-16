@@ -94,7 +94,7 @@ class JsonPath():
 
     def normalize(self,filter):
         """
-        normalize the path expression; outside jsonpath to allow testing
+        normalize the path expression; outside jsonpath to allow testings
         :param filter: 需要查找的值
         :return:
         """
@@ -473,6 +473,3 @@ if __name__ == '__main__':
     print("获取包含了year且<2018的数据："+str(JsonPath.find(data, "$.data[?(@.year<2017)]")))
     test_str = '获取包含了year且<2018的数'
     print(HtmlPath.border(sum_str=test_str, left_str="获取", right_str="year"))
-
-
-

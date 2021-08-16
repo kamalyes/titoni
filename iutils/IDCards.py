@@ -8,9 +8,7 @@
 # Date  : 2020/10/15 15:01
 '''
 import re
-import sys
 import random
-sys.path.append('../')
 from iutils import AreaCode
 from datetime import datetime, timedelta
 

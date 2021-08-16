@@ -7,8 +7,8 @@
 # Desc: 处理Pandas
 # Date： 2021/8/1 1:07
 '''
-import pandas as pd
 import os
+import pandas as pd
 
 class PandasHelper:
     def __init__(self, module_name: str, file_name: str):
@@ -62,6 +62,6 @@ class PandasHelper:
 
 
 if __name__ == '__main__':
-    test = PandasHelper('test_data', 'test.xlsx')
+    test = PandasHelper('variables', 'test.xlsx')
     print(test._df.values.tolist())
     pass

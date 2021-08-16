@@ -14,11 +14,8 @@ logger = Logger.write_log()#调用日志模块
 
 class IniHandle():
     def __init__(self,filepath=None):
-        try:
-            self.conf = configparser.ConfigParser()
-            self.conf.read(filepath, encoding="utf-8")
-        except Exception as FileNotFoundError:
-            logger.error("文件读取失败，请检查%s是否存在,错误信息：%s" % (filepath,FileNotFoundError))
+        self.conf = configparser.ConfigParser()
+        self.conf.read(filepath, encoding="utf-8")
 
     @classmethod
     def openConfig(self,filepath=None):
@@ -147,17 +144,3 @@ class IniHandle():
         return conf
 
 IniHandle = IniHandle()
-
-if __name__ == '__main__':
-    filepath = r'../config/config.ini'
-    logger.info(IniHandle(filepath))
-    IniHandle = IniHandle()
-    logger.info(IniHandle.allSection())
-    logger.info(IniHandle.openConfig(filepath))
-    logger.info(IniHandle.optValue(node="Proxy_Setting",key="proxy_switch"))
-    # logger.info(IniHandle().allSection())
-    logger.info(IniHandle.options("Proxy_Setting"))
-    logger.info(IniHandle.sectOption('Proxy_Setting'))
-    # logger.info(IniHandle().allItems())式展示：%s"%(dics))
-    IniHandle.checkSection("Proxy_Setting")
-    IniHandle.rmseOption(section="rose")

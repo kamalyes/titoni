@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
 '''
 # FileName： FolderUtils.py
@@ -8,17 +8,15 @@
 # Date： 2020/5/6 19:15
 '''
 import os
-import sys
 import shutil
 import zipfile
-sys.path.append('../')
 from BaseSetting import Route
 from iutils.LogUtils import Logger
 
 class FileHander(object):
     def __init__(self):
         self.logger = Logger.writeLog()
-        
+
     def getCurrentPath(self):
         """
         获取当前文件路径
@@ -35,7 +33,7 @@ class FileHander(object):
         superior_directory = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
         return superior_directory
 
-    def getDirList(self,file_path):
+    def getDirList(self, file_path):
         '''
         获取指定目录下所有的文件名并返回一个列表，剔除其中的__init__.py和__pycache__。
         :param file_path:
@@ -51,7 +49,7 @@ class FileHander(object):
                 all_files.extend(next_level_files)
         return all_files
 
-    def tarFile(self,method,file_path,target_path=""):
+    def tarFile(self, method, file_path, target_path=""):
         """
         打包文件为压缩包
         :param file_path  被打包的文件路径
@@ -68,7 +66,7 @@ class FileHander(object):
                 self.logger.error('请检查file_path是否正确！')
             else:
                 if method == "singfile":
-                        zip_file.write(file_path)
+                    zip_file.write(file_path)
                 if method == "allfile":
                     hasPDir = not file_path.endswith(os.sep);
                     self.logger.info(hasPDir)
@@ -90,7 +88,7 @@ class FileHander(object):
         finally:
             zip_file.close()
 
-    def unZip(self,method,file_path,target_path=""):
+    def unZip(self, method, file_path, target_path=""):
         """
         解压多种类型的压缩包
         :param method: 类型判断
@@ -115,7 +113,7 @@ class FileHander(object):
         finally:
             zip_file.close()
 
-    def getFileState(self,file_path):
+    def getFileState(self, file_path):
         """
         判断传入的文件状态
         :param file_path:  检查的文件路径
@@ -123,32 +121,32 @@ class FileHander(object):
         """
         try:
             if os.access(file_path, os.F_OK):
-                self.logger.info("%s：文件存在"%(file_path))
+                self.logger.info("%s：文件存在" % (file_path))
                 if os.access(file_path, os.R_OK):
-                    self.logger.info("%s：文件可读"%(file_path))
+                    self.logger.info("%s：文件可读" % (file_path))
                 else:
-                    self.logger.error("%s：文件不支持可读"%(file_path))
+                    self.logger.error("%s：文件不支持可读" % (file_path))
 
                 if os.access(file_path, os.W_OK):
-                    self.logger.info("%s：文件可写"%(file_path))
+                    self.logger.info("%s：文件可写" % (file_path))
                 else:
                     self.logger.error("%s：文件不支持可写" % (file_path))
 
                 if os.access(file_path, os.X_OK):
-                    self.logger.info("%s：文件可执行"%(file_path))
+                    self.logger.info("%s：文件可执行" % (file_path))
                 else:
                     self.logger.error("%s：文件不支持可执行" % (file_path))
 
                 if (os.path.isdir(file_path)):
-                    self.logger.info("%s：这是一个文件夹"%(file_path))
+                    self.logger.info("%s：这是一个文件夹" % (file_path))
                 else:
-                    self.logger.info("%s：这是一个文件" %(file_path))
+                    self.logger.info("%s：这是一个文件" % (file_path))
             else:
                 self.logger.error("%s：文件不存在" % (file_path))
         except Exception as IOError:
             self.logger.error(IOError)
 
-    def copyFile(self,file_path, target):
+    def copyFile(self, file_path, target):
         """
         复制文件
         :param method:
@@ -156,7 +154,7 @@ class FileHander(object):
         :param target:
         :return:
        """
-        file_list =[]
+        file_list = []
         if os.path.exists(file_path):
             if not os.path.exists(target):
                 os.makedirs(target)
@@ -165,12 +163,12 @@ class FileHander(object):
                 for filename in filenames:
                     file_list.append(os.path.join(dirpath, filename))
             for list in file_list:
-                shutil.copy(list,target)
+                shutil.copy(list, target)
         else:
             self.logger.error('请检查file_path是否正确！')
         return target
 
-    def removeFile(self,file_path):
+    def removeFile(self, file_path):
         """
         删除文件或文件夹
         :param file_path:
@@ -192,7 +190,7 @@ class FileHander(object):
         except Exception as FileNotFoundError:
             self.logger.error(FileNotFoundError)
 
-    def makeFile(self,file_path):
+    def makeFile(self, file_path):
         """
         递归创建多级文件夹
         :param file_path:
@@ -208,7 +206,7 @@ class FileHander(object):
         except Exception as FileNotFoundError:
             self.logger.error(FileNotFoundError)
 
-    def depthScanFile(self,catalog,file_type):
+    def depthScanFile(self, catalog, file_type):
         """
         过滤xxx目录下所有的xx格式文件
         :param catalog: 指定目录
@@ -220,11 +218,11 @@ class FileHander(object):
         for index in range(len(file_list)):
             name, suffix = os.path.splitext(file_list[index])
             # 判断文件类型
-            if suffix.replace(".","").lower() == file_type:
-                yaml_files.append("%s\\%s"%(catalog,file_list[index]))
+            if suffix.replace(".", "").lower() == file_type:
+                yaml_files.append("%s\\%s" % (catalog, file_list[index]))
         return yaml_files
 
-    def readFileType(self,file_path):
+    def readFileType(self, file_path):
         """
         获取文件类型
         :param file_path:
@@ -247,5 +245,5 @@ if __name__ == '__main__':
     # FileHander.removeFile(file_path)
     # FileHander.makeFile(file_path)
     # FileHander.getDirList(file_path)
-    print(FileHander.depthScanFile(Route.getPath("user_variables"), "yaml"))
-    print(FileHander.readFileType(os.path.join(Route.getPath("user_variables"), "global.yaml")))
+    print(FileHander.depthScanFile(Route.getPath("variables"), "yaml"))
+    print(FileHander.readFileType(os.path.join(Route.getPath("variables"), "global.yaml")))

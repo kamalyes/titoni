@@ -7,14 +7,12 @@
 # Desc:   邮件发送
 # Date： 2020/5/6 19:27
 '''
-import sys
 import smtplib
-sys.path.append('../')
 from email.header import Header
+from iutils.LogUtils import Logger
+from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from iutils.LogUtils import Logger
 
 class Email(object):
     def __init__(self,user_email=None,passwd=None,title=None,smtp_server=None,addressee=None)->str:

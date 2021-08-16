@@ -21,7 +21,7 @@ class Logger(object):
         :param local_data 时间格式存储目录
         :param general_dir
         """
-        self.result_dir = BaseSetting.Route.getPath("result")
+        self.result_dir = BaseSetting.Route.getPath("output")
         self.local_date = time.strftime('%Y-%m-%d-logs', time.localtime(time.time()))
         self.general_dir = os.path.join(self.result_dir,self.local_date)
 

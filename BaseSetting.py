@@ -8,23 +8,26 @@
 # Date： 2020/7/15 16:15
 '''
 import os
+import time
 
-class Route():
+class Route(object):
     def __init__(self):
         """
         统一配置yaml文件及报告产生的路径
         """
         self.workspaces = os.path.abspath(os.path.dirname(__file__))
-        self.path = {"debug":r"debug",
-                     "result": r"result",
-                     "test_path":r"test_case",
-                     "test_data": r"test_data",
-                     "global_variables":r"conf/global_variables",
-                     "host_properties" :r"conf/host_properties",
-                     "user_variables" :r"conf/user_variables",
-                     "workspaces": self.workspaces,
-                     "allure_result":r"allure_result",
-                     "allure_report": r"allure_report",
+        self.path = {"output": "output",
+                     "config": "config",
+                     "allure_result": "allure_result",
+                     "allure_report": "allure_report",
+                     "test_path": r"testings",
+                     "test_img": r"testings/dao/test_img",
+                     "test_csv": r"testings/dao/test_csv",
+                     "test_json": r"testings/dao/test_json",
+                     "test_yaml": r"testings/dao/test_yaml",
+                     "properties" : r"testings/config/properties",
+                     "variables" : r"testings/config/variables",
+                     "localhost" : r"testings/config/localhost",
                      }
 
     def getPath(self,keyword):
@@ -36,7 +39,7 @@ class Route():
         if keyword == "workspaces":
             return self.workspaces
         else:
-            return os.path.join(self.workspaces,self.path[keyword])
+            return os.path.join(self.workspaces, self.path[keyword])
 
     def joinPath(self,file_path,file_name):
         """
@@ -48,8 +51,3 @@ class Route():
         return os.path.join(Route.getPath(file_path), file_name)
 
 Route = Route()
-
-if __name__ == '__main__':
-    print(Route.getPath("workspaces"))
-    print(Route.getPath("debug"))
-    print(Route.joinPath("debug","test_change_type.json"))
