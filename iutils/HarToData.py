@@ -12,6 +12,7 @@ import os
 import sys
 import yaml
 import json
+sys.path.append("../")
 from urllib.parse import urlparse
 from iutils.Loader import Loader
 from iutils.LogUtils import Logger
@@ -164,15 +165,19 @@ class HarParser(object):
         合并数据
         :return:
         """
-        file_path = input("Please enter the path of the HAR file to escape:")
-        type = input("Please enter the storage type you want to escape (JSON, YAML) :").lower()
+        commonnd = sys.argv
+        try:
+            file_path = commonnd[1]
+            out_type = commonnd[2]
+        except IndexError:
+            raise IndexError("Example: python HarToData.py [file_path] [out_put_type]")
+        # file_path = input("Please enter the path of the HAR file to escape:")
+        # out_type = input("Please enter the storage type you want to escape (JSON, YAML) :").lower()
         har_data = self.readHarDatas(file_path)
         har_entries = har_data.get("har_entries")
         for i in range(len(har_entries)):
             har_info = self.getHarInfo(har_entries[i])
             head, tail = os.path.split(file_path)
-            self.writeFile(har_info, r"%s/%s.%s" % (head, tail.replace(".har", ""), type), type)
+            self.writeFile(har_info, r"%s/%s.%s" % (head, tail.replace(".har", ""), out_type), out_type)
 
-
-if __name__ == '__main__':
-    HarParser().run()
+HarParser().run()
