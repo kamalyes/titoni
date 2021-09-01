@@ -71,16 +71,34 @@ class Httpx(object):
         存储变量
         :param enter_data 返回值
         :param target_data 对应的目标节点
+        Example::
+            >>> enter_data = {"test_001": "${randSample()}","test_002": "srp","test_003": "chrome_address_bar","test_005": "${randLetters()}"}
+            >>> target_data = {"test_001":"$.test_001"}
+            >>> Httpx.saveData(enter_data=enter_data,target_data=target_data)
         :return:
         """
         if isinstance(enter_data,dict) and isinstance(target_data,dict):
-            try:
-                for key,value in target_data.items():
-                    Global.setValue({key:JsonPath.find(enter_data, value)[0]})
-            except TypeError:
-                pass
+            for key,value in target_data.items():
+                Global.setValue({"$VAR_%s"%(str(key).upper()):JsonPath.find(enter_data, value)[0]})
         else:
             raise Warning("暂不支持该模式提取参数！！！")
+
+    def mergeData(self,data):
+        """
+        合并参数
+        :param data
+        Example::
+            >>> print(Httpx.mergeData(data={"test": "$VAR_TEST_001"}))
+        :return:
+        """
+        try:
+            for key, value in data.items():
+                if "$VAR_" in value:
+                    data.update({key: Global.getValue(value)})
+        except AttributeError:
+            pass
+        else:
+            return data
 
     def sendApi(self, method=None, url=None,
                 params=None, data=None, headers=None, cookies=None, files=None,
@@ -129,9 +147,9 @@ class Httpx(object):
                     url = self.urlJoint(self.dns_pro.get(url[0]),self.address_pro.get(url[1]))
                 elif isinstance(url,list) and len(url)==1:
                     raise KeyError("自动模式下必须要先配置Host及Url或者仅传入Path，且为List例如：\n[host,url_path]")
-                json = randData(request_.get("json"))
-                data = randData(request_.get("data"))
-                params = randData(request_.get("params"))
+                parameter = ["data","json","params"]
+                for index in parameter:
+                    randData(request_.get(index))
                 if method == "get":  # 拦截不合法的数据
                     data = json = None
                 else:
@@ -144,10 +162,13 @@ class Httpx(object):
             content_type = None
         if json is not None and content_type is None:
             headers_.update(self.headers["json_headers"])
+            self.mergeData(json)
         elif params is not None and content_type is None:
             headers_.update(self.headers["get_headers"])
+            self.mergeData(params)
         elif data is not None and content_type is None:
             headers_.update(self.headers["from_headers"])
+            self.mergeData(data)
         if hook_header is not None and isinstance(headers_, dict):
             headers_.update(hook_header)
         with allure.step(
@@ -173,6 +194,10 @@ class Httpx(object):
                     pass
                 else:
                     raise Exception("%s-不是有效Url！！！"%(url))
+                # allure中已经注入了日志 若开启会产生三份雷同数据 debug也用不到、暂时补个位
+                # self.logger.info("\nRequest Url：{}\nRequest Method：{}\nRequest Headers：{}\n"
+                #                  "Request Data：{}\nRequest Json：{}\nRequest Params：{}"
+                #                  .format(url,method.lower(),headers_,data,json,params))
                 response = self.session.request(method=method.lower(), url=url, headers=headers_,
                                                 data=data, json=json, params=params, files=files, stream=stream,
                                                 verify=verify,
@@ -192,11 +217,11 @@ class Httpx(object):
             req_text = self.getText(response)
             req_headers = self.getHeaders(response)
             req_encoding = self.getEncoding(response)
-            req_httpxd = self.getHttpxd(response)
+            # req_httpxd = self.getHttpxd(response) # 获取请求方式，实际没有意义
             req_timeout = self.getResponseTime(response)
             req_content = self.getContent(response)
             req_datas = {"ResponseCode": [req_code, self.getNotice(req_code)], "ResponseTime": req_timeout,
-                         "ResponseText": req_text}
+                         "ResponseEncoding":req_encoding,"ResponseHeaders":req_headers,"ResponseText": req_text}
             # 提取变量
             if req_content is not None and extracts is not None:
                 self.saveData(req_content,extracts)
@@ -423,9 +448,3 @@ class Httpx(object):
 
 
 Httpx = Httpx()
-
-if __name__ == '__main__':
-    print(Httpx.sendApi(url="http://localhost:8001/#network", method="get", hook_header={"test": "aaa"}))
-    enter_data = {"test_001": "${randSample()}","test_002": "srp","test_003": "chrome_address_bar","test_005": "${randLetters()}"}
-    target_data = {"test_001":"$.test_001"}
-    Httpx.saveData(enter_data=enter_data,target_data=target_data)

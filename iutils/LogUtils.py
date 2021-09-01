@@ -58,8 +58,9 @@ class Logger(object):
 
         # 提示：这里需要进行判断如果logger.handlers列表为空，则添加，否则直接去写日志 处理重复打印事件
         if not logger.handlers:
-            logger.addHandler(defaul_log)
-            logger.addHandler(error_log)
+            # 暂时注释掉，不写入文件仅控制台
+            # logger.addHandler(defaul_log)
+            # logger.addHandler(error_log)
             logger.addHandler(console)
         return logger
 

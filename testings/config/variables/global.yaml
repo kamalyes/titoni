@@ -1,1 +1,2 @@
-test_001: ${randSample()}
+$VAR_TEST_001: ${randSample()}
+$VAR_TEST_002: chrome_address_bar

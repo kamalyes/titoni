@@ -4,11 +4,11 @@ email:
   # 发件人邮箱授权码
   password:  "password"
   # 邮箱host
-  host:  "smtp.exmail.qq.com"
+  host:  "host"
   contents:  请使用已安装Live Server 插件的VsCode或者其它Ide，打开index.html查看报告
   # 收件人邮箱
   addressees:  ["recipients001@xx.xx","recipients002@xx.xx".....]
-  title:  product_name-接口自动化测试报告
+  title:  xxxx-接口自动化测试报告
   # 附件
   enclosures: report.zip
 
@@ -24,8 +24,8 @@ jenkins:
 
 robot:
   # 企业微信私钥
-  debug_qywx_key: "8fc9500-25f9-5b30-bd50-dd1e73af0df3"
-  qywx_key: "293cf935-fff1-5593-a592-c8ba777fa816"
+  debug_qywx_key: "8fc95001-29f9-5b30-bd50-dd1e77af0df5"
+  qywx_key: "2938fc-95001-29f9-5b30-bd59-c8ba777fa816"
 
 other:
   # 项目概述

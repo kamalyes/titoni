@@ -11,7 +11,6 @@ import os
 from iutils.Loader import Loader
 from iutils.YamlUtils import YamlHandle
 from testings.control.path import GLOBAL_VAR_PATH
-
 class Global():
 
     @classmethod
@@ -21,20 +20,21 @@ class Global():
         :param obj:
         :return:
         """
-        try:
-            YamlHandle.saveData(GLOBAL_VAR_PATH,obj,False)
-        except KeyError:
-            return False
+        YamlHandle.saveData(GLOBAL_VAR_PATH,obj,False)
 
     @classmethod
-    def getValue(self,key):
+    def getValue(self,key=None):
         """
         获取全局变量
         :param key:
         :return:
         """
         try:
-            return Loader.yamlFile(GLOBAL_VAR_PATH).get(key)
+            value = Loader.yamlFile(GLOBAL_VAR_PATH)
+            if key is None:
+                return value
+            else:
+                return value.get(key)
         except KeyError:
             return False
 

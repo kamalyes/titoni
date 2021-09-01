@@ -57,7 +57,7 @@ class YamlHandle(object):
             for key,value in obj.items():
                 if key in old_data.keys() and safe_control is False:
                     bak_filepath = file_path+".bak"
-                    self.logger.warning("键值：%s已存在，生成备份数据：%s"%(key,bak_filepath.split("\\")[-1]))
+                    self.logger.warning("键值：%s已存在，对应的Value值：%s，备份数据至：%s"%(key,value,bak_filepath.split("\\")[-1]))
                     shutil.copy(file_path, bak_filepath)
                     old_data.update(obj)
                     self.writeOjb(file_path, old_data, "w")

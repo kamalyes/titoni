@@ -40,7 +40,7 @@ def randTime(layout):
     随机生成时间
     :return:
     """
-    return Moment.getTime(layout)
+    return str(Moment.getTime(layout))
 
 def randComputeTime(days=0,seconds=0, microseconds=0,
                 milliseconds=0, minutes=0, hours=0, weeks=0,custom=None):
@@ -56,9 +56,8 @@ def randComputeTime(days=0,seconds=0, microseconds=0,
     :param custom:
     :return:
     """
-    return Moment.computeDate(days=days,seconds=seconds, microseconds=microseconds,
-                milliseconds=milliseconds, minutes=minutes, hours=hours, weeks=weeks,custom=custom)
-
+    return str(Moment.computeDate(days=days,seconds=seconds, microseconds=microseconds,
+                milliseconds=milliseconds, minutes=minutes, hours=hours, weeks=weeks,custom=custom))
 
 def randLetters(length=10):
     """
@@ -309,28 +308,33 @@ def randomHelp(name: str, pattern='\$\{rand(.*)\((.*)\)\}'):
         >>> print(randomHelp('${randLetters(5)}'))
         >>> print(randomHelp('${randSample(123567890,30)}'))
     """
-    m = re.match(pattern, name)
+    # fix: File "D:\Program Files\Python37\lib\re.py", line 173, in match
+    # return _compile(pattern, flags).match(string)
+    # TypeError: expected string or bytes-like object
+    m = re.match(pattern, str(name))
     if m is not None:
         key, value = m.groups()
         if random_dict.get(key):
             func = random_dict[key]
             _param = [eval(x) if x.strip().isdigit() else x for x in value.split(',')]
-            if len(_param) > 1:
+            if len(_param) >=1 and "" not in _param:
                 return func.__call__(*_param)
-            else:  # 没有带参数的
-                return func.__call__()
+            elif "" in _param:
+                return func.__call__()  #没有带参数的
     else:
         return name  # 函数名不存在返回原始值
+
 
 def randData(dict_map: dict) -> dict:
     """
     随机数据
     :param dict_map: 初始data dict类型
-    举例 {"product": {"brand_id": "${randInt()}", "category_id": '${randFloat(1,2,3)}',"test": {"test": "${randSample(123567890abc,30)}"}}}
+    举例 {"product": {"brand_id": "${randInt(1,2)}", "category_id": '${randFloat(1,2,3)}',"test": {"test": "${randSample(123567890abc,30)}"}}}
     转化后 {'product': {'brand_id': 7, 'category_id': 1.358, 'test': {'test': 'c071135252718592b58007a10093b6'}}}
     :return 转化后的数据 若无则返回原始值
     Example::
-        >>> print(randData({"product": {"brand_id": "${randInt()}", "category_id": '${randFloat(1,2,3)}',}}))
+        >>> print(randData({"product": {"brand_id": "${randInt()}", "category_id": '${randFloat(1,2,3)}', }}))
+        >>> print(randData({"create_time": "${randTime(10timestamp)}"}))
     """
     if isinstance(dict_map, dict):
         for key in list(dict_map.keys()):
