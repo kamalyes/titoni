@@ -10,14 +10,14 @@
 import os
 import sys
 import time
-import shutil
-import pytest
+from Message import sendPush
 from BaseSetting import Route
 from iutils.Shell import Shell
 from iutils.LogUtils import Logger
 from iutils.DateUtils import Moment
 
 if __name__ == '__main__':
+    shell = Shell()
     Logger.deleteLog(30)
     logger = Logger.writeLog()
     currentTime = time.strftime("%Y%m%d%H%M%S", time.localtime())
@@ -33,11 +33,12 @@ if __name__ == '__main__':
                      \\__,_| .__/|_/_/   \\_\\__,_|\\__\\___/|_|\\___||___/\\__|
                        |_|Starting Time %s
                     """ % (Moment.getTime("%Y-%m-%d %H:%M:%S")))
-        # python3 -m pytest -vs --alluredir  ${WORKSPACE}/allure_report
-        # copyHistory()
-        pytest.main([Route.getPath("test_path"), "--alluredir", allure_result])
-        shell = Shell()
-        shell.invoke("allure generate {} -c -o {} --clean".format(allure_result, allure_report))
+        # debug 模式下调用
+        # pytest.main([Route.getPath("test_path"), "--alluredir", allure_result,'-W','ignore:Module already imported:pytest.PytestWarning'])
+        # shell.invoke("allure generate {} -c -o {} --clean".format(allure_result, allure_report))
+        # shell.invoke("allure open %s" % (Route.getPath("allure_report")))
+        # 生产模式调用
+        shell.invoke("python3 -m pytest -vs --alluredir  {}".format(allure_report))
         logger.info("""
                          #######                         ######               ##
                         #  #  #                          #    #               #
@@ -52,13 +53,9 @@ if __name__ == '__main__':
                           ###     ####   #####      ##  ######  ###  ###   ## ##
                                       Stop Time %s
                           """ % (Moment.getTime("%Y-%m-%d %H:%M:%S")))
-        # shell.invoke('allure serve %s'%(Route.getPath("allure_report")))
-        shell.invoke("allure open %s" % (Route.getPath("allure_report")))
     except Exception as e:
         logger.error("脚本批量执行失败！,请重新执行", e)
         raise
     else:
-        shutil.rmtree(allure_result)
         logger.info("测试报告已生成，HTML路径：{}".format(allure_report))
-    finally:
-        pass
+    sendPush()

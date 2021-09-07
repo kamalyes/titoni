@@ -14,6 +14,7 @@ import requests
 import filetype
 from uuid import uuid4
 from typing import Text
+from urllib import parse
 from urllib.parse import urlparse
 from requests_toolbelt import MultipartEncoder
 requests.packages.urllib3.disable_warnings()
@@ -24,7 +25,7 @@ from iutils.Helper import randData
 from iutils.AllureUtils import setTag
 from iutils.Processor import JsonPath
 from iutils.Assertion import assertEqual
-from testings.control.path import DNS_PATH,ADDRESS_PATH # 需对应的配置
+from testings.control.path import DNS_PATH, ADDRESS_PATH  # 需对应的配置
 from testings.control.variables import Global
 
 class Httpx(object):
@@ -33,8 +34,8 @@ class Httpx(object):
         self.session = requests.session()
         self.text_plain = ['get', 'head', 'patch', 'options']
         self.json_method = ['post', 'put', 'delete']
-        self.dns_pro = Loader.yamlFile(DNS_PATH) # 域名配置
-        self.address_pro = Loader.yamlFile(ADDRESS_PATH) # url地址配置
+        self.dns_pro = Loader.yamlFile(DNS_PATH)  # 域名配置
+        self.address_pro = Loader.yamlFile(ADDRESS_PATH)  # url地址配置
         self.headers = Loader.yamlFile(os.path.join(Route.getPath("config"), "norm_headers.yaml"))
 
     def getData(self, data, allures_=None, headers_=None, request_=None, validations=None, extracts=None):
@@ -66,7 +67,7 @@ class Httpx(object):
                             extracts = data[es][key]
         return allures_, headers_, request_, validations, extracts
 
-    def saveData(self,enter_data,target_data):
+    def saveData(self, enter_data, target_data):
         """
         存储变量
         :param enter_data 返回值
@@ -77,13 +78,13 @@ class Httpx(object):
             >>> Httpx.saveData(enter_data=enter_data,target_data=target_data)
         :return:
         """
-        if isinstance(enter_data,dict) and isinstance(target_data,dict):
-            for key,value in target_data.items():
-                Global.setValue({"$VAR_%s"%(str(key).upper()):JsonPath.find(enter_data, value)[0]})
+        if isinstance(enter_data, dict) and isinstance(target_data, dict):
+            for key, value in target_data.items():
+                Global.setValue({"$VAR_%s" % (str(key).upper()): JsonPath.find(enter_data, value)[0]})
         else:
             raise Warning("暂不支持该模式提取参数！！！")
 
-    def mergeData(self,data):
+    def mergeData(self, data):
         """
         合并参数
         :param data
@@ -93,6 +94,7 @@ class Httpx(object):
         """
         try:
             for key, value in data.items():
+                value = str(value) if isinstance(value,str) is not True else value
                 if "$VAR_" in value:
                     data.update({key: Global.getValue(value)})
         except AttributeError:
@@ -143,17 +145,22 @@ class Httpx(object):
                 method = request_.get("method")
                 # 根据dns+address 反转得到dns地址进行拼接为正确的url
                 url = request_.get("url")
-                if isinstance(url,list) and len(url)==2:
-                    url = self.urlJoint(self.dns_pro.get(url[0]),self.address_pro.get(url[1]))
-                elif isinstance(url,list) and len(url)==1:
-                    raise KeyError("自动模式下必须要先配置Host及Url或者仅传入Path，且为List例如：\n[host,url_path]")
-                parameter = ["data","json","params"]
+                timeout = request_.get("timeout")
+                proxies = request_.get("proxies")
+                allow_redirects = request_.get("allow_redirects")
+                if isinstance(url, list) and len(url) == 2:
+                    url = self.urlJoint(self.dns_pro.get(url[0]), self.address_pro.get(url[1]))
+                elif isinstance(url, list) and len(url) == 1:
+                    raise IndexError("自动模式下必须要先配置Host及Url或者仅传入Path，且为List例如：[host,url_path]")
+                parameter = ["data", "json", "params"]
+                loc = locals()
                 for index in parameter:
-                    randData(request_.get(index))
-                if method == "get":  # 拦截不合法的数据
-                    data = json = None
-                else:
-                    params = None
+                    exec('{} = {}'.format(index, randData(request_.get(index))))
+                data, json, params = loc["data"], loc["json"], loc["params"]
+                # if method == "get":  # 拦截不合法的数据
+                #     data = json = None
+                # else:
+                #     params = None
             except KeyError:
                 pass
         try:
@@ -162,13 +169,12 @@ class Httpx(object):
             content_type = None
         if json is not None and content_type is None:
             headers_.update(self.headers["json_headers"])
-            self.mergeData(json)
         elif params is not None and content_type is None:
             headers_.update(self.headers["get_headers"])
-            self.mergeData(params)
         elif data is not None and content_type is None:
             headers_.update(self.headers["from_headers"])
-            self.mergeData(data)
+            if method == "get":
+                data = parse.urlencode(data)
         if hook_header is not None and isinstance(headers_, dict):
             headers_.update(hook_header)
         with allure.step(
@@ -193,7 +199,7 @@ class Httpx(object):
                 if re.match(r'^https?:/{2}\w.+$', url):
                     pass
                 else:
-                    raise Exception("%s-不是有效Url！！！"%(url))
+                    raise Exception("%s-不是有效Url！！！" % (url))
                 # allure中已经注入了日志 若开启会产生三份雷同数据 debug也用不到、暂时补个位
                 # self.logger.info("\nRequest Url：{}\nRequest Method：{}\nRequest Headers：{}\n"
                 #                  "Request Data：{}\nRequest Json：{}\nRequest Params：{}"
@@ -202,7 +208,7 @@ class Httpx(object):
                                                 data=data, json=json, params=params, files=files, stream=stream,
                                                 verify=verify,
                                                 auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
-                                                timeout=timeout)
+                                                timeout=10 if timeout is None else int(timeout))
             except UnicodeEncodeError:
                 # fix:UnicodeEncodeError: 'latin-1' codec can't encode characters in position
                 # 223-226: xxx is not valid Latin-1. Use body.encode('utf-8')
@@ -212,7 +218,7 @@ class Httpx(object):
                                                 files=files, stream=stream,
                                                 verify=verify,
                                                 auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
-                                                timeout=timeout)
+                                                timeout=10 if timeout is None else int(timeout))
             req_code = self.getStatusCode(response)
             req_text = self.getText(response)
             req_headers = self.getHeaders(response)
@@ -221,22 +227,29 @@ class Httpx(object):
             req_timeout = self.getResponseTime(response)
             req_content = self.getContent(response)
             req_datas = {"ResponseCode": [req_code, self.getNotice(req_code)], "ResponseTime": req_timeout,
-                         "ResponseEncoding":req_encoding,"ResponseHeaders":req_headers,"ResponseText": req_text}
+                         "ResponseEncoding": req_encoding, "ResponseHeaders": req_headers, "ResponseText": req_text}
             # 提取变量
             if req_content is not None and extracts is not None:
-                self.saveData(req_content,extracts)
+                self.saveData(req_content, extracts)
             with allure.step(
                     "响应结果：{}".format(urlparse(url).path) if allure_setup is None else "响应结果：{}".format(allure_setup)):
                 {allure.attach(name="%s" % (str(key)), body=str(value).strip()) for key, value in req_datas.items()}
+            # 部分值效验
+            exp_variables = validations.get("expected_variables", None)
+            variables = {}
+            if exp_variables is not None:
+                for exp_key, exp_value in exp_variables.items():
+                    _value = JsonPath.find(req_content, exp_key)[0]
+                    variables.update({exp_key: _value})
             if validations != {} and assert_data is None:  # Yaml中声明了 但是case中没有声明
                 assertEqual(validations=validations, code=req_code, content=req_content, text=req_text,
-                            time=req_timeout)
+                            time=req_timeout, variables=variables)
             elif validations == {} and assert_data is not None:  # Yaml中未定义 但是case中声明
                 assertEqual(validations=assert_data, code=req_code, content=req_content, text=req_text,
-                            time=req_timeout)
+                            time=req_timeout, variables=variables)
             elif validations != {} and assert_data is not None:  # 若二者都有则以最后定义的为主
                 assertEqual(validations=assert_data, code=req_code, content=req_content, text=req_text,
-                            time=req_timeout)
+                            time=req_timeout, variables=variables)
             if seesion_ is True:
                 self.closeSession()
             return response
@@ -248,7 +261,7 @@ class Httpx(object):
         except Exception:
             pass
 
-    def setMultipartData(self,file_path):
+    def setMultipartData(self, file_path):
         """
         重组流式上传文件的所需参数
         :return:
@@ -266,9 +279,9 @@ class Httpx(object):
         fields = {"file": (os.path.basename(file_path), file_handler, mime_type)}
         encode_data = MultipartEncoder(fields, boundary)
         content_type = encode_data.content_type
-        return encode_data,content_type
+        return encode_data, content_type
 
-    def uploadFile(self, method, url, hook_header, file_path:list, data=None):
+    def uploadFile(self, method, url, hook_header, file_path: list, data=None):
         """
         上传文件
         :param method:
@@ -281,7 +294,8 @@ class Httpx(object):
         files = []
         if method == "single":
             data = self.setMultipartData(file_path)
-            response = self.sendApi(method="post",url=url, hook_header=hook_header, headers={"content-type":data[1]}, data=data[0])
+            response = self.sendApi(method="post", url=url, hook_header=hook_header, headers={"content-type": data[1]},
+                                    data=data[0])
         elif method == "double" or method == "add_data":
             for i in range(len(file_path)):
                 files.append(('file%s' % (i), (file_path[i], open(file_path[i], 'rb'))))
@@ -295,7 +309,7 @@ class Httpx(object):
         :param address: 地址
         :return:
         """
-        return "%s%s" % (host, address)
+        return parse.urljoin(host, address)
 
     def getCookies(self, response, keyword):
         """
@@ -445,6 +459,5 @@ class Httpx(object):
             505: "(HTTP 版本不受支持)服务器不支持请求中所用的 HTTP 协议版本"
         }
         return msg.get(int(code), "暂没有录入这个状态，需进行添加")
-
 
 Httpx = Httpx()

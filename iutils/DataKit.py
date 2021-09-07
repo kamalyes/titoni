@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
 '''
 # FileName： DataKit.py
@@ -25,8 +25,10 @@
 +-------------------+---------------+
 '''
 import json
+from urllib.parse import unquote
 
-def getTargetValue(dict_map: dict, separat: str = "$.", result_list:list={}):
+
+def getTargetValue(dict_map: dict, separat: str = "$.", result_list: list = {}):
     """
     递归获取所有的TargetValue
     :param dict_map: 初始data dict类型
@@ -53,7 +55,8 @@ def getTargetValue(dict_map: dict, separat: str = "$.", result_list:list={}):
     else:
         raise TypeError("传入的参数不是dict类型 %s" % (type(dict_map)))
 
-def conversType(dict_map:dict,disable_data:list=[]) -> dict:
+
+def conversType(dict_map: dict, disable_data: list = []) -> dict:
     """
     将只有数字的键值给强转类型为int
     :param dict_map: 初始data dict类型
@@ -64,13 +67,51 @@ def conversType(dict_map:dict,disable_data:list=[]) -> dict:
         for key in list(dict_map.keys()):
             if isinstance(dict_map[key], list):
                 for i in range(len(dict_map[key])):
-                    dict_map[key][i] = conversType(dict_map=dict_map[key][i],disable_data=disable_data)
+                    dict_map[key][i] = conversType(dict_map=dict_map[key][i], disable_data=disable_data)
             elif isinstance(dict_map[key], dict):
-                dict_map[key] = conversType(dict_map=dict_map[key],disable_data=disable_data)
+                dict_map[key] = conversType(dict_map=dict_map[key], disable_data=disable_data)
             elif str(dict_map[key]).isdigit() and str(key) not in disable_data:
                 dict_map[key] = int(dict_map[key])
-            elif str(dict_map[key]) =="null": # 统一处理str无法转化None
-                dict_map[key] =None
-        return json.dumps(dict_map,ensure_ascii=False).replace('\\"','"').replace('"{',"{").replace('}"',"}") # 临时打个补丁 后续若报错则需再次做兼容
+            elif str(dict_map[key]) == "null":  # 统一处理str无法转化None
+                dict_map[key] = None
+        return json.dumps(dict_map, ensure_ascii=False).replace('\\"', '"').replace('"{', "{").replace('}"',"}")  # 临时打个补丁 后续若报错则需再次做兼容
     else:
         raise TypeError("传入的参数不是dict类型 %s" % (type(dict_map)))
+
+
+def convertDictToXFrom(post_data):
+    """
+    字典转xwww-from格式
+    :param post_data: dict {"a": 1, "b":2}
+    :return: str: a=1&b=2
+    """
+    if isinstance(post_data, dict):
+        return "&".join(["{}={}".format(key, value) for key, value in post_data.items()])
+    else:
+        return post_data
+
+def convertXFormToDict(post_data):
+    """
+    x-www-from格式转字典
+    :param post_data (str): a=1&b=2
+    :return dict: {"a":1, "b":2}
+    """
+    if isinstance(post_data, str):
+        converted_dict = {}
+        for k_v in post_data.split("&"):
+            try:
+                key, value = k_v.split("=")
+            except ValueError:
+                raise Exception("Invalid x_www_form_urlencoded data format: {}".format(post_data))
+            converted_dict[key] = unquote(value)
+        return converted_dict
+    else:
+        return post_data
+
+def convertListToDict(origin_list):
+    """
+    list转dict
+    :param origin_list: (list) [{"name": "v", "value": "1"},{"name": "w", "value": "2"}]
+    :return: dict:{"v": "1", "w": "2"}
+    """
+    return {item["name"]: item.get("value") for item in origin_list}

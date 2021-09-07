@@ -103,3 +103,18 @@ test_setup:
       expected_code: 200
       expected_content: {"code":200,"message":"","error":"","details":null}
       expected_time: 10
+  search_007:
+    allures:
+      severity: critical
+      description: 这是继承测试的用例描述
+      story: 单个值效验
+    request:
+      method: get
+      url:  http://10.1.1.78:11008/swagger/doc.json
+    validations:
+      expected_code: 200
+      expected_variables:
+        $.basePath: [str_eq,""]
+        $.swagger: [">",5.6]
+        $.host: "10.1.1.78:11008"
+      expected_time: 10

@@ -28,3 +28,7 @@ class TestHelper():
 
     def test_helper_error_url_(self):
         Httpx.sendApi(auto=True, esdata=[config,test_setup["search_006"]])
+
+    def test_var(self):
+        Httpx.sendApi(auto=True, esdata=[config,test_setup["search_007"]])
+

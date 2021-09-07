@@ -25,7 +25,7 @@ except AttributeError:
 class Loader(object):
     def yamlFile(self,file_path=None,safe_loads=True):
         """
-        加载yaml文件(做特殊兼容处理、自动引入目录：test_json)
+        加载yaml文件(支持做特殊兼容处理、自动引入目录：test_yaml)
         :param file_path: 文件路径
         :param safe_loads: 安全加载 默认开启
         Example::
@@ -47,7 +47,7 @@ class Loader(object):
 
     def jsonFile(self,file_path=None) -> Dict:
         """
-        加载json文件(做特殊兼容处理、自动引入目录：test_json)
+        加载json文件(支持做特殊兼容处理、自动引入目录：test_json)
         :param file_name: 文件名
         :param file_path: 文件路径
         :return:
@@ -63,7 +63,7 @@ class Loader(object):
 
     def csvFile(self,file_path: Text=None) -> List[Dict]:
         """
-        加载CSV文件(做特殊兼容处理、自动引入目录：test_json)
+        加载CSV文件(支持做特殊兼容处理、自动引入目录：test_csv)
         :param csv_name：文件名
         :param file_path： 文件路径
         Examples:

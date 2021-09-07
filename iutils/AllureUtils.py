@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
 '''
 # FileName： AllureUtils.py
@@ -11,6 +11,7 @@ import os
 import allure
 import shutil
 from BaseSetting import Route
+
 allure_result = Route.getPath("allure_result")
 allure_report = Route.getPath("allure_report")
 
@@ -28,9 +29,9 @@ def setTag(data):
         >>> setTag([{'feature': '一级标签', 'severity': 'blocker'}, {'severity': 'critical（覆盖掉原有的blocker）', 'description': '这是用例描述', 'story': '正常创建三个平台货号的商品'}])
     :return:
     """
-    if isinstance(data,list):
+    if isinstance(data, list):
         data = {k: v for d in data for k, v in d.items()}
-    for key,value in data.items():
+    for key, value in data.items():
         if key == 'story':
             allure.dynamic.story(value)
         elif key == 'feature':
