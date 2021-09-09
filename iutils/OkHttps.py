@@ -39,34 +39,34 @@ class Httpx(object):
         self.address_pro = Loader.yamlFile(ADDRESS_PATH)  # url地址配置
         self.headers = Loader.yamlFile(os.path.join(Route.getPath("config"), "norm_headers.yaml"))
 
-    def getData(self, data, allures_=None, headers_=None, request_=None, validations=None, extracts=None):
+    def getData(self, data, allures=None, headers=None, demands=None, examines=None, extracts=None):
         """
         获取allures配置、headers、校验值
         :param data: config+子用例 list
-        :param allures_: allure配置
-        :param headers_: 头部信息
-        :param request_: 请求method及url
-        :param validations: 校验值
-        :param extracts:
+        :param allures: allure报告配置
+        :param headers: 头部信息
+        :param demands: 请求参数 例如：method及url
+        :param examines: 校验值
+        :param extracts: 提取参数值
         :return:
         """
         if isinstance(data, list):
             for es in range(len(data)):
                 if isinstance(data[es], list):
-                    self.getData(data[es], allures_, headers_, request_, validations, extracts)
+                    self.getData(data[es], allures, headers, demands, examines, extracts)
                 elif isinstance(data[es], dict):
                     for key, value in data[es].items():
                         if key == 'headers':
-                            headers_.update(data[es][key])
+                            headers.update(data[es][key])
                         elif key == 'request':
-                            request_.update(data[es][key])
+                            demands.update(data[es][key])
                         elif key == 'allures':
-                            allures_.update(data[es][key])
+                            allures.update(data[es][key])
                         elif key == 'validations':
-                            validations = data[es][key]
+                            examines = data[es][key]
                         elif key == "extract":
                             extracts = data[es][key]
-        return allures_, headers_, request_, validations, extracts
+        return allures, headers, demands, examines, extracts
 
     def saveData(self, enter_data, target_data):
         """
@@ -137,18 +137,18 @@ class Httpx(object):
         return Response <Response> 对象
         """
         if auto is True or aided is True:
-            allures, headers_, request_, validations, extracts = self.getData(esdata, {}, {}, {}, {}, {})
+            allures, headers_, demands, examines, extracts = self.getData(esdata, {}, {}, {}, {}, {})
             setTag(allures)  # 打标签
         else:
-            headers_, validations, extracts = {}, {}, {}
-        if auto is True and isinstance(request_, dict) and len(request_.keys()) > 1:  # 读取Yaml中request字段
+            headers_, examines, extracts = {}, {}, {}
+        if auto is True and isinstance(demands, dict) and len(demands.keys()) > 1:  # 读取Yaml中request字段
             try:
-                method = request_.get("method")
+                method = demands.get("method")
                 # 根据dns+address 反转得到dns地址进行拼接为正确的url
-                url = request_.get("url")
-                timeout = request_.get("timeout")
-                proxies = request_.get("proxies")
-                allow_redirects = request_.get("allow_redirects")
+                url = demands.get("url")
+                timeout = demands.get("timeout")
+                proxies = demands.get("proxies")
+                allow_redirects = demands.get("allow_redirects")
                 if isinstance(url, list) and len(url) == 2:
                     url = self.urlJoint(self.dns_pro.get(url[0]), self.address_pro.get(url[1]))
                 elif isinstance(url, list) and len(url) == 1:
@@ -156,7 +156,7 @@ class Httpx(object):
                 parameter = ["data", "json", "params"]
                 loc = locals()
                 for index in parameter:
-                    exec('{} = {}'.format(index, randData(request_.get(index))))
+                    exec('{} = {}'.format(index, randData(demands.get(index))))
                 data, json, params = loc["data"], loc["json"], loc["params"]
                 # if method == "get":  # 拦截不合法的数据
                 #     data = json = None
@@ -164,44 +164,54 @@ class Httpx(object):
                 #     params = None
             except KeyError:
                 pass
-        try:
-            content_type = headers_["content-type"]
-        except Exception:
-            content_type = None
+        headers = dict(headers_ if isinstance(headers_, dict) else {}, **headers if isinstance(headers, dict) else {})
+        content_type = headers.get("content-type")
+        method = method.lower()
         if json is not None and content_type is None:
-            headers_.update(self.headers["json_headers"])
+            headers.update(self.headers["json_headers"])
         elif params is not None and content_type is None:
-            headers_.update(self.headers["get_headers"])
+            headers.update(self.headers["get_headers"])
         elif data is not None and content_type is None:
-            headers_.update(self.headers["from_headers"])
+            headers.update(self.headers["from_headers"])
             if method == "get":
                 data = parse.urlencode(data)
-        data, json, params,headers_ = self.mergeData(data),self.mergeData(json),self.mergeData(params),self.mergeData(headers_)
+        elif method == "get" and content_type is None:
+            headers.update(self.headers["get_headers"])
+        elif method == "post" and content_type is None and json is not None:
+            headers.update(self.headers["json_headers"])
+        elif method == "post" and content_type is None and data is not None:
+            headers.update(self.headers["from_headers"])
+        else:
+            raise Exception("该场景未配置、请调试后添加判断")
+
+        data, json, params, headers = self.mergeData(data), self.mergeData(json), self.mergeData(
+            params), self.mergeData(headers)
         # fix requests.exceptions.InvalidHeader:
         # Value for header xxxx must be of type str or bytes, not <class 'int'>
         temp = {}
-        for k in list(headers_.keys()):
-            temp.update({k.lower():str(headers_[k])})
-        headers_ = temp
+        for k in list(headers.keys()):
+            temp.update({k.lower(): str(headers[k])})
+        headers = temp
         if hook_header is not None:
-            [headers_.update(capitalToLower(hd)) for hd in hook_header] if isinstance(hook_header, list) else headers_.update(hook_header)
+            [headers.update(capitalToLower(hd)) for hd in hook_header] if isinstance(hook_header,list) else headers.update(
+                hook_header)
         with allure.step(
                 "网络请求：{}".format(urlparse(url).path) if allure_setup is None else "网络请求：{}".format(allure_setup)):
             allure.attach(name="Request Url", body=str(url))
             allure.attach(name="Request Method", body=str(method))
-            allure.attach(name="Request Headers", body=str(headers_))
+            allure.attach(name="Request Headers", body=str(headers))
             if params is not None:
                 allure.attach(name="Query String Parametrize", body=str(params))
             elif data is not None:
                 allure.attach(name="Query Data Parametrize", body=str(data))
             elif json is not None:
                 allure.attach(name="Query Json Parametrize", body=str(json))
-            elif validations is not None:
-                allure.attach(name="Assert Parametrize", body=str(validations))
+            elif examines is not None:
+                allure.attach(name="Assert Parametrize", body=str(examines))
             elif assert_data is not None:
                 allure.attach(name="Assert Parametrize", body=str(assert_data))
         if method.lower() not in self.text_plain + self.json_method:
-            raise Exception("暂不支持：{}方式请求！！！".format(method.lower()))
+            raise Exception("暂不支持：{}方式请求！！！".format(method))
         else:
             try:
                 if re.match(r'^https?:/{2}\w.+$', url):
@@ -211,8 +221,8 @@ class Httpx(object):
                 # allure中已经注入了日志 若开启会产生三份雷同数据 debug也用不到、暂时补个位
                 # self.logger.info("\nRequest Url：{}\nRequest Method：{}\nRequest Headers：{}\n"
                 #                  "Request Data：{}\nRequest Json：{}\nRequest Params：{}"
-                #                  .format(url,method.lower(),headers_,data,json,params))
-                response = self.session.request(method=method.lower(), url=url, headers=headers_,
+                #                  .format(url,method.lower(),headers,data,json,params))
+                response = self.session.request(method=method, url=url, headers=headers,
                                                 data=data, json=json, params=params, files=files, stream=stream,
                                                 verify=verify,
                                                 auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
@@ -221,7 +231,7 @@ class Httpx(object):
                 # fix:UnicodeEncodeError: 'latin-1' codec can't encode characters in position
                 # 223-226: xxx is not valid Latin-1. Use body.encode('utf-8')
                 # if you want to send it encoded in UTF-8.
-                response = self.session.request(method=method.lower(), url=url, headers=headers_,
+                response = self.session.request(method=method, url=url, headers=headers,
                                                 data=data.encode("utf-8").decode("latin1"), json=json, params=params,
                                                 files=files, stream=stream,
                                                 verify=verify,
@@ -243,19 +253,19 @@ class Httpx(object):
                     "响应结果：{}".format(urlparse(url).path) if allure_setup is None else "响应结果：{}".format(allure_setup)):
                 {allure.attach(name="%s" % (str(key)), body=str(value).strip()) for key, value in req_datas.items()}
             # 部分值效验
-            exp_variables = validations.get("expected_variables", None)
+            exp_variables = examines.get("expected_variables", None)
             variables = {}
             if exp_variables is not None:
                 for exp_key, exp_value in exp_variables.items():
                     _value = JsonPath.find(req_content, exp_key)[0]
                     variables.update({exp_key: _value})
-            if validations != {} and assert_data is None:  # Yaml中声明了 但是case中没有声明
-                assertEqual(validations=validations, code=req_code, content=req_content, text=req_text,
+            if examines != {} and assert_data is None:  # Yaml中声明了 但是case中没有声明
+                assertEqual(validations=examines, code=req_code, content=req_content, text=req_text,
                             time=req_timeout, variables=variables)
-            elif validations == {} and assert_data is not None:  # Yaml中未定义 但是case中声明
+            elif examines == {} and assert_data is not None:  # Yaml中未定义 但是case中声明
                 assertEqual(validations=assert_data, code=req_code, content=req_content, text=req_text,
                             time=req_timeout, variables=variables)
-            elif validations != {} and assert_data is not None:  # 若二者都有则以最后定义的为主
+            elif examines != {} and assert_data is not None:  # 若二者都有则以最后定义的为主
                 assertEqual(validations=assert_data, code=req_code, content=req_content, text=req_text,
                             time=req_timeout, variables=variables)
             if seesion_ is True:

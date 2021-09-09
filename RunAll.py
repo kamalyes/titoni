@@ -10,6 +10,7 @@
 import os
 import sys
 import time
+import pytest
 from Message import sendPush
 from BaseSetting import Route
 from iutils.Shell import Shell
@@ -34,11 +35,11 @@ if __name__ == '__main__':
                        |_|Starting Time %s
                     """ % (Moment.getTime("%Y-%m-%d %H:%M:%S")))
         # debug 模式下调用
-        # pytest.main([Route.getPath("test_path"), "--alluredir", allure_result,'-W','ignore:Module already imported:pytest.PytestWarning'])
-        # shell.invoke("allure generate {} -c -o {} --clean".format(allure_result, allure_report))
-        # shell.invoke("allure open %s" % (Route.getPath("allure_report")))
+        pytest.main([Route.getPath("test_path"), "--alluredir", allure_result,'-W','ignore:Module already imported:pytest.PytestWarning'])
+        shell.invoke("allure generate {} -c -o {} --clean".format(allure_result, allure_report))
+        shell.invoke("allure open %s" % (Route.getPath("allure_report")))
         # 生产模式调用
-        shell.invoke("python3 -m pytest -vs --alluredir  {}".format(allure_report))
+        # shell.invoke("python3 -m pytest -vs --alluredir  {}".format(allure_report))
         logger.info("""
                          #######                         ######               ##
                         #  #  #                          #    #               #
@@ -58,4 +59,4 @@ if __name__ == '__main__':
         raise
     else:
         logger.info("测试报告已生成，HTML路径：{}".format(allure_report))
-    sendPush()
+    # sendPush()
