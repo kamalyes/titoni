@@ -25,6 +25,7 @@ from iutils.Helper import randData
 from iutils.AllureUtils import setTag
 from iutils.Processor import JsonPath
 from iutils.Assertion import assertEqual
+from iutils.DataKit import capitalToLower
 from testings.control.path import DNS_PATH, ADDRESS_PATH  # 需对应的配置
 from testings.control.variables import Global
 
@@ -94,7 +95,7 @@ class Httpx(object):
         """
         try:
             for key, value in data.items():
-                value = str(value) if isinstance(value,str) is not True else value
+                value = str(value) if isinstance(value, str) is not True else value
                 if "$VAR_" in value:
                     data.update({key: Global.getValue(value)})
         except AttributeError:
@@ -175,8 +176,15 @@ class Httpx(object):
             headers_.update(self.headers["from_headers"])
             if method == "get":
                 data = parse.urlencode(data)
-        if hook_header is not None and isinstance(headers_, dict):
-            headers_.update(hook_header)
+        data, json, params,headers_ = self.mergeData(data),self.mergeData(json),self.mergeData(params),self.mergeData(headers_)
+        # fix requests.exceptions.InvalidHeader:
+        # Value for header xxxx must be of type str or bytes, not <class 'int'>
+        temp = {}
+        for k in list(headers_.keys()):
+            temp.update({k.lower():str(headers_[k])})
+        headers_ = temp
+        if hook_header is not None:
+            [headers_.update(capitalToLower(hd)) for hd in hook_header] if isinstance(hook_header, list) else headers_.update(hook_header)
         with allure.step(
                 "网络请求：{}".format(urlparse(url).path) if allure_setup is None else "网络请求：{}".format(allure_setup)):
             allure.attach(name="Request Url", body=str(url))
@@ -294,8 +302,7 @@ class Httpx(object):
         files = []
         if method == "single":
             data = self.setMultipartData(file_path)
-            response = self.sendApi(method="post", url=url, hook_header=hook_header, headers={"content-type": data[1]},
-                                    data=data[0])
+            response = self.sendApi(method="post", url=url, hook_header=hook_header, headers={"content-type": data[1]},data=data[0])
         elif method == "double" or method == "add_data":
             for i in range(len(file_path)):
                 files.append(('file%s' % (i), (file_path[i], open(file_path[i], 'rb'))))

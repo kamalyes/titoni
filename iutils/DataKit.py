@@ -115,3 +115,25 @@ def convertListToDict(origin_list):
     :return: dict:{"v": "1", "w": "2"}
     """
     return {item["name"]: item.get("value") for item in origin_list}
+
+def capitalToLower(dict_map):
+    """
+    dict中的key转换小写
+    :param dict_map:
+    :return:
+    """
+    new_dict = {}
+    for key in list(dict_map.keys()):
+        new_dict[key.lower()] = dict_map[key]
+    return new_dict
+
+def lowerToCapital(dict_map):
+    """
+    dict中的key转换大写
+    :param dict_map:
+    :return:
+    """
+    new_dict = {}
+    for key in list(dict_map.keys()):
+        new_dict[key.upper()] = dict_map[key]
+    return new_dict
