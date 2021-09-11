@@ -26,6 +26,7 @@ from iutils.AllureUtils import setTag
 from iutils.Processor import JsonPath
 from iutils.Assertion import assertEqual
 from iutils.DataKit import capitalToLower
+from testings.control.sql import connModel
 from testings.control.path import DNS_PATH, ADDRESS_PATH  # 需对应的配置
 from testings.control.variables import Global
 
@@ -39,7 +40,7 @@ class Httpx(object):
         self.address_pro = Loader.yamlFile(ADDRESS_PATH)  # url地址配置
         self.headers = Loader.yamlFile(os.path.join(Route.getPath("config"), "norm_headers.yaml"))
 
-    def getData(self, data, allures=None, headers=None, demands=None, examines=None, extracts=None):
+    def getData(self, data, allures=None, headers=None, demands=None, examines=None, extracts=None, dbs=None):
         """
         获取allures配置、headers、校验值
         :param data: config+子用例 list
@@ -48,12 +49,13 @@ class Httpx(object):
         :param demands: 请求参数 例如：method及url
         :param examines: 校验值
         :param extracts: 提取参数值
+        :param dbs: 对外的勾子
         :return:
         """
         if isinstance(data, list):
             for es in range(len(data)):
                 if isinstance(data[es], list):
-                    self.getData(data[es], allures, headers, demands, examines, extracts)
+                    self.getData(data[es], allures, headers, demands, examines, extracts, dbs)
                 elif isinstance(data[es], dict):
                     for key, value in data[es].items():
                         if key == 'headers':
@@ -66,7 +68,9 @@ class Httpx(object):
                             examines = data[es][key]
                         elif key == "extract":
                             extracts = data[es][key]
-        return allures, headers, demands, examines, extracts
+                        elif key == "sql":
+                            dbs = data[es][key]
+        return allures, headers, demands, examines, extracts, dbs
 
     def saveData(self, enter_data, target_data):
         """
@@ -79,9 +83,13 @@ class Httpx(object):
             >>> Httpx.saveData(enter_data=enter_data,target_data=target_data)
         :return:
         """
-        if isinstance(enter_data, dict) and isinstance(target_data, dict):
+        if isinstance(enter_data, dict):
+            params = []
             for key, value in target_data.items():
-                Global.setValue({"$VAR_%s" % (str(key).upper()): JsonPath.find(enter_data, value)[0]})
+                ivar = {"$VAR_%s" % (str(key).upper()): JsonPath.find(enter_data, value)[0]}
+                Global.setValue(ivar)
+                params.append(ivar)
+            return params
         else:
             raise Warning("暂不支持该模式提取参数！！！")
 
@@ -103,12 +111,77 @@ class Httpx(object):
         else:
             return data
 
+    def sqlOperate(self, data, method="before", order="desc"):
+        """
+        数据库操作
+        :param data  原始数据
+        :param method: 执行先后
+        :param order: 默认倒序从上之下执行，反之按事件的字母排列顺序执行（谨慎使用）
+        Example::
+            >>> data = {"before_call_sql_000": ['result', 'var_name', 'connModel.callSql', 'select * from promotion']}
+            ... print(sqlOperate(data))
+            ... params = {}
+            ... val_value = ['var_name', 'connModel.callSql', 'select * from promotion']
+            ... var_name, func, compound = val_value[0], val_value[1], val_value[2]
+            ... exec("{var_name} = {func}(compound).to_dict()".format(var_name=var_name, func=func, compound=compound))
+            ... params.update({val_value[1]:var_name})
+            ... print(params)
+        :return:
+        """
+        if isinstance(data, dict):
+            valid_ext = {}
+            invalid_ext = {}
+            for ext_key, ext_value in data.items():
+                if isinstance(ext_value, list) is True:
+                    valid_ext.update({ext_key: ext_value})
+                else:
+                    invalid_ext.update({ext_key: ext_value})
+            # 操作数据库
+            if method in ["before", "after"]:
+                if order == "asc":
+                    # 按事件顺序执行
+                    order_val = ",".join((lambda x: (x.sort(), x)[1])(list(valid_ext))).split(",")
+                else:
+                    order_val = ",".join((lambda x: (x, x)[1])(list(valid_ext))).split(",")
+                for val_key in order_val:
+                    val_value = valid_ext[val_key]
+                    params = {}
+                    if len(val_value) == 3:
+                        var_name, func, compound = val_value[0], val_value[1], val_value[2]
+                        # TODO: 还需优化 取出来的值怎么传入
+                        loc = locals()
+                        # 调用sql查询语句
+                        exec("{var_name} = {func}(compound).to_dict()"
+                             .format(var_name=var_name, func=func, compound=compound))
+                        if "call_sql" in val_key:
+                            params.update({val_value[1]: loc["var_name"]})
+                        else:
+                            raise TypeError("暂时仅支持doSql/callSql模式！")
+                    else:
+                        raise IndexError("数组长度越界！Key：%s, Value：%s" % (val_key, val_value))
+                return params
+            else:
+                raise ModuleNotFoundError("暂时仅支持before/after模式！")
+            # 错误的调用时raise异常
+            if len(invalid_ext) > 0:
+                raise TypeError("无效参数队列：%s " % (invalid_ext))
+
+    def reqLog(self, url, method, data=None, json_=None, params=None, headers=None, files=None):
+        self.logger.info("接口请求地址 ==>> {}".format(url))
+        self.logger.info("接口请求方式 ==>> {}".format(method))
+        # Python3中，json在做dumps操作时，会将中文转换成unicode编码，因此设置 ensure_ascii=False
+        self.logger.info("接口请求头 ==>> {}".format(json.dumps(headers, indent=4, ensure_ascii=False)))
+        self.logger.info("接口请求 params 参数 ==>> {}".format(json.dumps(params, indent=4, ensure_ascii=False)))
+        self.logger.info("接口请求体 data 参数 ==>> {}".format(json.dumps(data, indent=4, ensure_ascii=False)))
+        self.logger.info("接口请求体 json 参数 ==>> {}".format(json.dumps(json_, indent=4, ensure_ascii=False)))
+        self.logger.info("接口上传附件 files 参数 ==>> {}".format(files))
+
     def sendApi(self, method=None, url=None,
                 params=None, data=None, headers=None, cookies=None, files=None,
                 auth=None, timeout=None, allow_redirects=True, proxies=None,
                 hooks=None, stream=None, verify=None, cert=None, json=None,
                 esdata=None, auto=False, aided=False, seesion_=False,
-                assert_data=None, hook_header=None, allure_setup=None):
+                assert_data=None, hook_header=None, dbs=None, allure_setup=None):
         """
         数据请求
         :param method: 请求方式
@@ -123,6 +196,8 @@ class Httpx(object):
         :param timeout: (可选)等待服务器发送的时间
         :param allow_redirects: (可选)默认为True
         :param proxies: 代理:(可选)字典映射协议或协议和主机名到代理的URL。
+        :param hooks:
+        :param dbs:
         :param stream: 是否立即下载响应 内容。 默认为“假”。
         :param verify: (可选)一个布尔值，它控制我们是否进行验证服务器的TLS证书，或字符串，在本地开发或测试期间可能有用。
         :param cert: (可选)if String, ssl客户端证书文件(.pem)的路径。  如果Tuple， ('cert'， 'key')对
@@ -137,10 +212,10 @@ class Httpx(object):
         return Response <Response> 对象
         """
         if auto is True or aided is True:
-            allures, headers_, demands, examines, extracts = self.getData(esdata, {}, {}, {}, {}, {})
+            allures, headers_, demands, examines, extracts, dbs = self.getData(esdata, {}, {}, {}, {}, {}, {})
             setTag(allures)  # 打标签
         else:
-            headers_, examines, extracts = {}, {}, {}
+            headers_, examines, extracts, dbs = {}, {}, {}, {}
         if auto is True and isinstance(demands, dict) and len(demands.keys()) > 1:  # 读取Yaml中request字段
             try:
                 method = demands.get("method")
@@ -153,6 +228,9 @@ class Httpx(object):
                     url = self.urlJoint(self.dns_pro.get(url[0]), self.address_pro.get(url[1]))
                 elif isinstance(url, list) and len(url) == 1:
                     raise IndexError("自动模式下必须要先配置Host及Url或者仅传入Path，且为List例如：[host,url_path]")
+                # 前置sql
+                if dbs is not None:
+                    self.sqlOperate(data)
                 parameter = ["data", "json", "params"]
                 loc = locals()
                 for index in parameter:
@@ -181,9 +259,12 @@ class Httpx(object):
             headers.update(self.headers["json_headers"])
         elif method == "post" and content_type is None and data is not None:
             headers.update(self.headers["from_headers"])
+            if method == "get":
+                data = parse.urlencode(data)
+        elif content_type is not None:
+            pass
         else:
             raise Exception("该场景未配置、请调试后添加判断")
-
         data, json, params, headers = self.mergeData(data), self.mergeData(json), self.mergeData(
             params), self.mergeData(headers)
         # fix requests.exceptions.InvalidHeader:
@@ -193,7 +274,8 @@ class Httpx(object):
             temp.update({k.lower(): str(headers[k])})
         headers = temp
         if hook_header is not None:
-            [headers.update(capitalToLower(hd)) for hd in hook_header] if isinstance(hook_header,list) else headers.update(
+            [headers.update(capitalToLower(hd)) for hd in hook_header] \
+                if isinstance(hook_header, list) else headers.update(
                 hook_header)
         with allure.step(
                 "网络请求：{}".format(urlparse(url).path) if allure_setup is None else "网络请求：{}".format(allure_setup)):
@@ -219,9 +301,7 @@ class Httpx(object):
                 else:
                     raise Exception("%s-不是有效Url！！！" % (url))
                 # allure中已经注入了日志 若开启会产生三份雷同数据 debug也用不到、暂时补个位
-                # self.logger.info("\nRequest Url：{}\nRequest Method：{}\nRequest Headers：{}\n"
-                #                  "Request Data：{}\nRequest Json：{}\nRequest Params：{}"
-                #                  .format(url,method.lower(),headers,data,json,params))
+                # self.reqLog(url=url,method=method,data=data, json_=json, params=params, headers=headers, files=files)
                 response = self.session.request(method=method, url=url, headers=headers,
                                                 data=data, json=json, params=params, files=files, stream=stream,
                                                 verify=verify,
@@ -237,6 +317,8 @@ class Httpx(object):
                                                 verify=verify,
                                                 auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
                                                 timeout=10 if timeout is None else int(timeout))
+            except Exception:
+                raise Exception("发送请求失败、请检查数据源是否正确！")
             req_code = self.getStatusCode(response)
             req_text = self.getText(response)
             req_headers = self.getHeaders(response)
@@ -268,6 +350,9 @@ class Httpx(object):
             elif examines != {} and assert_data is not None:  # 若二者都有则以最后定义的为主
                 assertEqual(validations=assert_data, code=req_code, content=req_content, text=req_text,
                             time=req_timeout, variables=variables)
+            # 后置sql
+
+
             if seesion_ is True:
                 self.closeSession()
             return response
@@ -312,7 +397,8 @@ class Httpx(object):
         files = []
         if method == "single":
             data = self.setMultipartData(file_path)
-            response = self.sendApi(method="post", url=url, hook_header=hook_header, headers={"content-type": data[1]},data=data[0])
+            response = self.sendApi(method="post", url=url, hook_header=hook_header, headers={"content-type": data[1]},
+                                    data=data[0])
         elif method == "double" or method == "add_data":
             for i in range(len(file_path)):
                 files.append(('file%s' % (i), (file_path[i], open(file_path[i], 'rb'))))
@@ -476,5 +562,6 @@ class Httpx(object):
             505: "(HTTP 版本不受支持)服务器不支持请求中所用的 HTTP 协议版本"
         }
         return msg.get(int(code), "暂没有录入这个状态，需进行添加")
+
 
 Httpx = Httpx()

@@ -31,6 +31,11 @@ test_setup:
       expected_code: 200
       expected_content: {"code":200,"message":"","error":"","details":null}
       expected_time: 10
+    sql:
+      before_call_sql:
+      before_do_sql:
+      after_call_sql:
+      after_do_sql:
   search_002:
     allures:
       severity: critical

@@ -18,6 +18,7 @@ class Route(object):
         self.path = {"output": "output",
                      "config": "config",
                      "debug": "debug",
+                     "report_data": "summary.yaml",
                      "allure_result": "allure_result",
                      "allure_report": "allure_report",
                      "test_path": r"testings",

@@ -18,5 +18,5 @@ DB_PASSWORD = APPLICATION["database"]["password"]
 DB_NAME = APPLICATION["database"]["db_name"]
 DB_CHARSET = APPLICATION["database"]["charset"]
 
-connActivity = MysqlTools(host=DB_HOST, user=DB_USER, pass_word=DB_PASSWORD, database=DB_NAME, port=DB_PORT)
-connActivity.init()
+connModel = MysqlTools(host=DB_HOST, user=DB_USER, pass_word=DB_PASSWORD, database=DB_NAME, port=DB_PORT)
+connModel.init()

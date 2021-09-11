@@ -11,7 +11,6 @@ import os
 import sys
 import time
 import pytest
-from Message import sendPush
 from BaseSetting import Route
 from iutils.Shell import Shell
 from iutils.LogUtils import Logger
@@ -20,6 +19,9 @@ from iutils.DateUtils import Moment
 if __name__ == '__main__':
     shell = Shell()
     Logger.deleteLog(30)
+    path = Route.getPath("report_data")
+    if os.path.exists(path):
+        os.remove(path)
     logger = Logger.writeLog()
     currentTime = time.strftime("%Y%m%d%H%M%S", time.localtime())
     allure_result = Route.getPath("allure_result")
@@ -40,23 +42,5 @@ if __name__ == '__main__':
         shell.invoke("allure open %s" % (Route.getPath("allure_report")))
         # 生产模式调用
         # shell.invoke("python3 -m pytest -vs --alluredir  {}".format(allure_report))
-        logger.info("""
-                         #######                         ######               ##
-                        #  #  #                          #    #               #
-                           #                       #     #  #                 #
-                           #                       #     #  #                 #
-                           #      ####    #####  #####   ####   ## ###     ####
-                           #     #    #  #    #    #     #  #    ##   #   #   #
-                           #     ######  #         #     #  #    #    #  #    #
-                           #     #        ####     #     #       #    #  #    #
-                           #     #            #    #     #    #  #    #  #    #
-                           #     ##   #  #    #    #     #    #  #    #   #  ##
-                          ###     ####   #####      ##  ######  ###  ###   ## ##
-                                      Stop Time %s
-                          """ % (Moment.getTime("%Y-%m-%d %H:%M:%S")))
     except Exception as e:
-        logger.error("脚本批量执行失败！,请重新执行", e)
-        raise
-    else:
-        logger.info("测试报告已生成，HTML路径：{}".format(allure_report))
-    # sendPush()
+        logger.error("初始化脚本批量执行失败！", e)

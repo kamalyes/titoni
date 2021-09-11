@@ -22,6 +22,5 @@ def pytest_terminal_summary(terminalreporter):
     skipped=len([i for i in terminalreporter.stats.get('skipped', []) if i.when != 'teardown'])
     successful = len(terminalreporter.stats.get('passed', []))/terminalreporter._numcollected*100
     duration = time.time() - terminalreporter._sessionstarttime
-    print('total times: %.2f' % duration, 'seconds')
     data = {"total":total,"passed":passed,"failed":failed,"error":error,"skipped":skipped,"successful":successful,"duration":duration}
     YamlHandle.writeOjb(os.path.join(Route.getPath("workspaces"),"summary.yaml"),data,"w")
