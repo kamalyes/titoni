@@ -217,31 +217,28 @@ class Httpx(object):
         else:
             headers_, examines, extracts, dbs = {}, {}, {}, {}
         if auto is True and isinstance(demands, dict) and len(demands.keys()) > 1:  # 读取Yaml中request字段
-            try:
-                method = demands.get("method")
-                # 根据dns+address 反转得到dns地址进行拼接为正确的url
-                url = demands.get("url")
-                timeout = demands.get("timeout")
-                proxies = demands.get("proxies")
-                allow_redirects = demands.get("allow_redirects")
-                if isinstance(url, list) and len(url) == 2:
-                    url = self.urlJoint(self.dns_pro.get(url[0]), self.address_pro.get(url[1]))
-                elif isinstance(url, list) and len(url) == 1:
-                    raise IndexError("自动模式下必须要先配置Host及Url或者仅传入Path，且为List例如：[host,url_path]")
-                # 前置sql
-                if dbs is not None:
-                    self.sqlOperate(data)
-                parameter = ["data", "json", "params"]
-                loc = locals()
-                for index in parameter:
-                    exec('{} = {}'.format(index, randData(demands.get(index))))
-                data, json, params = loc["data"], loc["json"], loc["params"]
-                # if method == "get":  # 拦截不合法的数据
-                #     data = json = None
-                # else:
-                #     params = None
-            except KeyError:
-                pass
+            method = demands.get("method")
+            # 根据dns+address 反转得到dns地址进行拼接为正确的url
+            url = demands.get("url")
+            timeout = demands.get("timeout")
+            proxies = demands.get("proxies")
+            allow_redirects = demands.get("allow_redirects")
+            if isinstance(url, list) and len(url) == 2:
+                url = self.urlJoint(self.dns_pro.get(url[0]), self.address_pro.get(url[1]))
+            elif isinstance(url, list) and len(url) == 1:
+                raise IndexError("自动模式下必须要先配置Host及Url或者仅传入Path，且为List例如：[host,url_path]")
+            # 前置sql
+            if dbs is not None:
+                self.sqlOperate(data)
+            parameter = ["data", "json", "params"]
+            loc = locals()
+            for index in parameter:
+                exec('{} = {}'.format(index, randData(demands.get(index))))
+            data, json, params = loc["data"], loc["json"], loc["params"]
+            # if method == "get":  # 拦截不合法的数据
+            #     data = json = None
+            # else:
+            #     params = None
         headers = dict(headers_ if isinstance(headers_, dict) else {}, **headers if isinstance(headers, dict) else {})
         content_type = headers.get("content-type")
         method = method.lower()
@@ -295,30 +292,17 @@ class Httpx(object):
         if method.lower() not in self.text_plain + self.json_method:
             raise Exception("暂不支持：{}方式请求！！！".format(method))
         else:
-            try:
-                if re.match(r'^https?:/{2}\w.+$', url):
-                    pass
-                else:
-                    raise Exception("%s-不是有效Url！！！" % (url))
-                # allure中已经注入了日志 若开启会产生三份雷同数据 debug也用不到、暂时补个位
-                # self.reqLog(url=url,method=method,data=data, json_=json, params=params, headers=headers, files=files)
-                response = self.session.request(method=method, url=url, headers=headers,
-                                                data=data, json=json, params=params, files=files, stream=stream,
-                                                verify=verify,
-                                                auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
-                                                timeout=10 if timeout is None else int(timeout))
-            except UnicodeEncodeError:
-                # fix:UnicodeEncodeError: 'latin-1' codec can't encode characters in position
-                # 223-226: xxx is not valid Latin-1. Use body.encode('utf-8')
-                # if you want to send it encoded in UTF-8.
-                response = self.session.request(method=method, url=url, headers=headers,
-                                                data=data.encode("utf-8").decode("latin1"), json=json, params=params,
-                                                files=files, stream=stream,
-                                                verify=verify,
-                                                auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
-                                                timeout=10 if timeout is None else int(timeout))
-            except Exception:
-                raise Exception("发送请求失败、请检查数据源是否正确！")
+            if re.match(r'^https?:/{2}\w.+$', url):
+                pass
+            else:
+                raise Exception("%s-不是有效Url！！！" % (url))
+            # allure中已经注入了日志 若开启会产生三份雷同数据 debug也用不到、暂时补个位
+            # self.reqLog(url=url,method=method,data=data, json_=json, params=params, headers=headers, files=files)
+            response = self.session.request(method=method, url=url, headers=headers,
+                                            data=data, json=json, params=params, files=files, stream=stream,
+                                            verify=verify,
+                                            auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
+                                            timeout=10 if timeout is None else int(timeout))
             req_code = self.getStatusCode(response)
             req_text = self.getText(response)
             req_headers = self.getHeaders(response)
@@ -350,9 +334,6 @@ class Httpx(object):
             elif examines != {} and assert_data is not None:  # 若二者都有则以最后定义的为主
                 assertEqual(validations=assert_data, code=req_code, content=req_content, text=req_text,
                             time=req_timeout, variables=variables)
-            # 后置sql
-
-
             if seesion_ is True:
                 self.closeSession()
             return response

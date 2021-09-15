@@ -7,8 +7,6 @@
 # Date： 2021/6/6 0:37
 '''
 import re
-from BaseSetting import Route
-from iutils.Loader import Loader
 from iutils.DataKit import conversType
 
 class TemplateMeta(type):
@@ -20,16 +18,17 @@ class TemplateMeta(type):
       (?P<invalid>)              # Other ill-formed delimiter exprs
     )
     """
+
     def __init__(cls, name, bases, dct):
         super(TemplateMeta, cls).__init__(name, bases, dct)
         if 'pattern' in dct:
             pattern = cls.pattern
         else:
             pattern = TemplateMeta.pattern % {
-                'delim' : re.escape(cls.delimiter),
-                'id'    : cls.idpattern,
-                'bid'   : cls.braceidpattern or cls.idpattern,
-                }
+                'delim': re.escape(cls.delimiter),
+                'id': cls.idpattern,
+                'bid': cls.braceidpattern or cls.idpattern,
+            }
         cls.pattern = re.compile(pattern, cls.flags | re.VERBOSE)
 
 class Template(metaclass=TemplateMeta):
@@ -40,7 +39,7 @@ class Template(metaclass=TemplateMeta):
     flags = re.IGNORECASE
 
     def __init__(self, template):
-        if isinstance(template,dict):
+        if isinstance(template, dict):
             self.template = str(template)
 
     def _invalid(self, mo):
@@ -52,20 +51,20 @@ class Template(metaclass=TemplateMeta):
         else:
             colno = i - len(''.join(lines[:-1]))
             lineno = len(lines)
-        error = self.template[int(colno)-3:len(str(self.template))]
-        raise ValueError('Invalid placeholder in string: line %d, col %d\n %s' %(lineno, colno, error))
+        error = self.template[int(colno) - 3:len(str(self.template))]
+        raise ValueError('Invalid placeholder in string: line %d, col %d\n %s' % (lineno, colno, error))
 
-    def subStitute(self,mapping,disable_data="",type=None):
+    def subStitute(self, mapping, disable_data="", genre=None):
         """
         合并数据
         :param mapping: 新的键值对
         :param disable_data:  无需参与类型转化的键值
-        :param type:    转化类型 若不添加则转为Json 若=dict则转为dict类型
+        :param genre:    转化类型 若不添加则转为Json 若=dict则转为dict类型
         Example::
-                >>> general_data = Loader.jsonFile(Route.joinPath("test_json","test_datakit.json"))
+                >>> general_data = {"name":"${name}","pic":"${pic}"}
                 >>> replace_str = {"name": "test0001_name","pic": "test_0001_pic",
                                "randSample":"test_rand_sample","src":"test_0001_src","randLetters":"test_rand_letters"}
-                >>> Template(general_data).subStitute(replace_str,["test0001_name","test_0001_pic"])
+                >>> Template(general_data).subStitute(replace_str)
         :return:
         """
         def convert(mo):
@@ -75,6 +74,8 @@ class Template(metaclass=TemplateMeta):
             if mo.group('escaped') is not None:
                 return self.delimiter
             if mo.group('invalid') is not None:
-                self._invalid(mo,)
-            raise ValueError('Unrecognized named group in pattern',self.pattern)
-        return eval(self.pattern.sub(convert, self.template)) if type =="dict" and disable_data is "" else conversType(eval(self.pattern.sub(convert, self.template)),disable_data)
+                self._invalid(mo)
+            raise ValueError('Unrecognized named group in pattern', self.pattern)
+        return eval(
+            self.pattern.sub(convert, self.template)) if genre == "dict" and disable_data is "" else conversType(
+            eval(self.pattern.sub(convert, self.template)), disable_data)

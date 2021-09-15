@@ -75,8 +75,6 @@ class HarParser(object):
         request = data.get("request")
         method = request.get("method")
         headers = request.get("headers")
-        httpVersion = request.get("httpVersion")
-        # postData = request.get("postData", "post data is not exist")
         url = "${host}%s" % ('{uri.path}'.format(uri=urlparse(request.get("url"))))
         name = "%s" % ('{uri.path}'.format(uri=urlparse(request.get("url")))).replace("/", "")
         result.update({"case_name": "%s" % ('{uri.path}'.format(uri=urlparse(request.get("url")))).replace("/", "")})
@@ -89,19 +87,21 @@ class HarParser(object):
                 result.update({index: "${%s}" % (index)})
             elif index == "referer":
                 result.update({index: "${referer}%s" % ('{uri.path}'.format(uri=urlparse(headers[i].get("value"))))})
-                # "request": {"file": "文件上传？（True or False）", "method": method, "url": url, "httpVersion": httpVersion,
-                #             "cookies": None, "params": "${params}"}
         if self.checkSuffix(url) is True:
             params.update({"config": [{"headers": result}, {"allures": self.alluer_tags},
                                       {"request": {"method": method, "url": url}}],
-                           "test_setup": {name: {"headers": result, "allures": self.alluer_tags,
+                           "test_setup": {name: {"headers": "子级扩展头部信息（写法与父类一致）", "allures": "子级扩展allure配置（写法与父类一致）",
                                                  "validations": {"expected_time": data.get("time"),
                                                                  "expected_code": "${expected_code}",
                                                                  "expected_text": "${expected_text}",
                                                                  "expected_content": "${expected_content}",
                                                                  "expected_variables": [{"$.variables1": "value1"},
-                                                                                        {"$.variables2": "value2"}]},
-                                                 "extract": [{"$.extract1": "value1"}, {"$.extract2": "value2"}]}}})
+                                                                                        {"$.variables2": "value2"}],
+                                                                 "expected_schema": "json_schema"},
+                                                 "sql": {"before_call_sql": "", "before_do_sql": "",
+                                                         "after_call_sql": "", "after_do_sql": ""},
+                                                 "extract": [{"var_name001": "json_path"},
+                                                             {"var_name002": "json_path"}]}}})
         return params
 
     def getHarInfo(self, data):
@@ -115,7 +115,6 @@ class HarParser(object):
         request = data.get("request")
         url = request.get("url")
         method = request.get("method")
-        httpVersion = request.get("httpVersion")
         headers = request.get("headers")
         name = "%s" % ('{uri.path}'.format(uri=urlparse(request.get("url")))).replace("/", "")
         for i in range(len(headers)):
@@ -129,23 +128,24 @@ class HarParser(object):
         statusCode = response.get("statusCode")
         statusText = response.get("statusText")
         content = response.get("content").get("text")
-        # cookies = response.get("cookies","${cookies}")
-        # "request": {"file": "文件上传？（True or False）", "method": method, "url": url, "httpVersion": httpVersion,
-        #             "cookies": None, "params": "${params}"},
         if self.checkSuffix(url) is True:
             params.update({"config": [{"headers": result}, {"allures": self.alluer_tags},
                                       {"request": {"method": method, "url": url}}],
-                           "test_setup": {name: {"headers": result, "allures": self.alluer_tags,
+                           "test_setup": {name: {"headers": "子级扩展头部信息（写法与父类一致）", "allures": "子级扩展allure配置（写法与父类一致）",
                                                  "validations": {"expected_time": data.get("time"),
                                                                  "expected_code": statusCode,
                                                                  "expected_text": statusText,
                                                                  "expected_content": str(content).strip(),
                                                                  "expected_variables": [{"$.variables1": "value1"},
-                                                                                        {"$.variables2": "value2"}]},
-                                                 "extract": [{"$.extract1": "value1"}, {"$.extract2": "value2"}]}}})
+                                                                                        {"$.variables2": "value2"}],
+                                                                 "expected_schema": "json_schema"},
+                                                 "sql": {"before_call_sql": "", "before_do_sql": "",
+                                                         "after_call_sql": "", "after_do_sql": ""},
+                                                 "extract": [{"var_name001": "json_path"},
+                                                             {"var_name002": "json_path"}]}}})
         return params
 
-    def writeFile(self, data, file_path, method) -> str:
+    def writeFile(self, data, file_path, method):
         """
         写入文件
         :param data:

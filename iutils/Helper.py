@@ -10,9 +10,12 @@
 import re
 import string
 from faker import Factory
+from iutils.Loader import Loader
 from iutils.DateUtils import Moment
 from iutils.IDCards import IdNumber
 from iutils.RandUtils import RandValue
+from testings.control.path import USER_VARS_PATH
+
 faker = Factory().create('zh_CN')
 default_elements = string.ascii_letters + string.digits
 
@@ -25,7 +28,7 @@ def randInt(min_=1, max_=100):
     """
     return faker.random.randint(min_, max_)
 
-def randFloat(min,max,length):
+def randFloat(min=0, max=1, length=2):
     """
     随机生成浮点数
     :param min:
@@ -33,7 +36,7 @@ def randFloat(min,max,length):
     :param length:
     :return:
     """
-    return RandValue.getFloat("{},{},{}".format(min,max,length))
+    return RandValue.getFloat("{},{},{}".format(min, max, length))
 
 def randTime(layout):
     """
@@ -42,8 +45,8 @@ def randTime(layout):
     """
     return str(Moment.getTime(layout))
 
-def randComputeTime(days=0,seconds=0, microseconds=0,
-                milliseconds=0, minutes=0, hours=0, weeks=0,custom=None):
+def randComputeTime(days=0, seconds=0, microseconds=0,
+                    milliseconds=0, minutes=0, hours=0, weeks=0, custom=None):
     """
     随机生成偏移时间
     :param days:
@@ -56,8 +59,8 @@ def randComputeTime(days=0,seconds=0, microseconds=0,
     :param custom:
     :return:
     """
-    return str(Moment.computeDate(days=days,seconds=seconds, microseconds=microseconds,
-                milliseconds=milliseconds, minutes=minutes, hours=hours, weeks=weeks,custom=custom))
+    return str(Moment.computeDate(days=days, seconds=seconds, microseconds=microseconds,
+                                  milliseconds=milliseconds, minutes=minutes, hours=hours, weeks=weeks, custom=custom))
 
 def randLetters(length=10):
     """
@@ -264,10 +267,22 @@ def randIdCard(random_sex):
     """
     return IdNumber.getIDCard(random_sex)
 
+def getUserVars(target_key=None):
+    """
+    组合静态跟动态变量
+    :param target_key: 目标key
+    :return:
+    """
+    user_vars = Loader.yamlFile(USER_VARS_PATH)
+    if target_key is None:
+        return randData(user_vars)
+    else:
+        return randData(user_vars).get(target_key)
+
 random_dict = {"Int": randInt,
-               "Float":randFloat,
-               "Time":randTime,
-               "ComputeTime":randComputeTime,
+               "Float": randFloat,
+               "Time": randTime,
+               "ComputeTime": randComputeTime,
                "Letters": randLetters,
                "Sample": randSample,
                "Number": randNumber,
@@ -295,35 +310,38 @@ random_dict = {"Int": randInt,
                "UserInfo": randUserInfo,
                "UserInfoPro": randUserInfoPro,
                "UserAgent": randUserAgent,
-               "IdCard": randIdCard}
+               "IdCard": randIdCard,
+               "UserVars": getUserVars}
 
-def randomHelp(name: str, pattern='\$\{rand(.*)\((.*)\)\}'):
+def randomHelp(name: str):
     """
     随机函数助手，输出以下常用随机数，返回结果值。支持的函数详情见random_dict:
     :param name:  函数名，需要在random_dict存在的key值
-    :param pattern:  匹配模式
     :return:  随机函数调用结果 or None
     Example::
-        >>> print(randomHelp('${randNumber()}'))
+        >>> print(randomHelp('${ColorName}'))
         >>> print(randomHelp('${randLetters(5)}'))
         >>> print(randomHelp('${randSample(123567890,30)}'))
+        >>> print(randomHelp("${getUserVars()}"))
+        >>> print(randomHelp("${getUserVars(rand)}"))
     """
     # fix: File "D:\Program Files\Python37\lib\re.py", line 173, in match
     # return _compile(pattern, flags).match(string)
     # TypeError: expected string or bytes-like object
-    m = re.match(pattern, str(name))
-    if m is not None:
-        key, value = m.groups()
+    rand = re.match("\$\{rand(.*)\((.*)\)\}", str(name))  # 随机
+    get = re.match("\$\{get(.*)\((.*)\)\}", str(name))  # 获取
+    pattern = get if rand is None and get is not None else rand
+    if pattern is not None:
+        key, value = pattern.groups()
         if random_dict.get(key):
             func = random_dict[key]
             _param = [eval(x) if x.strip().isdigit() else x for x in value.split(',')]
-            if len(_param) >=1 and "" not in _param:
+            if len(_param) >= 1 and "" not in _param:
                 return func.__call__(*_param)
             elif "" in _param:
-                return func.__call__()  #没有带参数的
+                return func.__call__()  # 没有带参数的
     else:
         return name  # 函数名不存在返回原始值
-
 
 def randData(dict_map: dict) -> dict:
     """
@@ -346,7 +364,7 @@ def randData(dict_map: dict) -> dict:
             else:
                 dict_map[key] = randomHelp(dict_map[key])
         return dict_map
-    elif dict_map is None: # fix：为空的时候raise 异常导致其它函数调用失败
+    elif dict_map is None:  # fix：为空的时候raise 异常导致其它函数调用失败
         pass
     else:
         raise TypeError("传入的参数不是dict类型 %s" % (type(dict_map)))

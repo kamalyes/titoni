@@ -23,3 +23,4 @@ PROFILES = Loader.yamlFile(APPPROPERTIES_PATH)["profiles"]
 APPLICATION_PATH = os.path.join(Route.getPath("workspaces"),"application-{}.yaml".format(PROFILES))
 DNS_PATH = os.path.join(Route.getPath("properties"),"dns_{}.yaml".format(PROFILES))
 ADDRESS_PATH = os.path.join(Route.getPath("properties"),"address.yaml")
+USER_VARS_PATH = os.path.join(Route.getPath("properties"),"user_vars.yaml")
