@@ -61,23 +61,11 @@ def typeMatch(actual_value: Any, expect_value: Any, message: Text = ""):
     :param expect_value:
     :param message:
     :return:
+    Example::
+        >>> print(typeMatch("str", ["list"], "类型不正确"))
+        >>> print(typeMatch(None, None, "类型不正确"))
     """
-
-    def get_type(name):
-        if isinstance(name, type):
-            return name
-        elif isinstance(name, str):
-            try:
-                return __builtins__[name]
-            except KeyError:
-                raise ValueError(name)
-        else:
-            raise ValueError(name)
-
-    if expect_value in ["None", "NoneType", None]:
-        assert actual_value is None, message
-    else:
-        assert type(actual_value) == get_type(expect_value), message
+    assert type(actual_value) == type(expect_value), message
 
 def startSwith(actual_value: Any, expect_value: Any, message: Text = ""):
     """
