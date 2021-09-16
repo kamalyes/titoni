@@ -273,13 +273,13 @@ def getUserVars(target_key=None):
     :param target_key: 目标key
     :return:
     """
-    user_vars = Loader.yamlFile(USER_VARS_PATH)
+    user_vars = Loader.yamlFile(USER_VARS_PATH, False)
     if target_key is None:
-        return randData(user_vars)
+        return combData(user_vars)
     else:
-        return randData(user_vars).get(target_key)
+        return combData(user_vars).get(target_key) if user_vars is not None else None
 
-random_dict = {"Int": randInt,
+func_dict = {"Int": randInt,
                "Float": randFloat,
                "Time": randTime,
                "ComputeTime": randComputeTime,
@@ -313,56 +313,65 @@ random_dict = {"Int": randInt,
                "IdCard": randIdCard,
                "UserVars": getUserVars}
 
-def randomHelp(name: str):
+def citeHelper(name: str):
     """
-    随机函数助手，输出以下常用随机数，返回结果值。支持的函数详情见random_dict:
-    :param name:  函数名，需要在random_dict存在的key值
+    函数助手，输出以下常用随机数，返回结果值。支持的函数详情见func_dict:
+    :param name:  函数名，需要在func_dict存在的key值
     :return:  随机函数调用结果 or None
     Example::
-        >>> print(randomHelp('${ColorName}'))
-        >>> print(randomHelp('${randLetters(5)}'))
-        >>> print(randomHelp('${randSample(123567890,30)}'))
-        >>> print(randomHelp("${getUserVars()}"))
-        >>> print(randomHelp("${getUserVars(rand)}"))
+        >>> print(citeHelper('${randInt}'))
+        >>> print(citeHelper('${randInt()}'))
+        >>> print(citeHelper('${randLetters(5)}'))
+        >>> print(citeHelper('${randSample(123567890,30)}'))
+        >>> print(citeHelper("${getUserVars()}"))
+        >>> print(citeHelper("${getUserVars(randPwd)}"))
+        >>> print(citeHelper("{{UserAgent}}"))
+        >>> print(citeHelper("__sum({{Int}},${randInt})"))
     """
     # fix: File "D:\Program Files\Python37\lib\re.py", line 173, in match
     # return _compile(pattern, flags).match(string)
     # TypeError: expected string or bytes-like object
-    rand = re.match("\$\{rand(.*)\((.*)\)\}", str(name))  # 随机
-    get = re.match("\$\{get(.*)\((.*)\)\}", str(name))  # 获取
-    pattern = get if rand is None and get is not None else rand
+    rand_vars = re.match("\$\{rand(.*)\((.*)\)\}", str(name))  # 带参数
+    rand_no_vars = re.match("\$\{rand(.*)\}", str(name))  # 无参数
+    dynamic_vars = re.match("\$\{get(.*)\((.*)\)\}", str(name))  # 动态自定义
+    own_vars = re.match("\{\{(.*)\}\}", str(name))  # 动态自定义
+    pattern = rand_vars if rand_vars is not None else dynamic_vars
     if pattern is not None:
         key, value = pattern.groups()
-        if random_dict.get(key):
-            func = random_dict[key]
+        if func_dict.get(key):
+            func = func_dict[key]
             _param = [eval(x) if x.strip().isdigit() else x for x in value.split(',')]
             if len(_param) >= 1 and "" not in _param:
                 return func.__call__(*_param)
             elif "" in _param:
                 return func.__call__()  # 没有带参数的
+    elif own_vars is not None:
+        return getUserVars(own_vars.group().strip("{}"))
+    elif rand_no_vars is not None:
+        return func_dict[rand_no_vars.group().strip("${rand}")].__call__()
     else:
         return name  # 函数名不存在返回原始值
 
-def randData(dict_map: dict) -> dict:
+def combData(dict_map: dict) -> dict:
     """
-    随机数据
+    合并参数化数据
     :param dict_map: 初始data dict类型
     举例 {"product": {"brand_id": "${randInt(1,2)}", "category_id": '${randFloat(1,2,3)}',"test": {"test": "${randSample(123567890abc,30)}"}}}
     转化后 {'product': {'brand_id': 7, 'category_id': 1.358, 'test': {'test': 'c071135252718592b58007a10093b6'}}}
     :return 转化后的数据 若无则返回原始值
     Example::
-        >>> print(randData({"product": {"brand_id": "${randInt()}", "category_id": '${randFloat(1,2,3)}', }}))
-        >>> print(randData({"create_time": "${randTime(10timestamp)}"}))
+        >>> print(combData({"product": {"brand_id": "${randInt()}", "category_id": '${randFloat(1,2,3)}' }}))
+        >>> print(combData({"create_time": "${randTime(10timestamp)}"}))
     """
     if isinstance(dict_map, dict):
         for key in list(dict_map.keys()):
             if isinstance(dict_map[key], list):
                 for i in range(len(dict_map[key])):
-                    dict_map[key][i] = randData(dict_map=dict_map[key][i])
+                    dict_map[key][i] = combData(dict_map=dict_map[key][i])
             elif isinstance(dict_map[key], dict):
-                dict_map[key] = randData(dict_map=dict_map[key])
+                dict_map[key] = combData(dict_map=dict_map[key])
             else:
-                dict_map[key] = randomHelp(dict_map[key])
+                dict_map[key] = citeHelper(dict_map[key])
         return dict_map
     elif dict_map is None:  # fix：为空的时候raise 异常导致其它函数调用失败
         pass

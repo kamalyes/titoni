@@ -21,9 +21,9 @@ requests.packages.urllib3.disable_warnings()
 from BaseSetting import Route
 from iutils.Loader import Loader
 from iutils.LogUtils import Logger
-from iutils.Helper import randData
 from iutils.AllureUtils import setTag
 from iutils.Processor import JsonPath
+from iutils.Helper import combData
 from iutils.Assertion import assertEqual
 from iutils.DataKit import capitalToLower
 from testings.control.sql import connModel
@@ -233,7 +233,7 @@ class Httpx(object):
             parameter = ["data", "json", "params"]
             loc = locals()
             for index in parameter:
-                exec('{} = {}'.format(index, randData(demands.get(index))))
+                exec('{} = {}'.format(index, combData(demands.get(index))))
             data, json, params = loc["data"], loc["json"], loc["params"]
             # if method == "get":  # 拦截不合法的数据
             #     data = json = None
