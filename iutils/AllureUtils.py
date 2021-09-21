@@ -26,7 +26,7 @@ def setTag(data):
     :param description:  备注信息
     Example::
         >>> setTag({'feature': '一级标签', 'severity': 'blocker'})
-        >>> setTag([{'feature': '一级标签', 'severity': 'blocker'}, {'severity': 'critical（覆盖掉原有的blocker）', 'description': '这是用例描述', 'story': '正常创建三个平台货号的商品'}])
+        >>> setTag([{'feature': '一级标签', 'severity': 'blocker'}, {'severity': 'critical（覆盖掉原有的blocker）', 'description': '这是用例描述', 'story': '二级标签'}])
     :return:
     """
     if isinstance(data, list):

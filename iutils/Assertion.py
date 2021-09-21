@@ -7,8 +7,10 @@
 # Desc: 效验结果集
 # Date： 2021/3/27 18:05
 '''
+import re
 import allure
 from jsonschema import validate
+from iutils.Helper import combData
 from typing import Text, Any, Union
 
 def numMatch(method, actual_value: Union[int, float], expect_value: Union[int, float], message: Text = ""):
@@ -92,23 +94,32 @@ def legalValues(contrast: Text):
     标准化函数
     :param contrast:
     :return:
+    Example::
+        >>> print(legalValues("re"))
+        >>> print(legalValues("equal"))
     """
     if contrast in ["eq", "equal", "=="]:
         return "equal"
     elif contrast in ["lt", "less_than", "lessThan", "<"]:
         return "lessThan"
-    elif contrast in ["le", "less_or_equal", "lessOrEqual", "<="]:
+    elif contrast in ["le", "less_or_equal", "lessOrEqual", "<=", "≤"]:
         return "lessOrEqual"
     elif contrast in ["gt", "greater_than", "greaterThan", ">"]:
         return "greaterThan"
-    elif contrast in ["ge", "greater_or_equal", "greaterOrEqual", ">="]:
+    elif contrast in ["ge", "greater_or_equal", "greaterOrEqual", ">=", "≥"]:
         return "greaterOrEqual"
-    elif contrast in ["ne", "not_equal", "notEqual", "!="]:
+    elif contrast in ["ne", "not_equal", "notEqual", "!=", "≠"]:
         return "notEqual"
     elif contrast in ["str_eq", "string_equal", "stringEqual"]:
         return "strEqual"
     elif contrast in ["str_lg", "str_length", "strLength"]:
         return "strLength"
+    elif contrast in ["re", "regexMatch"]:
+        return "regexMatch"
+    elif contrast in ["bg", "beginSwith"]:
+        return " beginSwith"
+    elif contrast in ["end", "endSwith"]:
+        return "endSwith"
     else:
         return contrast
 
@@ -121,8 +132,12 @@ def dimMethod(contrast: Text):
     method = legalValues(contrast)
     if method[:3] == "str":
         return ["strMatch", method]
-    else:
+    elif method in ["startSwith", "endSwith"]:
+        return method
+    elif method in ["equal", "lessThan", "lessOrEqual", "greaterThan", "greaterOrEqual", "notEqual"]:
         return ["numMatch", method]
+    else:
+        return method
 
 def equalData(method, actual_value: Any, expect_value: Any, message: Text = ""):
     """
@@ -131,46 +146,57 @@ def equalData(method, actual_value: Any, expect_value: Any, message: Text = ""):
     :param expect_value: 预期值
     :param message: 错误信息
     :return:
+    Example::
+        >>> equalData(method="lt",actual_value="5",expect_value="6")
+        >>> equalData(method="str_eq",actual_value="Test12356",expect_value="Test123568")
     """
     try:
-        func = dimMethod(method)[0]
-        method = dimMethod(method)[1]
-        globals().get(func)(method, actual_value, expect_value, message)
+        dim_method = dimMethod(method)
+        if isinstance(dim_method, list):
+            func, method = dim_method[0], dim_method[1]
+            globals().get(func)(method, actual_value, expect_value, message)
+        elif isinstance(dim_method, str):
+            func = dim_method
+            globals().get(func)(actual_value, expect_value, message)
     except AssertionError:
-        raise AssertionError(message, "比较方式：%s-%s" % (func, method), "预期值", expect_value, "实际值", actual_value)
+        raise AssertionError(message, "比较方式：%s%s" % (func + "-", method if 'func' in locals().keys() else ""), "预期值",
+                             expect_value, "实际值", actual_value)
     except TypeError:
-        raise TypeError("%s比较函数错误" % (func))
+        raise TypeError("{}比较函数错误".format(func + "-" if 'func' in locals().keys() else "",
+                        method if 'method' in locals().keys() else "")
+                        if isinstance(dim_method, list) else "{}比较函数错误".format(
+            func if 'func' in locals().keys() else ""))
 
 def assertEqual(validations: dict, code=None, time=None, content=None, text=None, variables=None):
     """
-    校验测试结果
+    校验测试结果 （备注 有局限 若多重效验后者不会执行 程序直接跳出）
     :param validations: 预期效验值
     :param text: 实际文本值
     :param code: 实际接口状态码
     :param time: 实际响应时间
     :param content: 返回的接口json数据
     :param variables: 实际效验值结果
+    :return:
     Example::
-        >>> all = {'expected_code': 500, 'expected_content': {'code': 200, 'message': '', 'error': '', 'details': None}, 'expected_text': 'Bad Request', 'expected_time': 3, 'expected_variables': [{'$.variables1': 'value1'}, {'$.variables2': 'value2'}]}
         >>> only_code = {'expected_code': 500}
         >>> only_content = {'expected_content': {'code': 200, 'message': '', 'error': '', 'details': None}}
-        >>> code_and_content = {'expected_code': 500,'expected_content': {'code': 200, 'message': '', 'error': '', 'details': None}}
-        >>> assertEqual(all,code=200,text="Bad Request")
-        >>> assertEqual(only_code,code=200)
-        >>> assertEqual(code_and_content)
-    :return:
-    备注 有局限 若多重效验后者不会执行 程序直接跳出
+        >>> code_and_content = {'expected_code': "500" ,'expected_content': {'code': "${randInt}", 'message': '$VAR_TEST_001', 'error': '', 'details': None}}
+        >>> expected_variables = {"expected_variables":{'test_001': 500, "test002":["aaa",500]}}
+        >>> assertEqual(only_code,code=500)
+        >>> assertEqual(code_and_content, content={'code': 200}, code= 500)
+        >>> assertEqual(expected_variables, variables= {'test_001': 500, "test002":[]})
     """
     if isinstance(validations, dict):
         with allure.step("接口常规值效验"):
-            for key, value in validations.items():
+            for key, value in combData(validations).items():
                 if "expected_code" == key:
                     allure.attach(name="Assert StatusCode", body="预期Code：{}，实际Code：{}".format(str(value), str(code)))
-                    if value != int(code):
+                    if str(value) != str(code):
                         raise AssertionError("接口状态码错误！\n %s != %s" % (value, code))
 
                 elif "expected_time" == key:
-                    allure.attach(name="Assert ResponseTime",body="预期Time：{}s，实际Time：{}s".format(str(value), str(time)))
+                    allure.attach(name="Assert ResponseTime",
+                                  body="预期Time：{}s，实际Time：{}s".format(str(value), str(time)))
                     if value < time:
                         raise AssertionError("接口响应时间不匹配！\n %s < %s" % (value, time))
 
@@ -181,7 +207,8 @@ def assertEqual(validations: dict, code=None, time=None, content=None, text=None
 
                 elif "expected_content" == key:
                     allure.attach(name="Assert ResponseContent",
-                                  body="预期Content：{}，实际Content：{}（Dict格式数据仅做参考详情信息可见ResponseText）".format(value, content))
+                                  body="预期Content：{}，实际Content：{}（Dict格式数据仅做参考详情信息可见ResponseText）".format(value,
+                                                                                                          content))
                     if value != content:
                         raise AssertionError("接口响应流式结果不匹配！\n %s != %s" % (value, content))
 
@@ -208,11 +235,14 @@ def assertEqual(validations: dict, code=None, time=None, content=None, text=None
                                 allure.attach(name="Assert Single Params {}".format(ep_key),
                                               body="预期Variables：{}，实际Variables：{}".format(ep_value, ac_value))
                                 if ac_value != ep_value:
-                                    raise AssertionError("接口响应部分文本值对比异常, 比较方式：strMatch-equal 预期Variables：{}，实际Variables：{}".format(ep_value, ac_value))
+                                    raise AssertionError(
+                                        "接口响应部分文本值对比异常, 比较方式：strMatch-equal 预期Variables：{}，实际Variables：{}".format(
+                                            ep_value, ac_value))
                     else:
                         raise Warning("接口响应部分文本值不是字典类型，请检查返回体是否为Json类型！\n %s" % (variables))
     else:
         raise Warning("请先检查效验入参是否为Dict类型！！！")
+
 
 if __name__ == '__main__':
     result = {

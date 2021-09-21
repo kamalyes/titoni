@@ -1,0 +1,37 @@
+site_name: ProtocolTest
+site_description: A next-generation ApiTest client for Python.
+site_url: https://www.python-ProtocolTest.org/
+
+theme:
+    name: 'material'
+
+repo_name: encode/ProtocolTest
+repo_url: https://github.com/encode/ProtocolTest/
+edit_uri: ""
+
+nav:
+    - Introduction: 'index.md'
+    - QuickStart: 'quickstart.md'
+    - Advanced Usage: 'advanced.md'
+    - Report of Pytest: 'pytest_allure.md'
+    - Continuous Integration: 'continue_integration.md'
+    - Troubleshooting: 'troubleshooting.md'
+    - Code of Conduct: 'code_of_conduct.md'
+    - Third Party Packages: 'third_party_packages.md'
+    - Other Contributing: 'contributing.md'
+
+markdown_extensions:
+  - admonition
+  - codehilite:
+      css_class: highlight
+
+extra:
+  search:
+    language: 'zh'
+
+extra_css:
+    - css/custom.css
+
+extra_javascript:
+  - 'js/chat.js'
+  - 'js/sidecar-1.5.0.js'

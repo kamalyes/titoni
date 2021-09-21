@@ -344,7 +344,8 @@ func_dict = {"Int": randInt,
                "UserInfo": randUserInfo,
                "UserInfoPro": randUserInfoPro,
                "UserAgent": randUserAgent,
-               "IdCard": randIdCard}
+               "IdCard": randIdCard,
+               "UserVars": getUserVars}
 
 def citeHelper(name: str):
     """
@@ -384,7 +385,7 @@ def citeHelper(name: str):
             elif "" in _param:
                 return func.__call__()  # 没有带参数的
     elif own_vars is not None:
-        return getUserVars(own_vars.group().strip("{}"))
+        return citeHelper(getUserVars(own_vars.group().strip("{}")))
     elif extract_vars is not None:
         return getExtractVars(extract_vars.group())
     elif rand_no_vars is not None:
@@ -406,8 +407,9 @@ def combData(dict_map: dict) -> dict:
     转化后 {'product': {'brand_id': 7, 'category_id': 1.358, 'test': {'test': 'c071135252718592b58007a10093b6'}}}
     :return 转化后的数据 若无则返回原始值
     Example::
-        >>> print(combData({"product": {"brand_id": "${randInt()}", "category_id": '${randFloat(1,2,3)}' }}))
+        >>> print(combData({"product": {"brand_id": "{{Int}}", "category_id": '${randFloat(1,2,3)}' }}))
         >>> print(combData({"create_time": "${randTime(10timestamp)}"}))
+        >>> print(combData({"key1":"$ENC_(base64,Base64参数加密)"}))
     """
     if isinstance(dict_map, dict):
         for key in list(dict_map.keys()):
@@ -423,3 +425,4 @@ def combData(dict_map: dict) -> dict:
         pass
     else:
         raise TypeError("传入的参数不是dict类型 %s" % (type(dict_map)))
+

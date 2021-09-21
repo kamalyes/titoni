@@ -1,4 +1,4 @@
-## Jenkins平台+Allure插件部署项目 
+## 基于Jenkins+阿里云linux服务器
 ### 第一步、安装并配置Jenkins环境
 #### 1、创建并启动（8080端口占用，配置其它（8001）端口）
 ```
@@ -43,10 +43,10 @@ firewall-cmd --permanent --zone=public --add-port=8001/udp
 //执行
 #  firewall-cmd --reload     //重启防火墙，使最新的防火墙设置规则生效。
 ```
-![开放端口](images/firewall.png)
+![开放端口](img/firewall.png)
 
 #### 5、访问并初始化
-![访问](images/jenkins_login.png)
+![访问](img/jenkins_login.png)
 ```
 若是一直卡在这里，那么需要查看下日志
 [root@mryu jenkins]# docker logs jenkins
@@ -63,31 +63,31 @@ Please use the following password to proceed to installation:
 32bc5be9b0c341c7b824d6e1bea8cde6 （密码）
 This may also be found at: /var/jenkins_home/secrets/initialAdminPassword
 ```
-![访问](images/set_start.png)
+![访问](img/set_start.png)
 
 
 ### 第二步、安装Allure插件
 #### 1、进入插件管理页
-![进入插件管理页](images/enter_manger.png)
+![进入插件管理页](img/enter_manger.png)
 #### 2、搜索allure插件并进行安装
-![搜索allure插件并进行安装](images/install_allure.png)
+![搜索allure插件并进行安装](img/install_allure.png)
 #### 3、检查是否安装成功
-![检查是否安装成功](images/isinstalled_allure.png)
+![检查是否安装成功](img/isinstalled_allure.png)
 ### 第二步、配置全局变量
 #### 1、进入配置页
-![进入config页面](images/enter_config.png)
+![进入config页面](img/enter_config.png)
 #### 2、设置allure安装路径 （切勿使用自动安装，一般都会失败、可手动安装后配置路径即可）
-![进入config页面](images/set_allure_path.png)
+![进入config页面](img/set_allure_path.png)
 
 ### 第三步、配置项目规则
 #### 1、执行shell中的report路径需要与allure_report插件保持一致
-![配置项目规则](images/configure.png)
+![配置项目规则](img/configure.png)
 #### 2、检查是否有Allure_Report入口(若没有或点击时报错则先手动构建拉下代码)
-![配置项目规则](images/check_enter.png)
+![配置项目规则](img/check_enter.png)
 #### 3、空的时候allure报告样式 
-![配置项目规则](images/null_data.png)
+![配置项目规则](img/null_data.png)
 #### 5、执行几次之后就可以看到趋势图了
-![配置项目规则](images/show_home.png)
-![配置项目规则](images/show_report.png)
-![配置项目规则](images/show_grap.png)
-![配置项目规则](images/show_retries.png)
+![配置项目规则](img/show_home.png)
+![配置项目规则](img/show_report.png)
+![配置项目规则](img/show_grap.png)
+![配置项目规则](img/show_retries.png)

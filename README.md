@@ -12,12 +12,12 @@
 
 关键特性:
 
-* **高效编码**：提高功能开发速度约 200％ 至 300％。*
+* **高效编码**：提高编写用例速度约 50％ 至 100％。*
 * **更少 bug**：减少约 40％ 的人为（开发者）导致错误。*
 * **智能**：极佳的编辑器支持。处处皆可<abbr title="也被称为自动完成、智能感知">自动补全</abbr>，减少调试时间。
 * **简单**：设计的易于使用和学习，阅读文档的时间更短。
 * **简短**：使代码重复最小化。通过不同的参数声明实现丰富功能。bug 更少。
-* **健壮**：生产可用级别的代码。还有自动生成的交互式文档。
+* **健壮**：生产可用级别的代码。还有生成的交互式测试报告。
 * **标准化**：基于（并完全兼容）API 的相关开放标准：<a href="https://github.com/OAI/OpenAPI-Specification" class="external-link" target="_blank">OpenAPI</a> (以前被称为 Swagger) 和 <a href="https://json-schema.org/" class="external-link" target="_blank">JSON Schema</a>。
 
 <small>* 根据对某个构建线上应用的内部开发团队所进行的测试估算得出。</small>
@@ -62,6 +62,17 @@ emoji	emoji代码	commit说明
 🔧 (扳手)	:wrench:	修改配置文件
 🌐 (地球)	:globe_with_meridians:	国际化与本地化
 ✏️ (铅笔)	:pencil2:	修复 typo
+!!! note "note, seealso"
+!!! summary "summary, tldr"
+!!! info "info, todo"
+!!! tip "tip, hint, important"
+!!! success "success, check, done"
+!!! question "question, help, faq"
+!!! warning "warning, caution, attention"
+!!! failure "failure, fail, missing"
+!!! danger "danger, error"
+!!! bug "bug"
+!!! quote "quote, cite"
 ```
 ## 一、整个框架设计思路
 
