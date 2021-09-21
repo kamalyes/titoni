@@ -23,11 +23,17 @@ class TestHelper():
     def test_helper_single_url(self):
         Httpx.sendApi(auto=True, esdata=[config,test_setup["search_003"]])
 
-    def test_helper_error_url(self):
+    def test_helper_variable_fixed_value(self):
         Httpx.sendApi(auto=True, esdata=[config,test_setup["search_005"]])
 
-    def test_helper_error_url_(self):
+    def test_helper_mixed_type(self):
         Httpx.sendApi(auto=True, esdata=[config,test_setup["search_006"]])
 
-    def test_var(self):
+    def test_helper_error_url(self):
         Httpx.sendApi(auto=True, esdata=[config,test_setup["search_007"]])
+
+    def test_helper_error_url_(self):
+        Httpx.sendApi(auto=True, esdata=[config,test_setup["search_008"]])
+
+    def test_helper_not_var(self):
+        Httpx.sendApi(auto=True, esdata=[config,test_setup["search_009"]])

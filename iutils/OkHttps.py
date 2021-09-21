@@ -26,7 +26,7 @@ from iutils.Processor import JsonPath
 from iutils.Helper import combData
 from iutils.Assertion import assertEqual
 from iutils.DataKit import capitalToLower
-from testings.control.sql import connModel
+# from testings.control.sql import connModel
 from testings.control.path import DNS_PATH, ADDRESS_PATH  # 需对应的配置
 from testings.control.variables import Global
 
@@ -49,8 +49,12 @@ class Httpx(object):
         :param demands: 请求参数 例如：method及url
         :param examines: 校验值
         :param extracts: 提取参数值
-        :param dbs: 对外的勾子
+        :param dbs: 数据库操作
         :return:
+        Example::
+            >>> single = {'headers': {'accept': 'application/json, text/plain, */*', 'accept-encoding': 'gzip', 'accept-language': 'zh-CN,zh;q=0.9', 'content-type': 'application/json;charset=UTF-8', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'}}
+            >>> double = [[{'headers': {'accept': 'application/json, text/plain, */*', 'accept-encoding': 'gzip', 'accept-language': 'zh-CN,zh;q=0.9', 'content-type': 'application/json;charset=UTF-8', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'}}, {'allures': {'feature': '函数助手测试(部分参数固定值仅做测试)', 'severity': 'normal'}}, {'request': {'method': 'get', 'url': ['localhost', 8001]}}], {'allures': {'severity': 'critical', 'description': '这是继承测试的用例描述', 'story': '引用后置处理后的变量&固定值'}, 'headers': {'accept': 'application/json, text/plain, */*', 'accept-encoding': 'gzip', 'accept-language': 'zh-CN,zh;q=0.9'}, 'request': {'method': 'get', 'url': ['localhost', 8001], 'params': {'Int': 1, 'ComputeTime': '2020-09-21 15:00', 'Letters': '$VAR_TEST_001', 'Sample': '$VAR_TEST_002'}}, 'validations': {'expected_code': 200, 'expected_content': {'code': 200, 'message': '', 'error': '', 'details': None}, 'expected_time': 10}}]
+            >>> print(Httpx.getData(double, {}, {}, {}, {}, {}, {}))
         """
         if isinstance(data, list):
             for es in range(len(data)):
@@ -70,6 +74,22 @@ class Httpx(object):
                             extracts = data[es][key]
                         elif key == "sql":
                             dbs = data[es][key]
+        elif isinstance(data, dict):
+            for key, value in data.items():
+                if key == 'headers':
+                    headers.update(data[key])
+                elif key == 'request':
+                    demands.update(data[key])
+                elif key == 'allures':
+                    allures.update(data[key])
+                elif key == 'validations':
+                    examines = data[key]
+                elif key == "extract":
+                    extracts = data[key]
+                elif key == "sql":
+                    dbs = data[key]
+        else:
+            pass
         return allures, headers, demands, examines, extracts, dbs
 
     def saveData(self, enter_data, target_data):
@@ -167,6 +187,15 @@ class Httpx(object):
                 raise TypeError("无效参数队列：%s " % (invalid_ext))
 
     def reqLog(self, url, method, data=None, json_=None, params=None, headers=None, files=None):
+        """
+        请求数据时的日志写入
+        :param url: 接口请求地址
+        :param method: 接口请求方式
+        :param data json_ params: 接口请求体
+        :param headers: 接口请求头
+        :param files: 接口上传附件
+        :return:
+        """
         self.logger.info("接口请求地址 ==>> {}".format(url))
         self.logger.info("接口请求方式 ==>> {}".format(method))
         # Python3中，json在做dumps操作时，会将中文转换成unicode编码，因此设置 ensure_ascii=False

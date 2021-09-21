@@ -17,7 +17,7 @@ test_setup:
     allures:
       severity: critical
       description: 这是继承测试的用例描述
-      story: 单条url
+      story: 单条url&全局的用户自定义变量
     headers:
       accept: application/json, text/plain, */*
       accept-encoding: gzip
@@ -25,8 +25,7 @@ test_setup:
     request:
       method: post
       url:  https://www.so.com/s
-      params: {"q": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
-      data: {"AAAA": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
+      params: {"Int": "{{Int}}","ComputeTime": "{{ComputeTime}}","Letters": "{{Letters}}","Sample": "{{Sample}}"}
     validations:
       expected_code: 200
       expected_content: {"code":200,"message":"","error":"","details":null}
@@ -40,7 +39,7 @@ test_setup:
     allures:
       severity: critical
       description: 这是继承测试的用例描述
-      story: 合法的url配置
+      story: 合法的url配置&单例调用随机变量
     headers:
       accept: application/json, text/plain, */*
       accept-encoding: gzip
@@ -48,8 +47,7 @@ test_setup:
     request:
       method: get
       url:  [localhost,8001]
-      params: {"q": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
-      data: {"AAAA": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
+      params: {"Int": "${randInt}","ComputeTime": "${randTime(10timestamp)}","Letters": "${randLetters}","Sample": "${randSample}"}
     validations:
       expected_code: 200
       expected_content: {"code":200,"message":"","error":"","details":null}
@@ -58,21 +56,54 @@ test_setup:
     allures:
       severity: critical
       description: 这是继承测试的用例描述
-      story: 单列表
+      story: 单列表&混合数据
     headers:
       accept: application/json, text/plain, */*
       accept-encoding: gzip
       accept-language: zh-CN,zh;q=0.9
     request:
       method: get
-      url:  [localhost]
-      params: {"q": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
-      data: {"AAAA": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
+      url:  [localhost,8001]
+      params: {"Int": "${randInt()}","ComputeTime": "{{ComputeTime}}","Letters": "${randLetters}","Sample": "固定值001555"}
     validations:
       expected_code: 200
       expected_content: {"code":200,"message":"","error":"","details":null}
       expected_time: 10
   search_005:
+    allures:
+      severity: critical
+      description: 这是继承测试的用例描述
+      story:  引用后置处理后的变量&固定值
+    headers:
+      accept: application/json, text/plain, */*
+      accept-encoding: gzip
+      accept-language: zh-CN,zh;q=0.9
+    request:
+      method: get
+      url:  [localhost,8001]
+      params: {"Int": 1 ,"ComputeTime": 2020-09-21 15:00 ,"Letters": "$VAR_TEST_001","Sample": "$VAR_TEST_002"}
+    validations:
+      expected_code: 200
+      expected_content: {"code":200,"message":"","error":"","details":null}
+      expected_time: 10
+  search_006:
+    allures:
+      severity: critical
+      description: 这是继承测试的用例描述
+      story: 混合类型
+    headers:
+      accept: application/json, text/plain, */*
+      accept-encoding: gzip
+      accept-language: zh-CN,zh;q=0.9
+    request:
+      method: get
+      url:  [localhost,8001]
+      params: {"Int": 1 ,"ComputeTime": "{{ComputeTime}}" ,"Letters": "$VAR_TEST_001","Sample": "$VAR_TEST_002"}
+    validations:
+      expected_code: 200
+      expected_content: {"code":200,"message":"","error":"","details":null}
+      expected_time: 10
+  search_007:
     allures:
       severity: critical
       description: 这是继承测试的用例描述
@@ -84,13 +115,12 @@ test_setup:
     request:
       method: get
       url:  localhost
-      params: {"q": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
-      data: {"AAAA": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
+      params: {"Int": 1 ,"ComputeTime": 2020-09-21 15:00 ,"Letters": "$VAR_TEST_001","Sample": "$VAR_TEST_002"}
     validations:
       expected_code: 200
       expected_content: {"code":200,"message":"","error":"","details":null}
       expected_time: 10
-  search_006:
+  search_008:
     allures:
       severity: critical
       description: 这是继承测试的用例描述
@@ -102,17 +132,16 @@ test_setup:
     request:
       method: get
       url:  https
-      params: {"q": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
-      data: {"AAAA": "${randSample()}","src": "srp","fr": "chrome_address_bar","psid": "${randLetters()}"}
+      params: {"Int": 1 ,"ComputeTime": 2020-09-21 15:00 ,"Letters": "Letters","Sample": "Sample"}
     validations:
       expected_code: 200
       expected_content: {"code":200,"message":"","error":"","details":null}
       expected_time: 10
-  search_007:
+  search_009:
     allures:
       severity: critical
       description: 这是继承测试的用例描述
-      story: 单个值效验
+      story: 无请求参数&效验
     request:
       method: get
       url:  http://10.1.1.78:11008/swagger/doc.json

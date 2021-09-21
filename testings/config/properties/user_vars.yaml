@@ -30,3 +30,7 @@ UserInfo: ${randUserInfo()}
 UserInfoPro: ${randUserInfoPro()}
 UserAgent: ${randUserAgent()}
 randPwd: ${randPwd()}
+Custom_INT_VAR: 12356789
+Custom_STR_VAR: 12356789ABCDEFG
+Custom_None_VAR: NONE
+Custom_NULL_VAR: null

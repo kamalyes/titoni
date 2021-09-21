@@ -277,7 +277,8 @@ def getUserVars(target_key=None):
     if target_key is None:
         return combData(user_vars)
     else:
-        return combData(user_vars).get(target_key) if user_vars is not None else None
+        comb_var = user_vars.get(target_key)
+        return None if str(comb_var).title() in ["None", "Null"] else comb_var
 
 func_dict = {"Int": randInt,
                "Float": randFloat,
@@ -326,7 +327,8 @@ def citeHelper(name: str):
         >>> print(citeHelper("${getUserVars()}"))
         >>> print(citeHelper("${getUserVars(randPwd)}"))
         >>> print(citeHelper("{{UserAgent}}"))
-        >>> print(citeHelper("__sum({{Int}},${randInt})"))
+        >>> print(citeHelper("{{Custom_None_VAR}}"))
+        >>> print(citeHelper("{{Custom_NULL_VAR}}"))
     """
     # fix: File "D:\Program Files\Python37\lib\re.py", line 173, in match
     # return _compile(pattern, flags).match(string)
