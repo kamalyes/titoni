@@ -114,24 +114,6 @@ class Httpx(object):
         else:
             raise Warning("暂不支持该模式提取参数！！！")
 
-    def mergeData(self, data):
-        """
-        合并参数
-        :param data
-        Example::
-            >>> print(Httpx.mergeData(data={"test": "$VAR_TEST_001"}))
-        :return:
-        """
-        try:
-            for key, value in data.items():
-                value = str(value) if isinstance(value, str) is not True else value
-                if "$VAR_" in value:
-                    data.update({key: Global.getValue(value)})
-        except AttributeError:
-            pass
-        else:
-            return data
-
     def sqlOperate(self, data, method="before", order="desc"):
         """
         数据库操作
@@ -292,8 +274,6 @@ class Httpx(object):
             pass
         else:
             raise Exception("该场景未配置、请调试后添加判断")
-        data, json, params, headers = self.mergeData(data), self.mergeData(json), self.mergeData(
-            params), self.mergeData(headers)
         # fix requests.exceptions.InvalidHeader:
         # Value for header xxxx must be of type str or bytes, not <class 'int'>
         temp = {}
@@ -353,8 +333,8 @@ class Httpx(object):
             variables = {}
             if exp_variables is not None:
                 for exp_key, exp_value in exp_variables.items():
-                    _value = JsonPath.find(req_content, exp_key)[0]
-                    variables.update({exp_key: _value})
+                    _value = JsonPath.find(req_content, exp_key)
+                    variables.update({exp_key: _value[0] if _value is not False else None})
             if examines != {} and assert_data is None:  # Yaml中声明了 但是case中没有声明
                 assertEqual(validations=examines, code=req_code, content=req_content, text=req_text,
                             time=req_timeout, variables=variables)

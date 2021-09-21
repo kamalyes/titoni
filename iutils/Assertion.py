@@ -107,7 +107,7 @@ def legalValues(contrast: Text):
         return "notEqual"
     elif contrast in ["str_eq", "string_equal", "stringEqual"]:
         return "strEqual"
-    elif contrast in ["str_lg","str_length","strLength"]:
+    elif contrast in ["str_lg", "str_length", "strLength"]:
         return "strLength"
     else:
         return contrast
@@ -141,7 +141,7 @@ def equalData(method, actual_value: Any, expect_value: Any, message: Text = ""):
     except TypeError:
         raise TypeError("%s比较函数错误" % (func))
 
-def assertEqual(validations:dict, code=None, time=None, content=None, text=None, variables=None):
+def assertEqual(validations: dict, code=None, time=None, content=None, text=None, variables=None):
     """
     校验测试结果
     :param validations: 预期效验值
@@ -165,29 +165,29 @@ def assertEqual(validations:dict, code=None, time=None, content=None, text=None,
         with allure.step("接口常规值效验"):
             for key, value in validations.items():
                 if "expected_code" == key:
-                    allure.attach(name="Assert Code", body="预期Code：{}，实际Code：{}".format(str(value), str(code)))
+                    allure.attach(name="Assert StatusCode", body="预期Code：{}，实际Code：{}".format(str(value), str(code)))
                     if value != int(code):
                         raise AssertionError("接口状态码错误！\n %s != %s" % (value, code))
 
                 elif "expected_time" == key:
-                    allure.attach(name="Assert Time", body="预期Time：{}s，实际Time：{}s".format(str(value), str(time)))
+                    allure.attach(name="Assert ResponseTime",body="预期Time：{}s，实际Time：{}s".format(str(value), str(time)))
                     if value < time:
                         raise AssertionError("接口响应时间不匹配！\n %s < %s" % (value, time))
 
                 elif "expected_text" == key:
-                    allure.attach(name="Assert Text", body="预期Text：{}，实际Text：{}".format(value, text))
+                    allure.attach(name="Assert ResponseText", body="预期Text：{}，实际Text：{}".format(value, text))
                     if value != text:
                         raise AssertionError("接口响应文本值不匹配！\n %s != %s" % (value, text))
 
                 elif "expected_content" == key:
-                    allure.attach(name="Assert Content",
-                                  body="预期Content：{}，实际Content：{}（Dict格式数据仅做参考详情信息可见ResponseText）".format(value,content))
+                    allure.attach(name="Assert ResponseContent",
+                                  body="预期Content：{}，实际Content：{}（Dict格式数据仅做参考详情信息可见ResponseText）".format(value, content))
                     if value != content:
                         raise AssertionError("接口响应流式结果不匹配！\n %s != %s" % (value, content))
 
                 elif "expected_schema" == key:
-                    allure.attach(name="Assert Schema", body="Schema：{}，实际Instance：{}".format(value, content))
-                    if isinstance(content,dict):
+                    allure.attach(name="Assert JsonSchema", body="Schema：{}，实际Instance：{}".format(value, content))
+                    if isinstance(content, dict):
                         validate(instance=value, schema=content)
                     else:
                         raise Warning("实际Instance类型不正确，暂不支持该方式效验！")
@@ -200,24 +200,23 @@ def assertEqual(validations:dict, code=None, time=None, content=None, text=None,
                                 pass
                             if isinstance(ep_value, list):
                                 assert_method, ep_value = ep_value[0], ep_value[1]
-                                allure.attach(name="Assert Some Parameters {}".format(ep_key),
+                                allure.attach(name="Assert Single Params {}".format(ep_key),
                                               body="预期Variables：{}，实际Variables：{}".format(ep_value, ac_value))
                                 equalData(method=assert_method, actual_value=ac_value, expect_value=ep_value,
                                           message="接口响应部分文本值对比异常")
-                            elif isinstance(ep_value,list) is False:
+                            elif isinstance(ep_value, list) is False:
+                                allure.attach(name="Assert Single Params {}".format(ep_key),
+                                              body="预期Variables：{}，实际Variables：{}".format(ep_value, ac_value))
                                 if ac_value != ep_value:
-                                    allure.attach(name="Assert Some Parameters {}".format(ep_key),
-                                                  body="预期Variables：{}，实际Variables：{}".format(ep_value, ac_value))
-                                    equalData(method=assert_method, actual_value=ac_value, expect_value=ep_value,
-                                              message="接口响应部分文本值对比异常")
+                                    raise AssertionError("接口响应部分文本值对比异常, 比较方式：strMatch-equal 预期Variables：{}，实际Variables：{}".format(ep_value, ac_value))
                     else:
-                        raise AssertionError("接口响应部分文本值不是字典类型，请检查返回体是否为Json类型！\n %s" % (variables))
+                        raise Warning("接口响应部分文本值不是字典类型，请检查返回体是否为Json类型！\n %s" % (variables))
     else:
         raise Warning("请先检查效验入参是否为Dict类型！！！")
 
 if __name__ == '__main__':
     result = {
-        "code" : 0,
+        "code": 0,
         "name": "中国",
         "msg": "login success!",
         "password": "000038efc7edc7538d781b0775eeaa009cb65865",
@@ -234,20 +233,20 @@ if __name__ == '__main__':
                 "type": "string"
             },
             "msg":
-            {
-                "description": "msg",
-                "type": "string"
-            },
+                {
+                    "description": "msg",
+                    "type": "string"
+                },
             "password":
-            {
-                "description": "error password",
-                "maxLength": 20,
-                "pattern": "^[a-f0-9]{20}$",  # 正则校验a-f0-9的16进制，总长度20
-                "type": "string"
-            }
+                {
+                    "description": "error password",
+                    "maxLength": 20,
+                    "pattern": "^[a-f0-9]{20}$",  # 正则校验a-f0-9的16进制，总长度20
+                    "type": "string"
+                }
         },
         "required": [
-            "code","name", "msg", "password"
+            "code", "name", "msg", "password"
         ]
     }
-    assertEqual(validations={"expected_schema":result}, content=schema)
+    assertEqual(validations={"expected_schema": result}, content=schema)
