@@ -14,7 +14,7 @@ from iutils.Loader import Loader
 from iutils.DateUtils import Moment
 from iutils.IDCards import IdNumber
 from iutils.RandUtils import RandValue
-from testings.control.path import USER_VARS_PATH
+from testings.control.path import USER_VARS_PATH, GLOBAL_VAR_PATH
 
 faker = Factory().create('zh_CN')
 default_elements = string.ascii_letters + string.digits
@@ -277,8 +277,21 @@ def getUserVars(target_key=None):
     if target_key is None:
         return combData(user_vars)
     else:
-        comb_var = user_vars.get(target_key)
-        return None if str(comb_var).title() in ["None", "Null"] else comb_var
+        _var = user_vars.get(target_key)
+        return None if str(_var).title() in ["None", "Null"] else _var
+
+def getExtractVars(target_key=None):
+    """
+    获取提取后的参数
+    :param target_key: 目标key
+    :return:
+    """
+    extract_vars = Loader.yamlFile(GLOBAL_VAR_PATH, False)
+    if target_key is None:
+        return extract_vars
+    else:
+        _var = extract_vars.get(target_key)
+        return None if str(_var).title() in ["None", "Null"] else _var
 
 func_dict = {"Int": randInt,
                "Float": randFloat,
@@ -312,7 +325,8 @@ func_dict = {"Int": randInt,
                "UserInfoPro": randUserInfoPro,
                "UserAgent": randUserAgent,
                "IdCard": randIdCard,
-               "UserVars": getUserVars}
+               "UserVars": getUserVars,
+               "ExtractVars": getExtractVars}
 
 def citeHelper(name: str):
     """
@@ -329,6 +343,7 @@ def citeHelper(name: str):
         >>> print(citeHelper("{{UserAgent}}"))
         >>> print(citeHelper("{{Custom_None_VAR}}"))
         >>> print(citeHelper("{{Custom_NULL_VAR}}"))
+        >>> print(citeHelper("$VAR_TEST_001"))
     """
     # fix: File "D:\Program Files\Python37\lib\re.py", line 173, in match
     # return _compile(pattern, flags).match(string)
@@ -337,6 +352,7 @@ def citeHelper(name: str):
     rand_no_vars = re.match("\$\{rand(.*)\}", str(name))  # 无参数
     dynamic_vars = re.match("\$\{get(.*)\((.*)\)\}", str(name))  # 动态自定义
     own_vars = re.match("\{\{(.*)\}\}", str(name))  # 动态自定义
+    extract_vars = re.match("\$VAR_(.*)", str(name))  # 后置提取参数
     pattern = rand_vars if rand_vars is not None else dynamic_vars
     if pattern is not None:
         key, value = pattern.groups()
@@ -349,6 +365,8 @@ def citeHelper(name: str):
                 return func.__call__()  # 没有带参数的
     elif own_vars is not None:
         return getUserVars(own_vars.group().strip("{}"))
+    elif extract_vars is not None:
+        return getExtractVars(extract_vars.group())
     elif rand_no_vars is not None:
         return func_dict[rand_no_vars.group().strip("${rand}")].__call__()
     else:

@@ -106,7 +106,8 @@ class Httpx(object):
         if isinstance(enter_data, dict):
             params = []
             for key, value in target_data.items():
-                ivar = {"$VAR_%s" % (str(key).upper()): JsonPath.find(enter_data, value)[0]}
+                _value = JsonPath.find(enter_data, value)
+                ivar = {"$VAR_%s" % (str(key).upper()): _value[0] if _value else None}
                 Global.setValue(ivar)
                 params.append(ivar)
             return params
@@ -298,11 +299,11 @@ class Httpx(object):
         temp = {}
         for k in list(headers.keys()):
             temp.update({k.lower(): str(headers[k])})
-        headers = temp
         if hook_header is not None:
-            [headers.update(capitalToLower(hd)) for hd in hook_header] \
-                if isinstance(hook_header, list) else headers.update(
+            [temp.update(capitalToLower(hd)) for hd in hook_header] \
+                if isinstance(hook_header, list) else temp.update(
                 hook_header)
+        headers = combData(temp)
         with allure.step(
                 "网络请求：{}".format(urlparse(url).path) if allure_setup is None else "网络请求：{}".format(allure_setup)):
             allure.attach(name="Request Url", body=str(url))
