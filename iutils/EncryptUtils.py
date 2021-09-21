@@ -10,7 +10,7 @@
 import base64
 from hashlib import sha1, md5
 
-class Helper:
+class CipherHelper:
     def base64Encrypt(self,key):
         """
         base64 算法加密
@@ -47,10 +47,3 @@ class Helper:
         sh = sha1()
         sh.update(decode_msg.encode('utf-8'))
         return sh.hexdigest()
-
-if __name__ == '__main__':
-    Helper = Helper()
-    print(Helper.base64Encrypt(key="你好"))
-    print(Helper.base64Decrypt(binary="5L2g5aW9"))
-    print(Helper.md5Encrypt('你好'))
-

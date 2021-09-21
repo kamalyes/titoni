@@ -14,6 +14,7 @@ from iutils.Loader import Loader
 from iutils.DateUtils import Moment
 from iutils.IDCards import IdNumber
 from iutils.RandUtils import RandValue
+from iutils.EncryptUtils import CipherHelper
 from testings.control.path import USER_VARS_PATH, GLOBAL_VAR_PATH
 
 faker = Factory().create('zh_CN')
@@ -293,6 +294,25 @@ def getExtractVars(target_key=None):
         _var = extract_vars.get(target_key)
         return None if str(_var).title() in ["None", "Null"] else _var
 
+def setEncryptVars(method,target_key):
+    """
+    给参数加密
+    :param method: 加密风格 base64 md5 sha1
+    :param target_key:
+    :return:
+    Example::
+        >>> print(setEncryptVars("md5", "${randInt}"))
+        >>> print(setEncryptVars("sha1", "$VAR_TEST_001"))
+        >>> print(setEncryptVars("base64", "{{Custom_NULL_VAR}}"))
+    """
+    func_list = ["base64", "md5", "sha1"]
+    if method in func_list:
+        exec('_var = CipherHelper().{method}Encrypt("{target_key}")'.format(method=method, target_key=citeHelper(target_key)))
+        var = locals()["_var"]
+        return var.decode() if isinstance(var,bytes) else var
+    else:
+        raise ModuleNotFoundError("暂时仅支持：%s"%(", ".join(func_list)))
+
 func_dict = {"Int": randInt,
                "Float": randFloat,
                "Time": randTime,
@@ -324,9 +344,7 @@ func_dict = {"Int": randInt,
                "UserInfo": randUserInfo,
                "UserInfoPro": randUserInfoPro,
                "UserAgent": randUserAgent,
-               "IdCard": randIdCard,
-               "UserVars": getUserVars,
-               "ExtractVars": getExtractVars}
+               "IdCard": randIdCard}
 
 def citeHelper(name: str):
     """
@@ -344,6 +362,7 @@ def citeHelper(name: str):
         >>> print(citeHelper("{{Custom_None_VAR}}"))
         >>> print(citeHelper("{{Custom_NULL_VAR}}"))
         >>> print(citeHelper("$VAR_TEST_001"))
+        >>> print(citeHelper('$ENC_(base64,Base64参数加密)'))
     """
     # fix: File "D:\Program Files\Python37\lib\re.py", line 173, in match
     # return _compile(pattern, flags).match(string)
@@ -353,6 +372,7 @@ def citeHelper(name: str):
     dynamic_vars = re.match("\$\{get(.*)\((.*)\)\}", str(name))  # 动态自定义
     own_vars = re.match("\{\{(.*)\}\}", str(name))  # 动态自定义
     extract_vars = re.match("\$VAR_(.*)", str(name))  # 后置提取参数
+    lock_vars = re.match("\$ENC_(.*)", str(name))  # 带参数
     pattern = rand_vars if rand_vars is not None else dynamic_vars
     if pattern is not None:
         key, value = pattern.groups()
@@ -369,6 +389,12 @@ def citeHelper(name: str):
         return getExtractVars(extract_vars.group())
     elif rand_no_vars is not None:
         return func_dict[rand_no_vars.group().strip("${rand}")].__call__()
+    elif lock_vars is not None:
+        _lock_param = [eval(x) if x.strip().isdigit() else x for x in lock_vars.group().strip("$ENC_()").split(',')]
+        if len(_lock_param) <2:
+            raise IndexError(_lock_param)
+        else:
+            return setEncryptVars.__call__(*_lock_param)
     else:
         return name  # 函数名不存在返回原始值
 
