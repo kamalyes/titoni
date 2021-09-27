@@ -6,7 +6,7 @@
 ProtocolTest
 </h1>
 <p align="center">
-    <em>Interface automation testing framework, easy to learn, efficient coding, production available</em>
+    <em>接口自动化测试框架，简单易学，编码高效，可量产</em>
 </p>
 
 <p align="center">
@@ -20,37 +20,32 @@ ProtocolTest
 
 !!! note 
 
-    A next-generation ApiTest client for Python This is the documentation for the 1.0.0 pre-release.
+    用于 Python 的下一代 ApiTest 客户端 这是 1.0.0 预发行版的文档。
 
-Key features:
+主要特性：
 
-* **Efficient coding** : Increases the speed of writing use cases by approximately 50% to 100%.
+* **高效编码** : 将编写用例的速度提高约 50% 到 100%
 
-* **Fewer bugs** : Approximately 40% fewer human errors.
+* **更少的错误** : 大约减少40% 的人为错误
 
-* **Smart** : Excellent editor support. Everywhere <abbr title=" also known as auto-complete, intellisense "> auto-complete </abbr> reduces debugging time.
+* **智能** : 出色的编辑器支持 减少了调试时间 <abbr title=" also known as auto-complete, intellisense "> auto-complete </abbr> reduces debugging time.
 
-* **Simple** : Designed to be easy to use and learn, the document takes less time to read.
+* **简单** : 旨在易于使用和学习,文档阅读时间更少
 
-* **Brevity** : Minimizes code duplication.
-Rich functionality through different parameter declarations.
-Fewer bugs.
+* **简洁** : 通过不同的参数声明实现丰富的功能,最大限度地减少代码重复
 
-* **Robust** : Produce usable level code.
-There are also interactive test reports generated.
+* **健壮** : 生成可用的级别代码,还生成了交互式测试报告
 
-* **Standardization** : Related open standards based on (and fully compatible with) apis：<a href="https://github.com/OAI/OpenAPI-Specification" class="external-link" target="_blank">OpenAPI</a> (以前被称为 Swagger) 和 <a href="https://json-schema.org/" class="external-link" target="_blank">JSON Schema</a>。
-
-<small>* Estimates based on tests performed by an internal development team for a build-line application.</small>
+* **标准化** : 基于RestFul开放标准：<a href="https://github.com/OAI/OpenAPI-Specification" class="external-link" target="_blank">OpenAPI</a> (以前被称为 Swagger) 和 <a href="https://json-schema.org/" class="external-link" target="_blank">JSON Schema</a>。
 
 ---
 
-Installing the ProtocolTest 0.0.1 pre-release.
-
-Your client must have Python 3.7 installed and the corresponding environment variables configured
-
-```shell
-git clone https://github.com/Bravebirds/ProtocolTest.git
-cd ProtocolTest
-pip install -r requirements.txt
-```
+!!! warning  "使用ProtocolTest 你的客户端必须安装Python 3.7并配置相应的环境变量 "
+    
+    clone 项目到本地后用Idea打开或者直接解压并cd ProtocolTest项目根目录
+    
+    create virtual (创建一个虚拟环境并切换使用它 可选)
+    
+    pip install -r requirements.txt （若中间有单个安装失败 则可以单独再安装一次即可）
+    
+上述环境部署好了之后即可先实操下简单的案例[快速入门](quickstart.md)

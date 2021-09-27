@@ -35,6 +35,8 @@ def getTargetValue(dict_map: dict, separat: str = "$.", result_list: list = {}):
     :param separat: 临时节点 str类型
     :param result_list:  用于存储所有遍历出来的结果 list集合
     :return: {xx,xx,xx} 以字典形式追加
+    Example::
+        >>> print(getTargetValue(dict_map={"TEST_001": "TEST_VALUE001","TEST_002": [{"TEST_VALUE002-001": "VALUE"}, {"TEST_VALUE002-002": "VALUE"}]}))
     """
     if isinstance(dict_map, dict):
         for key, value in dict_map.items():
@@ -61,7 +63,9 @@ def conversType(dict_map: dict, disable_data: list = []) -> dict:
     将只有数字的键值给强转类型为int
     :param dict_map: 初始data dict类型
     :param disable: 不用处理的键值对
-    枚举 {'product': {'brand_id': None, 'category_id': '15888'} 转化后 {'product': {'brand_id': null, 'category_id': 15888}
+    Example::
+        >>> print(conversType({'product': {'brand_id': None, 'category_id': '15888'}}))
+        >>> print(conversType({'product': {'brand_id': None, 'category_id': '15888'}},["category_id"]))
     """
     if isinstance(dict_map, dict):
         for key in list(dict_map.keys()):

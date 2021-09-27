@@ -10,15 +10,15 @@ repo_url: https://github.com/encode/ProtocolTest/
 edit_uri: ""
 
 nav:
-    - Introduction: 'index.md'
-    - QuickStart: 'quickstart.md'
-    - Advanced Usage: 'advanced.md'
-    - Report of Pytest: 'pytest_allure.md'
-    - Continuous Integration: 'continue_integration.md'
-    - Troubleshooting: 'troubleshooting.md'
-    - Code of Conduct: 'code_of_conduct.md'
-    - Third Party Packages: 'third_party_packages.md'
-    - Other Contributing: 'contributing.md'
+    - 介绍: 'index.md'
+    - 快速入门: 'quickstart.md'
+    - 高级用法: 'advanced.md'
+    - 测试报告: 'push_message.md'
+    - 持续集成: 'continue_integration.md'
+    - 故障排除: 'troubleshooting.md'
+    - 代码规范: 'code_of_conduct.md'
+    - 第三方包: 'third_party_packages.md'
+    - 其他贡献: 'contributing.md'
 
 markdown_extensions:
   - admonition

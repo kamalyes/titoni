@@ -60,12 +60,11 @@ class Template(metaclass=TemplateMeta):
         :param mapping: 新的键值对
         :param disable_data:  无需参与类型转化的键值
         :param genre:    转化类型 若不添加则转为Json 若=dict则转为dict类型
+        :return:
         Example::
                 >>> general_data = {"name":"${name}","pic":"${pic}"}
-                >>> replace_str = {"name": "test0001_name","pic": "test_0001_pic",
-                               "randSample":"test_rand_sample","src":"test_0001_src","randLetters":"test_rand_letters"}
+                >>> replace_str = {"name": "test0001_name","pic": "test_0001_pic","randLetters":"test_rand_letters"}
                 >>> Template(general_data).subStitute(replace_str)
-        :return:
         """
         def convert(mo):
             named = mo.group('named') or mo.group('braced')

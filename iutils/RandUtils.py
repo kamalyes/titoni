@@ -24,6 +24,8 @@ class RandValue(object):
         :param maxnum:    邮箱地址最大长度
         :param temp:      临时存储生成的字符  temp_str转化list为str
         :return: email_list 最终输出的邮箱集合
+        Example::
+            >>> print(RandValue.getEmail(emailtype="@qq.com", maxnum=10, rad_count=5))
         """
         temp = []
         count = 0
@@ -59,6 +61,8 @@ class RandValue(object):
         :param maxnum:  最多可生成的长度
         :param radcount: 需要生成的数量
         :return: verifi_code 输出结果集
+        Example::
+            >>> print(RandValue.getVerifi(maxnum=6, radcount=1))
         """
         # 注意： 这里我们生成的是0-9A-Za-z的列表，当然你也可以指定这个list，这里很灵活
         # 比如： code_list = ['P','y','t','h','o','n','T','a','b'] # PythonTab的字母
@@ -86,6 +90,8 @@ class RandValue(object):
         随机生成有效手机号码
         :param radcount: 需要生成的数量
         :return:
+        Example::
+            >>> RandValue.getPhone(radcount=6)
         """
         count = 0
         phone_num =[]
@@ -105,6 +111,8 @@ class RandValue(object):
         :param surnames 姓氏
         :param fames    名
         :return: name_list 多个时采用list集合返回
+        Example::
+            >>> print(RandValue.getName(length=2, radcount=10))
         """
         count = 0
         name_list = []
@@ -137,7 +145,13 @@ class RandValue(object):
         return name_list
 
     def getStrList(self,length):
-        '''生成给定长度的字符串，返回列表格式'''
+        """
+        生成给定长度的字符串，返回列表格式
+        :param length:
+        :return:
+        Example::
+            >>> print(RandValue.getStrList(length=5))
+        """
         numbers = ''.join(map(str, [i for i in range(10) if i != 4]))  # 数字
         init_chars = ''.join(numbers)
         sample_list = random.sample(init_chars, length)
@@ -149,6 +163,8 @@ class RandValue(object):
         从a-zA-Z0-9生成指定数量的随机字符
         :param num_length: 字符串长度
         :return:
+        Example::
+            >>> print(str(RandValue.getStr(RandValue.getInt("1,22"))).title())
         """
         str_list = [random.choice(string.digits + string.ascii_letters) for i in range(num_length)]
         random_str = ''.join(str_list)
@@ -159,17 +175,19 @@ class RandValue(object):
         从0-9生成指定数量的随机数字
         :param num_length: 字符串长度
         :return:
+        Example::
         """
         str_list = [random.choice(string.digits) for i in range(num_length)]
         random_str = ''.join(str_list)
         return random_str
-
 
     def getInt(self,data):
         """
         获取随机int数据
         :param data: 开始值,结束值 例如：1,5 输出：1
         :return:
+        Example::
+            >>> print(RandValue.getInt("1,100"))
         """
         try:
             start_num, end_num = data.split(",")
@@ -189,6 +207,8 @@ class RandValue(object):
         获取随机浮点数据
         :param data: 开始值,结束值,浮点数 例如：1,5,3 输出：1.123
         :return:
+        Example::
+            >>> RandValue.getFloat("1,5,6")
         """
         try:
             start_num, end_num, accuracy = data.split(",")
@@ -210,12 +230,20 @@ class RandValue(object):
         基于MAC地址+时间戳+随机数来生成GUID
         :param:
         :return:
+        Example::
+            >>> print(RandValue.getUuid())
         """
         str_uuid =  str(uuid.uuid1()).upper()
         # self.logger.info("成功生成随机uuid：%s"%(str_uuid))
         return str_uuid
 
     def getUserAgent(self):
+        """
+        获取头部信息
+        :return:
+        Example::
+            >>> print(RandValue.getUserAgent())
+        """
         Mozilla = [
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.3589.115 Safari/537.36"
@@ -225,17 +253,3 @@ class RandValue(object):
         return choice(Mozilla)
 
 RandValue = RandValue()
-
-if __name__ == '__main__':
-    print(RandValue.getEmail(emailtype="@qq.com", maxnum=10, rad_count=5))
-    print(RandValue.getVerifi(maxnum=6, radcount=1))
-    print(RandValue.getPhone(radcount=6))
-    print(RandValue.getName(length=2, radcount=10))
-    print(RandValue.getStrList(length=5))
-    print(RandValue.getStr(256))
-    print(RandValue.getInt("1,5"))
-    print(RandValue.getFloat("1,5,6"))
-    print(RandValue.getUuid())
-    print(RandValue.getNum(255))
-    print(str(RandValue.getStr(RandValue.getInt("1,22"))).title())
-    print(RandValue.getFloat("1,100,10"))

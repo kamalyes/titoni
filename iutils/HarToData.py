@@ -13,14 +13,17 @@ import sys
 import yaml
 import json
 sys.path.append("../")
-from urllib.parse import urlparse
 from iutils.Loader import Loader
+from urllib.parse import urlparse
 from iutils.LogUtils import Logger
 from iutils.FolderUtils import FileHander
+from testings.control.path import DNS_PATH, ADDRESS_PATH
 
 class HarParser(object):
     def __init__(self):
         self.logger = Logger.writeLog()
+        self.dns_pro = Loader.yamlFile(DNS_PATH)  # 域名配置
+        self.address_pro = Loader.yamlFile(ADDRESS_PATH)  # url地址配置
         self.alluer_tags = Loader.yamlFile(os.path.join("../config", "allure_feature.yaml"))
 
     def loadHarEntries(self, file_path):
@@ -36,6 +39,22 @@ class HarParser(object):
             except (KeyError, TypeError):
                 self.logger.error("HAR file content error: {}".format(file_path))
                 sys.exit(1)
+
+    def joinUrl(self, dns, path):
+        """
+        拼接url
+        :param dns:
+        :param path:
+        :return:
+        """
+        for dns_key, dns_value in self.dns_pro.items():
+            _dns = dns_key if dns_value == dns else False
+        for route_key, route_value in self.address_pro.items():
+            _path = route_key if route_value == path else False
+        if _dns and _path:
+            return [_dns,_path]
+        else:
+            return False
 
     def readHarDatas(self, file_path):
         """
@@ -71,38 +90,51 @@ class HarParser(object):
         :param data
         :return:
         """
-        result, params = {}, {}
-        request = data.get("request")
-        method = request.get("method")
-        headers = request.get("headers")
-        url = "${host}%s" % ('{uri.path}'.format(uri=urlparse(request.get("url"))))
-        name = "%s" % ('{uri.path}'.format(uri=urlparse(request.get("url")))).replace("/", "")
-        result.update({"case_name": "%s" % ('{uri.path}'.format(uri=urlparse(request.get("url")))).replace("/", "")})
-        for i in range(len(headers)):
-            index = headers[i].get("name").lower()
-            header_list = ["accept", "user-agent", "content-type", "accept-encoding", "accept-language"]
-            if index in header_list and index != "authorization" and index != "host":
-                result.update({index: headers[i].get("value")})
-            elif index in ["host", "authorization"]:
-                result.update({index: "${%s}" % (index)})
-            elif index == "referer":
-                result.update({index: "${referer}%s" % ('{uri.path}'.format(uri=urlparse(headers[i].get("value"))))})
-        if self.checkSuffix(url) is True:
-            params.update({"config": [{"headers": result}, {"allures": self.alluer_tags},
-                                      {"request": {"method": method, "url": url}}],
-                           "test_setup": {name: {"headers": "子级扩展头部信息（写法与父类一致）", "allures": "子级扩展allure配置（写法与父类一致）",
-                                                 "validations": {"expected_time": data.get("time"),
-                                                                 "expected_code": "${expected_code}",
-                                                                 "expected_text": "${expected_text}",
-                                                                 "expected_content": "${expected_content}",
-                                                                 "expected_variables": [{"$.variables1": "value1"},
-                                                                                        {"$.variables2": "value2"}],
-                                                                 "expected_schema": "json_schema"},
-                                                 "sql": {"before_call_sql": "", "before_do_sql": "",
-                                                         "after_call_sql": "", "after_do_sql": ""},
-                                                 "extract": [{"var_name001": "json_path"},
-                                                             {"var_name002": "json_path"}]}}})
-        return params
+        headers, case_data, post_data = {}, {}, {}
+        # 获取头部信息
+        har_request = data.get("request")
+        har_url = har_request.get("url")
+        _scheme, _netloc, _path = urlparse(har_url).scheme, urlparse(har_url).netloc, urlparse(har_url).path
+        join_url = self.joinUrl("{}://{}".format(_scheme, _netloc), _path)
+        har_method = har_request.get("method").lower()
+        har_headers = har_request.get("headers")
+        loc = locals()
+        for index in ["params", "text", "queryString"]:
+            if index == "queryString":
+                exec('post_data.update({index} = har_request.get("{index}"))'.format(index=index))
+            else:
+                exec('post_data.update({index} = har_request.get("postData").get("{index}"))'.format(index=index))
+        name = _path.replace("/", "_")
+        for i in range(len(har_headers)):
+            index = har_headers[i].get("name").lower()
+            header_list = ["accept", "user-agent", "content-type", "accept-encoding",
+                           "accept-language", "authorization"]
+            if index in header_list:
+                headers.update({index: har_headers[i].get("value")})
+        # 获取响应后的信息
+        response = data.get("response")
+        statusCode = response.get("statusCode")
+        statusText = response.get("statusText")
+        content = response.get("content").get("text").encode("utf-8")
+        if self.checkSuffix(har_url) is True:
+            case_data.update({"config": [{"headers": headers}, {"allures": self.alluer_tags},
+                                         {"request": {"method": har_method,
+                                                      "url": join_url if join_url else  har_url}}],
+                              "test_setup": {name: {"headers": "子级扩展头部信息（写法与父类一致）", "request": post_data,
+                                                    "allures": "子级扩展allure配置（写法与父类一致）",
+                                                    "validations": {"expected_time": data.get("time"),
+                                                                    "expected_code": "${expected_code}",
+                                                                    "expected_reason": "${expected_reason}",
+                                                                    "expected_text": "${expected_text}",
+                                                                    "expected_content": "${expected_content}",
+                                                                    "expected_variables": [{"$.variables1": "value1"},
+                                                                                           {"$.variables2": "value2"}],
+                                                                    "expected_schema": "json_schema"},
+                                                    "sql": {"before_call_sql": "", "before_do_sql": "",
+                                                            "after_call_sql": "", "after_do_sql": ""},
+                                                    "extract": [{"var_name001": "json_path"},
+                                                                {"var_name002": "json_path"}]}}})
+        return case_data
 
     def getHarInfo(self, data):
         """
@@ -110,32 +142,41 @@ class HarParser(object):
         :param data
         :return:
         """
-        result, params = {}, {}
+        headers, case_data, post_data = {}, {}, {}
         # 获取头部信息
-        request = data.get("request")
-        url = request.get("url")
-        method = request.get("method")
-        headers = request.get("headers")
-        name = "%s" % ('{uri.path}'.format(uri=urlparse(request.get("url")))).replace("/", "")
-        for i in range(len(headers)):
-            index = headers[i].get("name").lower()
-            header_list = ["host", "accept", "user-agent", "content-type", "referer", "accept-encoding",
+        har_request = data.get("request")
+        har_url = har_request.get("url")
+        _scheme, _netloc, _path = urlparse(har_url).scheme, urlparse(har_url).netloc, urlparse(har_url).path
+        join_url = self.joinUrl("{}://{}".format(_scheme, _netloc), _path)
+        har_method = har_request.get("method").lower()
+        har_headers = har_request.get("headers")
+        loc = locals()
+        for index in ["params","text","queryString"]:
+            if  index == "queryString":
+                exec('post_data.update({index} = har_request.get("{index}"))'.format(index=index))
+            else:
+                exec('post_data.update({index} = har_request.get("postData").get("{index}"))'.format(index=index))
+        name = _path.replace("/", "_")
+        for i in range(len(har_headers)):
+            index = har_headers[i].get("name").lower()
+            header_list = ["accept", "user-agent", "content-type", "accept-encoding",
                            "accept-language", "authorization"]
             if index in header_list:
-                result.update({index: headers[i].get("value")})
+                headers.update({index: har_headers[i].get("value")})
         # 获取响应后的信息
         response = data.get("response")
         statusCode = response.get("statusCode")
         statusText = response.get("statusText")
-        content = response.get("content").get("text")
-        if self.checkSuffix(url) is True:
-            params.update({"config": [{"headers": result}, {"allures": self.alluer_tags},
-                                      {"request": {"method": method, "url": url}}],
-                           "test_setup": {name: {"headers": "子级扩展头部信息（写法与父类一致）", "allures": "子级扩展allure配置（写法与父类一致）",
+        content = response.get("content").get("text").encode("utf-8")
+        if self.checkSuffix(har_url) is True:
+            case_data.update({"config": [{"headers": headers}, {"allures": self.alluer_tags},
+                                      {"request": {"method": har_method, "url": join_url if join_url else  har_url}}],
+                           "test_setup": {name: {"headers": "子级扩展头部信息（写法与父类一致）","request": post_data, "allures": "子级扩展allure配置（写法与父类一致）",
                                                  "validations": {"expected_time": data.get("time"),
                                                                  "expected_code": statusCode,
-                                                                 "expected_text": statusText,
-                                                                 "expected_content": str(content).strip(),
+                                                                 "expected_reason": statusText,
+                                                                 "expected_text": str(eval(content)),
+                                                                 "expected_content": str(eval(content)),
                                                                  "expected_variables": [{"$.variables1": "value1"},
                                                                                         {"$.variables2": "value2"}],
                                                                  "expected_schema": "json_schema"},
@@ -143,7 +184,7 @@ class HarParser(object):
                                                          "after_call_sql": "", "after_do_sql": ""},
                                                  "extract": [{"var_name001": "json_path"},
                                                              {"var_name002": "json_path"}]}}})
-        return params
+        return case_data
 
     def writeFile(self, data, file_path, method):
         """

@@ -1,0 +1,54 @@
+config:
+- headers:
+    accept: application/json, text/plain, */*
+    accept-encoding: gzip
+    accept-language: zh-CN,zh;q=0.9
+    content-type: application/json;charset=UTF-8
+    user-agent: Mozilla/5.0 (Windows NT 10.0; Win65; x65) AppleWebKit/557.56 (KHTML,
+      like Gecko) Chrome/95.0.5577.82 Safari/557.56
+- allures:
+    description: 这是用例描述
+    feature: 用于描述被测试产品需求
+    severity:
+    - '# blocker级别：中断缺陷（客户端程序无响应，无法执行下一步操作）'
+    - '# critical级别：临界缺陷（ 功能点缺失）'
+    - '# normal级别：普通缺陷（数值计算错误）'
+    - '# minor级别：次要缺陷（界面错误与UI需求不符）'
+    - '# trivial级别：轻微缺陷（必输项无提示，或者提示不规范）'
+    story: 用于描述feature的用户场景，即测试需求
+    title: 用于描述用例名称
+- request:
+    method: post
+    url: http://localhost:8006/api/login
+test_setup:
+  _api_login:
+    allures: 子级扩展allure配置（写法与父类一致）
+    extract:
+    - var_name001: json_path
+    - var_name002: json_path
+    headers: 子级扩展头部信息（写法与父类一致）
+    request:
+      json: '{"account":"Admin","password":"1255678"}'
+    sql:
+      after_call_sql: ''
+      after_do_sql: ''
+      before_call_sql: ''
+      before_do_sql: ''
+    validations:
+      expected_code: 200
+      expected_content: '{''data'': {''account'': ''Admin'', ''create_user'': 1,
+        ''created_time'': ''2021-09-28 12:27:59'', ''id'': 2, ''name'': ''管理员'', ''role_id'':
+        2, ''status'': 1, ''token'': ''eyJhbGciOiJIUzUxMiIsImlhdCI6MTYzMjgyODUxMSwiZXhwIjoxNjMyODY0NTExfQ.eyJpZCI6Mn0.D1EFWprk5IQ9Q8YsyLQqAAUHeHKWrrS9bRm5FwdP_slQRGhxOWYRwC1zaKGgscElQF57dF5gAg1CqJSpDJZc5w'',
+        ''update_time'': ''2021-09-28 12:55:55''}, ''message'': ''登录成功'', ''status'':
+        200}'
+      expected_reason: OK
+      expected_schema: json_schema
+      expected_text: '{''data'': {''account'': ''Admin'', ''create_user'': 1, ''created_time'':
+        ''2021-09-28 12:27:59'', ''id'': 2, ''name'': ''管理员'', ''role_id'': 2, ''status'':
+        1, ''token'': ''eyJhbGciOiJIUzUxMiIsImlhdCI6MTYzMjgyODUxMSwiZXhwIjoxNjMyODY0NTExfQ.eyJpZCI6Mn0.D1EFWprk5IQ9Q8YsyLQqAAUHeHKWrrS9bRm5FwdP_slQRGhxOWYRwC1zaKGgscElQF57dF5gAg1CqJSpDJZc5w'',
+        ''update_time'': ''2021-09-28 12:55:55''}, ''message'': ''登录成功'', ''status'':
+        200}'
+      expected_time: 157
+      expected_variables:
+      - $.variables1: value1
+      - $.variables2: value2

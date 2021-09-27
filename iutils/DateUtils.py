@@ -17,6 +17,10 @@ class Moment(object):
         :param time_type: 现在的时间now， 其他时间else_time
         :param layout: 10timestamp， 13timestamp,  else  时间类型
         :return:
+        Example::
+            >>> print(Moment.getTime("%Y-%m-%d %H:%M:%S"))
+            >>> print(Moment.getTime("10timestamp"))
+            >>> print(Moment.getTime("13timestamp"))
         """
         tim = datetime.datetime.now()
         temp = tim.strftime('%Y-%m-%d %H:%M:%S')
@@ -28,7 +32,7 @@ class Moment(object):
             datetime_object = datetime.datetime.now()
             now_timetuple = datetime_object.timetuple()
             now_second = time.mktime(now_timetuple)
-            tim = now_second*1000 + datetime_object.microsecond/1000
+            tim =int(now_second*1000 + datetime_object.microsecond/1000)
         # 按传入格式获取时间
         else:
             tim = tim.strftime(layout)
@@ -47,6 +51,8 @@ class Moment(object):
         :param weeks:
         :param custom：自定义
         :return:
+        Example::
+            >>> print(Moment.computeDate(-6))
         """
         if custom is not None:
             today = datetime.datetime.strptime(custom,'%Y-%m-%d %H:%M:%S')
@@ -60,6 +66,8 @@ class Moment(object):
         :return timestamp_to_date
         :param
         :return:
+        Example::
+            >>> print(Moment.timestampToDate(1603282677.5209892))
         """
         if not isinstance(timestamp, (int, float)):
             return None
@@ -74,6 +82,8 @@ class Moment(object):
         :param start: 开始日期
         :param end:   结束日期
         :return
+        Example::
+            >>> print(Moment.getEveryDay("2020-06-05", "2020-07-01"))
         """
         date_list = []
         begin_date = datetime.datetime.strptime(start, "%Y-%m-%d")
@@ -90,6 +100,8 @@ class Moment(object):
         单个日期初始化时间戳年月日时分秒、转化为时间戳
         :param singletime:
         :return
+        Example::
+            >>> print(Moment.getSingletime("2020-06-01 18:50:00"))
         """
         singletime = time.strptime(singletime, '%Y-%m-%d %H:%M:%S')
         time_stamp = int(time.mktime(singletime))
@@ -109,6 +121,8 @@ class Moment(object):
         :param time1:
         :param time2:
         :return:
+        Example::
+            >>> print(Moment.compareTime("2021-08-23 17:11:37", "2021-08-22 17:11:37"))
         """
         time1 = datetime.datetime.strptime(time1,'%Y-%m-%d %H:%M:%S')
         time2 = datetime.datetime.strptime(time2,'%Y-%m-%d %H:%M:%S')
@@ -118,13 +132,3 @@ class Moment(object):
             return False
 
 Moment = Moment()
-
-if __name__ == "__main__":
-    print(Moment.getTime("%Y-%m-%d %H:%M:%S"))
-    print(Moment.getTime("10timestamp"))
-    print(Moment.getTime("13timestamp"))
-    print(Moment.computeDate(-6))
-    print(Moment.timestampToDate(1603282677.5209892))
-    print(Moment.getEveryDay("2020-06-05", "2020-07-01"))
-    print(Moment.getSingletime("2020-06-01 18:50:00"))
-    print(Moment.compareTime("2021-08-23 17:11:37", "2021-08-22 17:11:37"))

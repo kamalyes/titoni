@@ -58,14 +58,14 @@ def sendPush():
         passed = SUMMARY["passed"]
         failed = SUMMARY["failed"]
         skipped = SUMMARY["skipped"]
-		if failed == 0 and passed == 0 and skipped == 0:
-			robot_msg.send_markdown("# **{} {}**<font color=\"warning\">**{}环境**</font>\n".format(RUN_TIME,PRODUCT,RUN_PATH) +  # 标题 （支持1至6级标题，注意#与文字中间要有空格）
+        if failed == 0 and passed == 0 and skipped == 0:
+            robot_msg.send_markdown("# **{} {}**<font color=\"warning\">**{}环境**</font>\n".format(RUN_TIME,PRODUCT,RUN_PATH) +
                                 "#### **代码执行过程报错请相关同事注意，及时跟进！**\n" +  # 加粗：**需要加粗的字**
                                 "> 类型：<font color=\"info\">API自动化</font> \n" +  # 引用：> 需要引用的文字
                                 "[点击查看Jenkins构建日志]({}/job/{}/{}/console)\n".format(BUILD_URL, JOB_NAME, LAST_BUILD_NAM) +
                                 "[点击查看Allure测试报告详情]({}/job/{}/{}/allure)".format(BUILD_URL, JOB_NAME, LAST_BUILD_NAM))
-		else:
-			robot_msg.send_markdown("# **{} {}**<font color=\"warning\">**{}环境**</font>\n".format(RUN_TIME,PRODUCT,RUN_PATH) +  # 标题 （支持1至6级标题，注意#与文字中间要有空格）
+        else:
+            robot_msg.send_markdown("# **{} {}**<font color=\"warning\">**{}环境**</font>\n".format(RUN_TIME,PRODUCT,RUN_PATH) +
 									"> 类型：<font color=\"info\">API自动化</font> \n" +  # 引用：> 需要引用的文字
 									"> 执行总耗时：<font color=\"warning\">{}s</font>\n".format(duration) +
 									"> 用例总数：<font color=\"warning\">{}例</font> \n".format(count) +  # 字体颜色(只支持3种内置颜色)
@@ -76,7 +76,7 @@ def sendPush():
 									"> 跳过数：<font color=\"comment\">{}例</font>\n".format(skipped) +
 									"[点击查看Jenkins构建日志]({}/job/{}/{}/console)\n".format(BUILD_URL,JOB_NAME,LAST_BUILD_NAM) +
 									"[点击查看Allure测试报告详情]({}/job/{}/{}/allure)".format(BUILD_URL,JOB_NAME,LAST_BUILD_NAM))
-			body = """
+            body = """
 			<!doctype html>
 					<html lang="en">
 						<head>
@@ -115,7 +115,7 @@ def sendPush():
 						</div>
 						</body>
 					</html>"""
-			mail_body = str(body).replace("report_detail_count", str(count)) \
+            mail_body = str(body).replace("report_detail_count", str(count)) \
 				.replace("report_summary_duration", str(duration)) \
 				.replace("report_summary_status_pass", str(passed)) \
 				.replace("report_summary_status_fail", str(failed)) \
@@ -124,9 +124,9 @@ def sendPush():
 				.replace("BUILD_URL", str(BUILD_URL)) \
 				.replace("LAST_BUILD_NAM", str(LAST_BUILD_NAM))\
 				.replace("JOB_NAME",str(JOB_NAME))
-			Email = EMail(user_email=EMAIL_USER, passwd=EMAIL_PWD, title="({})".format(RUN_PATH)+EMAIL_TITLE,smtp_server=EMAIL_HOST,addressee=EMAIL_ADDRESS)
-			Email.send(subject='自动执行发送-请勿回复 ', content=mail_body, send_type='html')
-	logger.info("""
+            Email = EMail(user_email=EMAIL_USER, passwd=EMAIL_PWD, title="({})".format(RUN_PATH)+EMAIL_TITLE,smtp_server=EMAIL_HOST,addressee=EMAIL_ADDRESS)
+            Email.send(subject='自动执行发送-请勿回复 ', content=mail_body, send_type='html')
+        logger.info("""
 					 #######                         ######               ##
 					#  #  #                          #    #               #
 					   #                       #     #  #                 #

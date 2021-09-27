@@ -97,17 +97,24 @@ class Httpx(object):
         存储变量
         :param enter_data 返回值
         :param target_data 对应的目标节点
-        Example::
-            >>> enter_data = {"test_001": "${randSample()}","test_002": "srp","test_003": "chrome_address_bar","test_005": "${randLetters()}"}
-            >>> target_data = {"test_001":"$.test_001"}
-            >>> Httpx.saveData(enter_data=enter_data,target_data=target_data)
         :return:
+        Example::
+            >>> enter_data = {"owner": [{"title": "The first title","description": "","url": ""},{"title": "The two title","description": ""}]}
+            >>> target_data = {"test_001": ["$.owner[*].title",3]}
+            >>> Httpx.saveData(enter_data=enter_data,target_data=target_data)
         """
         if isinstance(enter_data, dict):
             params = []
             for key, value in target_data.items():
-                _value = JsonPath.find(enter_data, value)
-                ivar = {"$VAR_%s" % (str(key).upper()): _value[0] if _value else None}
+                if (isinstance(value, list) and len(value)==1 ) or isinstance(value, str):
+                    _value = JsonPath.find(enter_data, value)
+                    ivar = {"$VAR_%s" % (str(key).upper()): _value[0] if _value else None}
+                elif isinstance(value, list) and (len(value)>1) and (len(value)<=2):
+                    _value = JsonPath.find(enter_data, "{}".format(value[0]))
+                    try:
+                        ivar = {"$VAR_%s" % (str(key).upper()): _value[value[1]] if _value else None}
+                    except IndexError:
+                        raise IndexError("\n需提取的参数值：{}\n目前提取到{}个参数,\n参数值：{}".format(enter_data,len(_value),_value))
                 Global.setValue(ivar)
                 params.append(ivar)
             return params
@@ -224,36 +231,36 @@ class Httpx(object):
         return Response <Response> 对象
         """
         if auto is True or aided is True:
-            allures, headers_, demands, examines, extracts, dbs = self.getData(esdata, {}, {}, {}, {}, {}, {})
+            allures, _headers, demands, examines, extracts, dbs = self.getData(esdata, {}, {}, {}, {}, {}, {})
             setTag(allures)  # 打标签
+            if isinstance(demands, dict):  # 读取Yaml中request字段
+                method = demands.get("method")
+                # 根据dns+address 反转得到dns地址进行拼接为正确的url
+                url = demands.get("url")
+                timeout = demands.get("timeout")
+                proxies = demands.get("proxies")
+                allow_redirects = demands.get("allow_redirects")
+                if isinstance(url, list) and len(url) == 2:
+                    url = self.urlJoint(self.dns_pro.get(url[0]), self.address_pro.get(url[1]))
+                elif isinstance(url, list) and len(url) == 1:
+                    raise IndexError("自动模式下必须要先配置Host及Url或者仅传入Path，且为List例如：[host,url_path]")
+                # 前置sql
+                if dbs is not None:
+                    self.sqlOperate(data)
+                parameter = ["data", "json", "params"]
+                loc = locals()
+                for index in parameter:
+                    exec('_{} = {}'.format(index, combData(demands.get(index))))
+                data, json, params = loc["_data"], loc["_json"], loc["_params"]
+                # if method == "get":  # 拦截不合法的数据
+                #     data = json = None
+                # else:
+                #     params = None
         else:
-            headers_, examines, extracts, dbs = {}, {}, {}, {}
-        if auto is True and isinstance(demands, dict) and len(demands.keys()) > 1:  # 读取Yaml中request字段
-            method = demands.get("method")
-            # 根据dns+address 反转得到dns地址进行拼接为正确的url
-            url = demands.get("url")
-            timeout = demands.get("timeout")
-            proxies = demands.get("proxies")
-            allow_redirects = demands.get("allow_redirects")
-            if isinstance(url, list) and len(url) == 2:
-                url = self.urlJoint(self.dns_pro.get(url[0]), self.address_pro.get(url[1]))
-            elif isinstance(url, list) and len(url) == 1:
-                raise IndexError("自动模式下必须要先配置Host及Url或者仅传入Path，且为List例如：[host,url_path]")
-            # 前置sql
-            if dbs is not None:
-                self.sqlOperate(data)
-            parameter = ["data", "json", "params"]
-            loc = locals()
-            for index in parameter:
-                exec('{} = {}'.format(index, combData(demands.get(index))))
-            data, json, params = loc["data"], loc["json"], loc["params"]
-            # if method == "get":  # 拦截不合法的数据
-            #     data = json = None
-            # else:
-            #     params = None
-        headers = dict(headers_ if isinstance(headers_, dict) else {}, **headers if isinstance(headers, dict) else {})
+            _headers, examines, extracts, dbs = {}, {}, {}, {}
+        headers = dict(_headers if isinstance(_headers, dict) else {}, **headers if isinstance(headers, dict) else {})
         content_type = headers.get("content-type")
-        method = method.lower()
+        method = method.lower() if method is not None else method
         if json is not None and content_type is None:
             headers.update(self.headers["json_headers"])
         elif params is not None and content_type is None:
@@ -271,9 +278,7 @@ class Httpx(object):
             if method == "get":
                 data = parse.urlencode(data)
         elif content_type is not None:
-            pass
-        else:
-            raise Exception("该场景未配置、请调试后添加判断")
+            headers.update(self.headers["get_headers"])
         # fix requests.exceptions.InvalidHeader:
         # Value for header xxxx must be of type str or bytes, not <class 'int'>
         temp = {}
@@ -299,7 +304,7 @@ class Httpx(object):
                 allure.attach(name="Assert Parametrize", body=str(examines))
             elif assert_data is not None:
                 allure.attach(name="Assert Parametrize", body=str(assert_data))
-        if method.lower() not in self.text_plain + self.json_method:
+        if method not in self.text_plain + self.json_method:
             raise Exception("暂不支持：{}方式请求！！！".format(method))
         else:
             if re.match(r'^https?:/{2}\w.+$', url):
@@ -320,7 +325,8 @@ class Httpx(object):
             # req_httpxd = self.getHttpxd(response) # 获取请求方式，实际没有意义
             req_timeout = self.getResponseTime(response)
             req_content = self.getContent(response)
-            req_datas = {"ResponseCode": [req_code, self.getNotice(req_code)], "ResponseTime": req_timeout,
+            req_reason = self.getReason(response)
+            req_datas = {"ResponseCode": [req_code, self.getNotice(req_code)],"ResponseReason": req_reason, "ResponseTime": req_timeout,
                          "ResponseEncoding": req_encoding, "ResponseHeaders": req_headers, "ResponseText": req_text}
             # 提取变量
             if req_content is not None and extracts is not None:
@@ -329,20 +335,20 @@ class Httpx(object):
                     "响应结果：{}".format(urlparse(url).path) if allure_setup is None else "响应结果：{}".format(allure_setup)):
                 {allure.attach(name="%s" % (str(key)), body=str(value).strip()) for key, value in req_datas.items()}
             # 部分值效验
-            exp_variables = examines.get("expected_variables", None)
+            exp_variables = examines.get("expected_field", None)
             variables = {}
             if exp_variables is not None:
                 for exp_key, exp_value in exp_variables.items():
                     _value = JsonPath.find(req_content, exp_key)
                     variables.update({exp_key: _value[0] if _value is not False else None})
             if examines != {} and assert_data is None:  # Yaml中声明了 但是case中没有声明
-                assertEqual(validations=examines, code=req_code, content=req_content, text=req_text,
+                assertEqual(validations=examines, code=req_code, reason=req_reason, content=req_content, text=req_text,
                             time=req_timeout, variables=variables)
             elif examines == {} and assert_data is not None:  # Yaml中未定义 但是case中声明
-                assertEqual(validations=assert_data, code=req_code, content=req_content, text=req_text,
+                assertEqual(validations=assert_data, code=req_code, reason=req_reason, content=req_content, text=req_text,
                             time=req_timeout, variables=variables)
             elif examines != {} and assert_data is not None:  # 若二者都有则以最后定义的为主
-                assertEqual(validations=assert_data, code=req_code, content=req_content, text=req_text,
+                assertEqual(validations=assert_data, code=req_code, reason=req_reason, content=req_content, text=req_text,
                             time=req_timeout, variables=variables)
             if seesion_ is True:
                 self.closeSession()

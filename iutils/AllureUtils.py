@@ -24,10 +24,10 @@ def setTag(data):
     :param story:     二级标签 用于描述feature的用户场景，即测试需求
     :param title:     标题 用于描述用例名称
     :param description:  备注信息
+    :return:
     Example::
         >>> setTag({'feature': '一级标签', 'severity': 'blocker'})
         >>> setTag([{'feature': '一级标签', 'severity': 'blocker'}, {'severity': 'critical（覆盖掉原有的blocker）', 'description': '这是用例描述', 'story': '二级标签'}])
-    :return:
     """
     if isinstance(data, list):
         data = {k: v for d in data for k, v in d.items()}

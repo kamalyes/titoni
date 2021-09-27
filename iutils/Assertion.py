@@ -12,6 +12,7 @@ import allure
 from jsonschema import validate
 from iutils.Helper import combData
 from typing import Text, Any, Union
+from iutils.Helper import citeHelper
 
 def numMatch(method, actual_value: Union[int, float], expect_value: Union[int, float], message: Text = ""):
     """
@@ -167,12 +168,13 @@ def equalData(method, actual_value: Any, expect_value: Any, message: Text = ""):
                         if isinstance(dim_method, list) else "{}比较函数错误".format(
             func if 'func' in locals().keys() else ""))
 
-def assertEqual(validations: dict, code=None, time=None, content=None, text=None, variables=None):
+def assertEqual(validations: dict, code=None,reason=None, time=None, content=None, text=None, variables=None):
     """
     校验测试结果 （备注 有局限 若多重效验后者不会执行 程序直接跳出）
     :param validations: 预期效验值
     :param text: 实际文本值
     :param code: 实际接口状态码
+    :param reason: 实际响应状态-文本 例如：OK
     :param time: 实际响应时间
     :param content: 返回的接口json数据
     :param variables: 实际效验值结果
@@ -181,18 +183,24 @@ def assertEqual(validations: dict, code=None, time=None, content=None, text=None
         >>> only_code = {'expected_code': 500}
         >>> only_content = {'expected_content': {'code': 200, 'message': '', 'error': '', 'details': None}}
         >>> code_and_content = {'expected_code': "500" ,'expected_content': {'code': "${randInt}", 'message': '$VAR_TEST_001', 'error': '', 'details': None}}
-        >>> expected_variables = {"expected_variables":{'test_001': 500, "test002":["aaa",500]}}
+        >>> expected_field = {"expected_field":{'test_001': 500, "test002":["aaa",500]}}
         >>> assertEqual(only_code,code=500)
         >>> assertEqual(code_and_content, content={'code': 200}, code= 500)
-        >>> assertEqual(expected_variables, variables= {'test_001': 500, "test002":[]})
+        >>> assertEqual(expected_field, variables= {'test_001': 500, "test002":[]})
     """
+    # TODO 函数及方法太多需要适配调用链
     if isinstance(validations, dict):
         with allure.step("接口常规值效验"):
-            for key, value in combData(validations).items():
+            for key, value in validations.items():
                 if "expected_code" == key:
                     allure.attach(name="Assert StatusCode", body="预期Code：{}，实际Code：{}".format(str(value), str(code)))
                     if str(value) != str(code):
                         raise AssertionError("接口状态码错误！\n %s != %s" % (value, code))
+
+                elif "expected_reason" == key:
+                    allure.attach(name="Assert Reason", body="预期Reason：{}，实际Reason：{}".format(str(value), str(reason)))
+                    if str(value) != str(reason):
+                        raise AssertionError("接口状态文本值错误！\n %s != %s" % (value, reason))
 
                 elif "expected_time" == key:
                     allure.attach(name="Assert ResponseTime",
@@ -218,7 +226,7 @@ def assertEqual(validations: dict, code=None, time=None, content=None, text=None
                         validate(instance=value, schema=content)
                     else:
                         raise Warning("实际Instance类型不正确，暂不支持该方式效验！")
-                elif "expected_variables" == key:
+                elif "expected_field" == key:
                     if isinstance(value, dict):
                         for ep_key, ep_value in value.items():
                             try:
@@ -226,7 +234,7 @@ def assertEqual(validations: dict, code=None, time=None, content=None, text=None
                             except KeyError:
                                 pass
                             if isinstance(ep_value, list):
-                                assert_method, ep_value = ep_value[0], ep_value[1]
+                                assert_method, ep_value = ep_value[0], citeHelper(ep_value[1])
                                 allure.attach(name="Assert Single Params {}".format(ep_key),
                                               body="预期Variables：{}，实际Variables：{}".format(ep_value, ac_value))
                                 equalData(method=assert_method, actual_value=ac_value, expect_value=ep_value,

@@ -278,8 +278,11 @@ def getUserVars(target_key=None):
     if target_key is None:
         return combData(user_vars)
     else:
-        _var = user_vars.get(target_key)
-        return None if str(_var).title() in ["None", "Null"] else _var
+        if user_vars is not None:
+            _var = user_vars.get(target_key)
+            return None if str(_var).title() in ["None", "Null"] else _var
+        else:
+            return None
 
 def getExtractVars(target_key=None):
     """
@@ -291,8 +294,11 @@ def getExtractVars(target_key=None):
     if target_key is None:
         return extract_vars
     else:
-        _var = extract_vars.get(target_key)
-        return None if str(_var).title() in ["None", "Null"] else _var
+        if extract_vars is not None:
+            _var = extract_vars.get(target_key)
+            return None if str(_var).title() in ["None", "Null"] else _var
+        else:
+            return None
 
 def setEncryptVars(method,target_key):
     """
@@ -345,7 +351,8 @@ func_dict = {"Int": randInt,
                "UserInfoPro": randUserInfoPro,
                "UserAgent": randUserAgent,
                "IdCard": randIdCard,
-               "UserVars": getUserVars}
+               "UserVars": getUserVars,
+               "ExtractVars": getExtractVars}
 
 def citeHelper(name: str):
     """
@@ -372,7 +379,7 @@ def citeHelper(name: str):
     rand_no_vars = re.match("\$\{rand(.*)\}", str(name))  # 无参数
     dynamic_vars = re.match("\$\{get(.*)\((.*)\)\}", str(name))  # 动态自定义
     own_vars = re.match("\{\{(.*)\}\}", str(name))  # 动态自定义
-    extract_vars = re.match("\$VAR_(.*)", str(name))  # 后置提取参数
+    extract_vars = re.match("\$VAR_(.*)", str(name).upper())  # 后置提取参数
     lock_vars = re.match("\$ENC_(.*)", str(name))  # 带参数
     pattern = rand_vars if rand_vars is not None else dynamic_vars
     if pattern is not None:
@@ -384,13 +391,13 @@ def citeHelper(name: str):
                 return func.__call__(*_param)
             elif "" in _param:
                 return func.__call__()  # 没有带参数的
-    elif own_vars is not None:
+    elif own_vars:
         return citeHelper(getUserVars(own_vars.group().strip("{}")))
-    elif extract_vars is not None:
+    elif extract_vars:
         return getExtractVars(extract_vars.group())
-    elif rand_no_vars is not None:
+    elif rand_no_vars:
         return func_dict[rand_no_vars.group().strip("${rand}")].__call__()
-    elif lock_vars is not None:
+    elif lock_vars:
         _lock_param = [eval(x) if x.strip().isdigit() else x for x in lock_vars.group().strip("$ENC_()").split(',')]
         if len(_lock_param) <2:
             raise IndexError(_lock_param)
@@ -423,6 +430,3 @@ def combData(dict_map: dict) -> dict:
         return dict_map
     elif dict_map is None:  # fix：为空的时候raise 异常导致其它函数调用失败
         pass
-    else:
-        raise TypeError("传入的参数不是dict类型 %s" % (type(dict_map)))
-

@@ -20,6 +20,8 @@ def wirteJson(target_data, file_path, method="w"):
     :param file_path:
     :param method: 谨慎使用"a"追加模式（可能存在覆盖键值、json格式不对无法提取出来）
     :return:
+    Example::
+        >>> print(wirteJson({"TEST_KEY":"TEST_VALUE"},"TEST_001.JSON"))
     """
     with open(file_path, method, encoding="utf-8") as file:
         json.dump(target_data, file, ensure_ascii=False, indent=4)
@@ -53,6 +55,8 @@ def isJsonFormat(raw_msg):
     用于判断一个字符串是否符合Json格式
     :param raw_msg:
     :return:
+    Example::
+        >>> print(json.dumps({"TEST_KEY":"TEST_VALUE"}) is True)
     """
     if isinstance(raw_msg,str):
         try:

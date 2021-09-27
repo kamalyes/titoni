@@ -49,48 +49,6 @@ class HtmlPath(object):
                 return None
 
 class JsonPath():
-    def jsonToXwwwForm(self, post_data)->Text:
-        """
-        将origin dict转换为x-www-form-urlencoded
-        Args:
-            post_data (dict):{"a": 1, "b":2}
-        Returns:
-            str:a=1&b=2
-        """
-        if isinstance(post_data, dict):
-            return "&".join(["{}={}".format(key, value) for key, value in post_data.items()])
-        else:
-            return post_data
-
-    def xwwwFormToJson(self, post_data)->Dict:
-        """
-        将x-www-form-urlencoded转换为origin dict
-        Args:
-            post_data (str): a=1&b=2
-        Returns:
-            dict: {"a":1, "b":2}
-        """
-        if isinstance(post_data, str):
-            converted_dict = {}
-            for k_v in post_data.split("&"):
-                try:
-                    key, value = k_v.split("=")
-                except ValueError:
-                    raise Exception("Invalid x_www_form_urlencoded data format: {}".format(post_data))
-                converted_dict[key] = unquote(value)
-            return converted_dict
-        else:
-            return post_data
-
-    def listToJson(self, origin_list)->Dict:
-        """
-        将list数据转化为json
-        Args:
-            origin_list (list)[{"name": "v", "value": "1"}, {"name": "w", "value": "2"}]
-        Returns:
-            dict:{"v": "1", "w": "2"}
-        """
-        return {item["name"]: item.get("value") for item in origin_list}
 
     def normalize(self,filter):
         """

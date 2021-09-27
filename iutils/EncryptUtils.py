@@ -15,6 +15,8 @@ class CipherHelper:
         """
         base64 算法加密
         :return:加密后的字符
+        Example::
+            >>> print(CipherHelper().base64Encrypt("Hello Word base64Encrypt"))
         """
         binary = base64.b64encode(key.encode())
         return binary
@@ -33,6 +35,8 @@ class CipherHelper:
         md5 算法加密
         :param decode_msg: 需加密的字符串
         :return: 加密后的字符
+        Example::
+            >>> print(CipherHelper().md5Encrypt("Hello Word md5Encrypt"))
         """
         hl = md5()
         hl.update(decode_msg.encode('utf-8'))
@@ -43,6 +47,8 @@ class CipherHelper:
         哈希算法加密
         :param decode_msg: 需加密的字符串
         :return: 加密后的字符
+        Example::
+            >>> print(CipherHelper().sha1Encrypt("Hello Word sha1Encrypt"))
         """
         sh = sha1()
         sh.update(decode_msg.encode('utf-8'))
