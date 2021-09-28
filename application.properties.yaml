@@ -1,2 +1,4 @@
 # 初始化程序必须要访问这个配置
 profiles: dev
+# 日志开关
+log_switch: True

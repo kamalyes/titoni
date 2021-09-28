@@ -176,31 +176,34 @@ class Httpx(object):
             if len(invalid_ext) > 0:
                 raise TypeError("无效参数队列：%s " % (invalid_ext))
 
-    def reqLog(self, url, method, data=None, json_=None, params=None, headers=None, files=None):
+    def reqLog(self, **kwargs):
         """
         请求数据时的日志写入
-        :param url: 接口请求地址
-        :param method: 接口请求方式
-        :param data json_ params: 接口请求体
-        :param headers: 接口请求头
-        :param files: 接口上传附件
         :return:
         """
-        self.logger.info("接口请求地址 ==>> {}".format(url))
-        self.logger.info("接口请求方式 ==>> {}".format(method))
-        # Python3中，json在做dumps操作时，会将中文转换成unicode编码，因此设置 ensure_ascii=False
-        self.logger.info("接口请求头 ==>> {}".format(json.dumps(headers, indent=4, ensure_ascii=False)))
-        self.logger.info("接口请求 params 参数 ==>> {}".format(json.dumps(params, indent=4, ensure_ascii=False)))
-        self.logger.info("接口请求体 data 参数 ==>> {}".format(json.dumps(data, indent=4, ensure_ascii=False)))
-        self.logger.info("接口请求体 json 参数 ==>> {}".format(json.dumps(json_, indent=4, ensure_ascii=False)))
-        self.logger.info("接口上传附件 files 参数 ==>> {}".format(files))
+        for key,value in kwargs.items():
+            key = str(key).title().replace("_", "")
+            self.logger.info("Request{} ==>> {}".format(key,json.dumps(value, indent=4, ensure_ascii=False)))
+
+    def resLog(self, response):
+        """
+        接口响应数据
+        :param response: 接口响应数据
+        :return:
+        """
+        for key,value in response.items():
+            if key in ["ResponseHeaders","ResponseText"]:
+                value = eval(str(value))
+            elif key in ["ResponseHttpxd"]:
+                value = str(value)
+            self.logger.info("{} ==>> {}".format(key,json.dumps(value, indent=4, ensure_ascii=False)))
 
     def sendApi(self, method=None, url=None,
                 params=None, data=None, headers=None, cookies=None, files=None,
                 auth=None, timeout=None, allow_redirects=True, proxies=None,
                 hooks=None, stream=None, verify=None, cert=None, json=None,
                 esdata=None, auto=False, aided=False, seesion_=False,
-                assert_data=None, hook_header=None, dbs=None, allure_setup=None):
+                assert_data=None, hook_header=None, dbs=None, allure_setup=None,**kwargs):
         """
         数据请求
         :param method: 请求方式
@@ -304,6 +307,7 @@ class Httpx(object):
                 allure.attach(name="Assert Parametrize", body=str(examines))
             elif assert_data is not None:
                 allure.attach(name="Assert Parametrize", body=str(assert_data))
+        self.reqLog(url=url, method=method, data=data, json_=json, params=params, headers=headers, files=files)
         if method not in self.text_plain + self.json_method:
             raise Exception("暂不支持：{}方式请求！！！".format(method))
         else:
@@ -312,7 +316,6 @@ class Httpx(object):
             else:
                 raise Exception("%s-不是有效Url！！！" % (url))
             # allure中已经注入了日志 若开启会产生三份雷同数据 debug也用不到、暂时补个位
-            # self.reqLog(url=url,method=method,data=data, json_=json, params=params, headers=headers, files=files)
             response = self.session.request(method=method, url=url, headers=headers,
                                             data=data, json=json, params=params, files=files, stream=stream,
                                             verify=verify,
@@ -322,12 +325,13 @@ class Httpx(object):
             req_text = self.getText(response)
             req_headers = self.getHeaders(response)
             req_encoding = self.getEncoding(response)
-            # req_httpxd = self.getHttpxd(response) # 获取请求方式，实际没有意义
+            req_httpxd = self.getHttpxd(response) # 获取请求方式，实际没有意义
             req_timeout = self.getResponseTime(response)
             req_content = self.getContent(response)
             req_reason = self.getReason(response)
-            req_datas = {"ResponseCode": [req_code, self.getNotice(req_code)],"ResponseReason": req_reason, "ResponseTime": req_timeout,
-                         "ResponseEncoding": req_encoding, "ResponseHeaders": req_headers, "ResponseText": req_text}
+            req_datas = {"ResponseCode": [req_code, self.getNotice(req_code)],"ResponseHttpxd":req_httpxd,"ResponseReason": req_reason, "ResponseTime": req_timeout,
+                         "ResponseEncoding": req_encoding, "ResponseHeaders": req_headers, "ResponseContent": req_content, "ResponseText": req_text}
+            self.resLog(req_datas)
             # 提取变量
             if req_content is not None and extracts is not None:
                 self.saveData(req_content, extracts)

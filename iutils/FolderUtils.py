@@ -11,11 +11,8 @@ import os
 import shutil
 import zipfile
 from BaseSetting import Route
-from iutils.LogUtils import Logger
 
 class FileHander(object):
-    def __init__(self):
-        self.logger = Logger.writeLog()
 
     def getCurrentPath(self):
         """

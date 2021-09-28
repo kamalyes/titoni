@@ -20,6 +20,7 @@ PROPERTIES_PATH = Route.getPath("properties")
 GLOBAL_VAR_PATH  = Route.joinPath("variables", "global.yaml")
 APPPROPERTIES_PATH = os.path.join(Route.getPath("workspaces"),"application.properties.yaml")
 PROFILES = Loader.yamlFile(APPPROPERTIES_PATH)["profiles"]
+LOG_SWITCH = Loader.yamlFile(APPPROPERTIES_PATH)["log_switch"]
 APPLICATION_PATH = os.path.join(Route.getPath("workspaces"),"application-{}.yaml".format(PROFILES))
 DNS_PATH = os.path.join(Route.getPath("properties"),"dns_{}.yaml".format(PROFILES))
 ADDRESS_PATH = os.path.join(Route.getPath("properties"),"address.yaml")
