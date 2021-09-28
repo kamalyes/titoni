@@ -28,13 +28,13 @@ class Loader(object):
         加载yaml文件(支持做特殊兼容处理、自动引入目录：test_yaml)
         :param file_path: 文件路径
         :param safe_loads: 安全加载 默认开启
+        :return:
         Example::
             >>> from BaseSetting import Route
             >>> yaml_data = Loader.yamlFile(Route.joinPath("test_yaml","test_not_exists.yaml"))
             >>> yaml_data = Loader.yamlFile(Route.joinPath("test_yaml","test_helper.yaml"),False)
             >>> json_data = Loader.jsonFile(Route.joinPath("test_json","test_datakit.json"))
-            >>> print("%s\n%s\n"%(yaml_data,json_data))
-        :return:
+            >>> print("%s,%s"%(yaml_data, json_data))
         """
         if not os.path.exists(file_path) and safe_loads is False:
             with open(file_path, 'w', encoding='utf-8') as file:
@@ -53,19 +53,21 @@ class Loader(object):
         :return:
         """
         try:
-            with open(file_path, mode="rb") as data_file:
-                json_content = json.load(data_file)
+            if os.path.exists(file_path):
+                with open(file_path, mode="rb") as data_file:
+                    json_content = json.load(data_file)
+                    return json_content
+            else:
+                raise FileNotFoundError("本地没有这个文件")
         except json.JSONDecodeError as ex:
-            err_msg = "JSONDecodeError:\nfile: %s\nerror: %s"%(file_path,ex)
-
-            raise FileFormatError(err_msg)
-        return json_content
+            raise FileFormatError("JSONDecodeError:\nfile: %s\nerror: %s"%(file_path,ex))
 
     def csvFile(self,file_path: Text=None) -> List[Dict]:
         """
         加载CSV文件(支持做特殊兼容处理、自动引入目录：test_csv)
         :param csv_name：文件名
         :param file_path： 文件路径
+        :return:
         Examples:
             username,password
             test1,111111
@@ -77,7 +79,6 @@ class Loader(object):
                 {'username': 'test3', 'password': '333333'}
             ]
         :param csv_file:
-        :return:
         """
         csv_content_list = []
         with open(file_path, encoding="utf-8") as csvfile:

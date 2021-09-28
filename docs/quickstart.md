@@ -371,7 +371,7 @@ Got:
 ![](img/export_har.gif)
 ![](img/har_to_case.gif)
 
-!!! danger "一个简单的Yaml用例，对比纯Py用例[login.yaml](code/test_login.md)"
+!!! danger "一个简单的Yaml用例，对比纯Py用例[login.py](code/test_login.md)"
 
 ```pycon
 # 结合[login.yaml](har/login_yaml.md)
