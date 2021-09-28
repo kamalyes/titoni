@@ -10,10 +10,8 @@
 import os
 import shutil
 import zipfile
-from BaseSetting import Route
 
 class FileHander(object):
-
     def getCurrentPath(self):
         """
         获取当前文件路径
@@ -242,5 +240,6 @@ if __name__ == '__main__':
     # FileHander.removeFile(file_path)
     # FileHander.makeFile(file_path)
     # FileHander.getDirList(file_path)
+    from BaseSetting import Route
     print(FileHander.depthScanFile(Route.getPath("variables"), "yaml"))
     print(FileHander.readFileType(os.path.join(Route.getPath("variables"), "global.yaml")))

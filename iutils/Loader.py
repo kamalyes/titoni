@@ -59,8 +59,10 @@ class Loader(object):
                     return json_content
             else:
                 raise FileNotFoundError("本地没有这个文件")
-        except json.JSONDecodeError as ex:
-            raise FileFormatError("JSONDecodeError:\nfile: %s\nerror: %s"%(file_path,ex))
+        # except json.JSONDecodeError as ex:
+        #     raise FileFormatError("JSONDecodeError:\nfile: %s\nerror: %s"%(file_path,ex))
+        except json.JSONDecodeError:
+            return False # 先降级
 
     def csvFile(self,file_path: Text=None) -> List[Dict]:
         """

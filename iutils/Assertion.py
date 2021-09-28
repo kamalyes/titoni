@@ -221,7 +221,7 @@ def assertEqual(validations: dict, code=None,reason=None, time=None, content=Non
                         actual_value = HtmlPath.border(sum_str=content, left_str=value[0], right_str=value[2])
                         allure.attach(name="Assert Border", body="预期Border：{}，实际Border：{}".format(expected_value, actual_value))
                         if expected_value != actual_value:
-                            raise AssertionError("接口响应文本值不匹配！\n %s != %s" % (expected_value, actual_value))
+                            raise ("接口响应文本值不匹配！\n %s != %s" % (expected_value, actual_value))
                     else:
                         raise IndexError("格式不正确：请修改为：expected_border: [left,own,right]")
 
