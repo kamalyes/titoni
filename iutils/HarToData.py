@@ -13,6 +13,7 @@ import sys
 import yaml
 import json
 sys.path.append("../")
+from BaseSetting import Route
 from iutils.Loader import Loader
 from urllib.parse import urlparse
 from iutils.LogUtils import Logger
@@ -47,12 +48,15 @@ class HarParser(object):
         :param path:
         :return:
         """
-        for dns_key, dns_value in self.dns_pro.items():
-            _dns = dns_key if dns_value == dns else False
-        for route_key, route_value in self.address_pro.items():
-            _path = route_key if route_value == path else False
-        if _dns and _path:
-            return [_dns,_path]
+        if self.dns_pro is not None and self.address_pro is not None:
+            for dns_key, dns_value in self.dns_pro.items():
+                _dns = dns_key if dns_value == dns else False
+            for route_key, route_value in self.address_pro.items():
+                _path = route_key if route_value == path else False
+            if _dns and _path:
+                return [_dns,_path]
+            else:
+                return False
         else:
             return False
 
@@ -126,8 +130,9 @@ class HarParser(object):
                                                                     "expected_code": "${expected_code}",
                                                                     "expected_reason": "${expected_reason}",
                                                                     "expected_text": "${expected_text}",
+                                                                    "expected_border": "[left, own, right]",
                                                                     "expected_content": "${expected_content}",
-                                                                    "expected_variables": [{"$.variables1": "value1"},
+                                                                    "expected_field": [{"$.variables1": "value1"},
                                                                                            {"$.variables2": "value2"}],
                                                                     "expected_schema": "json_schema"},
                                                     "sql": {"before_call_sql": "", "before_do_sql": "",
@@ -176,8 +181,9 @@ class HarParser(object):
                                                                  "expected_code": statusCode,
                                                                  "expected_reason": statusText,
                                                                  "expected_text": str(eval(content)),
+                                                                 "expected_border": "[left, own, right]",
                                                                  "expected_content": str(eval(content)),
-                                                                 "expected_variables": [{"$.variables1": "value1"},
+                                                                 "expected_field": [{"$.variables1": "value1"},
                                                                                         {"$.variables2": "value2"}],
                                                                  "expected_schema": "json_schema"},
                                                  "sql": {"before_call_sql": "", "before_do_sql": "",
@@ -219,6 +225,10 @@ class HarParser(object):
         for i in range(len(har_entries)):
             har_info = self.getHarInfo(har_entries[i])
             head, tail = os.path.split(file_path)
-            self.writeFile(har_info, r"%s/%s.%s" % (head, tail.replace(".har", ""), out_type), out_type)
+            out_path = Route.getPath("debug") if head is "" else head
+            out_file = os.path.join(out_path,tail.replace(".har", ""))
+            if os.path.exists(out_path) is False:
+                os.makedirs(out_path)
+            self.writeFile(har_info, r"%s.%s" % (out_file, out_type), out_type)
 
 HarParser().run()

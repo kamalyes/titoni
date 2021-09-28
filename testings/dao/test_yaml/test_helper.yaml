@@ -30,6 +30,7 @@ test_setup:
       expected_code: 200
       expected_content: {"code":200,"message":"","error":"","details":null}
       expected_time: 10
+      expected_border: [left,own,right]
     sql:
       before_call_sql:
       before_do_sql:
@@ -147,7 +148,7 @@ test_setup:
       url:  http://10.1.1.78:11008/swagger/doc.json
     validations:
       expected_code: 200
-      expected_variables:
+      expected_field:
         $.basePath: [str_eq,""]
         $.swagger: [">",5.6]
         $.host: "10.1.1.78:11008"

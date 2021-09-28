@@ -49,6 +49,6 @@ test_setup:
         ''update_time'': ''2021-09-28 12:55:55''}, ''message'': ''登录成功'', ''status'':
         200}'
       expected_time: 157
-      expected_variables:
+      expected_field:
       - $.variables1: value1
       - $.variables2: value2

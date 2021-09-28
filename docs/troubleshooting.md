@@ -49,8 +49,8 @@
     
     错误案例：
     
-            >>> expected_variables = {"expected_variables":{'test_001': 500, "test002":["aaa",500]}}
-            >>> assertEqual(expected_variables, variables= {'test_001': 500, "test002":[]})
+            >>> expected_field = {"expected_field":{'test_001': 500, "test002":["aaa",500]}}
+            >>> assertEqual(expected_field, variables= {'test_001': 500, "test002":[]})
     
     解决方案：修改效验方式
     

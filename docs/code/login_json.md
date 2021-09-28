@@ -43,7 +43,7 @@
         "expected_code": 200,
         "expected_text": "OK",
         "expected_content": "{\n  \"data\": {\n    \"account\": \"dengrr\", \n    \"create_user\": 1, \n    \"created_time\": \"2021-09-28 12:27:59\", \n    \"id\": 2, \n    \"name\": \"\\u7ba1\\u7506\\u5558\", \n    \"role_id\": 2, \n    \"status\": 1, \n    \"token\": \"eyJhbGciOiJIUzUxMiIsImlhdCI6MTYzMjgyODUxMSwiZXhwIjoxNjMyODY0NTExfQ.eyJpZCI6Mn0.D1EFWprk5IQ9Q8YsyLQqAAUHeHKWrrS9bRm5FwdP_slQRGhxOWYRwC1zaKGgscElQF57dF5gAg1CqJSpDJZc5w\", \n    \"update_time\": \"2021-09-28 12:33:55\"\n  }, \n  \"message\": \"\\u767b\\u5f55\\u6210\\u529f\", \n  \"status\": 200\n}",
-        "expected_variables": [
+        "expected_field": [
           {
             "$.variables1": "value1"
           },

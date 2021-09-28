@@ -46,7 +46,7 @@ test_setup:
       expected_schema: json_schema
       expected_text: OK
       expected_time: 157
-      expected_variables:
+      expected_field:
       - $.variables1: value1
       - $.variables2: value2
 ```

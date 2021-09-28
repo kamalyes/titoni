@@ -7,12 +7,11 @@
 # Desc: 效验结果集
 # Date： 2021/3/27 18:05
 '''
-import re
 import allure
 from jsonschema import validate
-from iutils.Helper import combData
 from typing import Text, Any, Union
 from iutils.Helper import citeHelper
+from iutils.Processor import HtmlPath
 
 def numMatch(method, actual_value: Union[int, float], expect_value: Union[int, float], message: Text = ""):
     """
@@ -184,9 +183,12 @@ def assertEqual(validations: dict, code=None,reason=None, time=None, content=Non
         >>> only_content = {'expected_content': {'code': 200, 'message': '', 'error': '', 'details': None}}
         >>> code_and_content = {'expected_code': "500" ,'expected_content': {'code': "${randInt}", 'message': '$VAR_TEST_001', 'error': '', 'details': None}}
         >>> expected_field = {"expected_field":{'test_001': 500, "test002":["aaa",500]}}
+        >>> expected_border = {"expected_border":["left","and","right"]} # 无空格
+        >>> expected_ge_border = {"expected_border":["left"," and ","right"]} # 有空格
         >>> assertEqual(only_code,code=500)
         >>> assertEqual(code_and_content, content={'code': 200}, code= 500)
         >>> assertEqual(expected_field, variables= {'test_001': 500, "test002":[]})
+        >>> assertEqual(expected_border, content="Test left and right boundary extraction")
     """
     # TODO 函数及方法太多需要适配调用链
     if isinstance(validations, dict):
@@ -212,6 +214,16 @@ def assertEqual(validations: dict, code=None,reason=None, time=None, content=Non
                     allure.attach(name="Assert ResponseText", body="预期Text：{}，实际Text：{}".format(value, text))
                     if value != text:
                         raise AssertionError("接口响应文本值不匹配！\n %s != %s" % (value, text))
+
+                elif "expected_border" == key:
+                    if isinstance(value,list) and len(value)==3:
+                        expected_value = value[1]
+                        actual_value = HtmlPath.border(sum_str=content, left_str=value[0], right_str=value[2])
+                        allure.attach(name="Assert Border", body="预期Border：{}，实际Border：{}".format(expected_value, actual_value))
+                        if expected_value != actual_value:
+                            raise AssertionError("接口响应文本值不匹配！\n %s != %s" % (expected_value, actual_value))
+                    else:
+                        raise IndexError("格式不正确：请修改为：expected_border: [left,own,right]")
 
                 elif "expected_content" == key:
                     allure.attach(name="Assert ResponseContent",

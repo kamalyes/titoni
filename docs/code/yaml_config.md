@@ -12,7 +12,7 @@ test_setup: 用例准备 子类与父类公用的字段优先级：子类=不配
       expected_code: status_code 验证码比较
       expected_text: 暂时不要用
       expected_content: content  完整响应体比较
-      expected_variables: (单字段效验)
+      expected_field: (单字段效验)
         json_path: [eq_method,var]
         .....
       expected_time: timeout
