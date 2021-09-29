@@ -105,7 +105,7 @@ test_setup:
       expected_content: {"code":200,"message":"","error":"","details":null}
       expected_time: 10
   search_007:
-    #depends: ["test_helper.yaml""search_001","search_002"]
+    #depends: ["test_helper.yaml","search_001","search_002"]
     depends: {"path":"test_helper.yaml","case":["search_001","search_002"]}
     allures:
       severity: critical

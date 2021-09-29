@@ -17,9 +17,6 @@ from typing import Text
 from urllib import parse
 from urllib.parse import urlparse
 from requests_toolbelt import MultipartEncoder
-
-from iutils.Exceptions import DependNotFoundError
-
 requests.packages.urllib3.disable_warnings()
 from BaseSetting import Route
 from iutils.Loader import Loader
@@ -30,8 +27,9 @@ from iutils.Helper import combData
 from iutils.Assertion import assertEqual
 from iutils.DataKit import capitalToLower
 # from testings.control.sql import connModel
-from testings.control.path import DNS_PATH, ADDRESS_PATH  # 需对应的配置
 from testings.control.variables import Global
+from iutils.Exceptions import DependNotFoundError
+from testings.control.path import DNS_PATH, ADDRESS_PATH  # 需对应的配置
 
 class Httpx(object):
     def __init__(self):
@@ -129,8 +127,17 @@ class Httpx(object):
                'from testings.control.init import Envision\n' \
                'config = Envision.getYaml("{yaml_path}")["config"]\n' \
                'test_setup = Envision.getYaml("{yaml_path}")["test_setup"]\n' \
-               'Httpx.sendApi(auto=True, esdata=[config, test_setup["{case_name}"]])'\
+               'Httpx.sendApi(auto=True, esdata=[config, test_setup["{case_name}"]],allure_setup="前置操作-{case_name}")'\
             .format(yaml_path=yaml_path, case_name=case_name)
+
+    def execDepend(self,depends):
+        if isinstance(depends, dict):
+            depend_path = depends.get("path")
+            depend_cases = depends.get("case")
+            for dp_case in depend_cases:
+                self.logger.info("执行上级关联用例：{}".format((depend_path, dp_case)))
+                dynamic_func = self.dependFunc(depend_path, dp_case)
+                exec(dynamic_func)
 
     def sqlOperate(self, data, method="before", order="desc"):
         """
@@ -246,7 +253,6 @@ class Httpx(object):
         """
         if auto is True or aided is True:
             allures, depends, _headers, demands, examines, extracts, dbs = self.getData(esdata, {}, {}, {}, {}, {}, {}, {})
-            setTag(allures)  # 打标签
             if isinstance(demands, dict):  # 读取Yaml中request字段
                 method = demands.get("method")
                 # 根据dns+address 反转得到dns地址进行拼接为正确的url
@@ -271,15 +277,10 @@ class Httpx(object):
                 # else:
                 #     params = None
         else:
-            _headers, depends, examines, extracts, dbs = {}, {}, {}, {}, {}
+            allures, _headers, depends, examines, extracts, dbs = {}, {}, {}, {}, {}, {}
         if depends:
-            if isinstance(depends, dict):
-                depend_path = depends.get("path")
-                depend_cases = depends.get("case")
-                for dp_case in depend_cases:
-                    self.logger.info("执行上级关联用例：{}".format((depend_path, dp_case)))
-                    dynamic_func = self.dependFunc(depend_path, dp_case)
-                    exec(dynamic_func)
+            self.execDepend(depends)
+        setTag(allures)  # 打标签
         headers = dict(_headers if isinstance(_headers, dict) else {}, **headers if isinstance(headers, dict) else {})
         content_type = headers.get("content-type")
         method = method.lower() if method is not None else method
@@ -312,7 +313,7 @@ class Httpx(object):
                 hook_header)
         headers = combData(temp)
         with allure.step(
-                "网络请求：{}".format(urlparse(url).path) if allure_setup is None else "网络请求：{}".format(allure_setup)):
+                "网络请求：{}".format(urlparse(url).path) if allure_setup is None else "{}：{}".format(allure_setup,urlparse(url).path)):
             allure.attach(name="Request Url", body=str(url))
             allure.attach(name="Request Method", body=str(method))
             allure.attach(name="Request Headers", body=str(headers))
