@@ -27,8 +27,21 @@ iutils/OkHttps.py:265 -->
 !!! question "若你想在当前用例的执行前调用其它前置用例、可以使用depends"
 
 ```
-depends: ["test_depends.yaml""test_depends_001","test_depends_002"]
+depends: ["test_helper.yaml","search_001,search_002"]
 depends: {"path":"test_depends.yaml","case":["test_depends_001","test_depends_002"]}
+```
+
+!!! question "若你想在当前用例的执行前调用其它其它的函数、可以使用tlackback"
+
+```
+在根目录下创建一个tlackback.py 之后的函数引用即可
+tlackback: ["**kwargs"]
+例如：
+from iutils.Helper import RandValue
+def randInt(min_,max_):
+    return RandValue.getInt("{min_},{max_}".format(min_=min_, max_=max_))
+使用：
+tlackback: ["randInt(1,100)","randInt(1,500)"]
 ```
 
 !!! question "若你想先提取后使用参数则可以结合extract、$VAL_来实现"
@@ -78,7 +91,7 @@ validation:
     expected_code: status_code
     expected_field:
       $.value_001: [str_eq,""] #文本对比
-      $.value_002: [">||<||≥||≤||...",5.6] #number对比
+      $.value_002: [">||<||≥||≤||...",equal_var] #number对比
       $.value_003: "equal_text" # 文本值相等比较也可以这样子写
     expected_content: dict的json返回值
     expected_border: [left,own,right] # 左右边界值比较

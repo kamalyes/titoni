@@ -15,6 +15,7 @@ from BaseSetting import Route
 from iutils.Shell import Shell
 from iutils.LogUtils import Logger
 from iutils.DateUtils import Moment
+from iutils.AwmCase import writeCase
 from iutils.Exceptions import PyVersion
 
 if __name__ == '__main__':

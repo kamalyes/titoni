@@ -15,6 +15,7 @@ import filetype
 from uuid import uuid4
 from typing import Text
 from urllib import parse
+from tlackback import *
 from urllib.parse import urlparse
 from requests_toolbelt import MultipartEncoder
 requests.packages.urllib3.disable_warnings()
@@ -41,12 +42,13 @@ class Httpx(object):
         self.address_pro = Loader.yamlFile(ADDRESS_PATH)  # url地址配置
         self.headers = Loader.yamlFile(os.path.join(Route.getPath("config"), "norm_headers.yaml"))
 
-    def getData(self, data, allures=None, depends=None, headers=None, demands=None, examines=None, extracts=None, dbs=None):
+    def getData(self, data, allures=None, depends=None, tlackback=None, headers=None, demands=None, examines=None, extracts=None, dbs=None):
         """
         获取allures配置、headers、校验值
         :param data: config+子用例 list
         :param allures: allure报告配置
         :param depends: 用例依赖
+        :param tlackback: 外部函数
         :param headers: 头部信息
         :param demands: 请求参数 例如：method及url
         :param examines: 校验值
@@ -56,18 +58,20 @@ class Httpx(object):
         Example::
             >>> single = {'headers': {'accept': 'application/json, text/plain, */*', 'accept-encoding': 'gzip', 'accept-language': 'zh-CN,zh;q=0.9', 'content-type': 'application/json;charset=UTF-8', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'}}
             >>> double = [[{'request': {'method': 'get', 'url': ['localhost', 8001]}}], {"depends":{"path": "test_helper.yaml", "test_case_name": "search_002"}},{'allures': {'severity': 'critical', 'description': '这是继承测试的用例描述', 'story': '引用后置处理后的变量&固定值'}, 'headers': {'accept': 'application/json, text/plain, */*', 'accept-encoding': 'gzip', 'accept-language': 'zh-CN,zh;q=0.9'}, 'request': {'method': 'get', 'url': ['localhost', 8001], 'params': {'Int': 1, 'ComputeTime': '2020-09-21 15:00', 'Letters': '$VAR_TEST_001', 'Sample': '$VAR_TEST_002'}}, 'validations': {'expected_code': 200, 'expected_content': {'code': 200, 'message': '', 'error': '', 'details': None}, 'expected_time': 10}}]
-            >>> print(Httpx.getData(double, {}, {}, {}, {}, {}, {}, {}))
+            >>> print(Httpx.getData(double, {}, {}, {}, {}, {}, {}, {}, {}))
         """
         if isinstance(data, list):
             for es in range(len(data)):
                 if isinstance(data[es], list):
-                    self.getData(data[es], allures, depends, headers, demands, examines, extracts, dbs)
+                    self.getData(data[es], allures, depends, tlackback, headers, demands, examines, extracts, dbs)
                 elif isinstance(data[es], dict):
                     for key, value in data[es].items():
                         if key == 'headers':
                             headers.update(data[es][key])
                         elif key == 'request':
                             demands.update(data[es][key])
+                        elif key == "tlackback":
+                            tlackback = data[es][key]
                         elif key == 'depends':
                             if isinstance(data[es][key], dict):
                                 depends = data[es][key]
@@ -85,7 +89,7 @@ class Httpx(object):
                             extracts = data[es][key]
                         elif key == "sql":
                             dbs = data[es][key]
-        return allures, depends, headers, demands, examines, extracts, dbs
+        return allures, depends, tlackback, headers, demands, examines, extracts, dbs
 
     def saveData(self, enter_data, target_data):
         """
@@ -252,7 +256,7 @@ class Httpx(object):
         return Response <Response> 对象
         """
         if auto is True or aided is True:
-            allures, depends, _headers, demands, examines, extracts, dbs = self.getData(esdata, {}, {}, {}, {}, {}, {}, {})
+            allures, depends, tracback, _headers, demands, examines, extracts, dbs = self.getData(esdata, {}, {}, {}, {}, {}, {}, {}, {})
             if isinstance(demands, dict):  # 读取Yaml中request字段
                 method = demands.get("method")
                 # 根据dns+address 反转得到dns地址进行拼接为正确的url
@@ -277,9 +281,18 @@ class Httpx(object):
                 # else:
                 #     params = None
         else:
-            allures, _headers, depends, examines, extracts, dbs = {}, {}, {}, {}, {}, {}
+            allures, tracback, _headers, depends, examines, extracts, dbs = {}, {}, {}, {}, {}, {}, {}
         if depends:
             self.execDepend(depends)
+        if tracback:
+            for tb in tracback:
+                try:
+                    tb_result = eval(tb)
+                except NameError:
+                    tb_warn_msg = "tracback.py中找不到{tb}函数".format(tb=tb)
+                    raise Warning(tb_warn_msg)
+                with allure.step("函数引用"):
+                    allure.attach(name="tracback--{tb}".format(tb=tb), body="{tb_result}".format(tb_result=str(tb_result)))
         setTag(allures)  # 打标签
         headers = dict(_headers if isinstance(_headers, dict) else {}, **headers if isinstance(headers, dict) else {})
         content_type = headers.get("content-type")
@@ -341,7 +354,7 @@ class Httpx(object):
                                             data=data, json=json, params=params, files=files, stream=stream,
                                             verify=verify,
                                             auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
-                                            timeout=10 if timeout is None else int(timeout))
+                                            timeout=1 if timeout is None else int(timeout))
             req_code = self.getStatusCode(response)
             req_text = self.getText(response)
             req_headers = self.getHeaders(response)

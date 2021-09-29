@@ -54,9 +54,7 @@ def dynamicExec(case_file,case_name):
     Example::
         >>> print(dynamicExec("test_helper.yaml","search_001"))
     """
-    return "import pytest\n" \
-		   "import allure\n" \
-		   "from iutils.OkHttps import Httpx\n" \
+    return "from iutils.OkHttps import Httpx\n" \
 		   "from testings.control.init import Envision\n" \
 		   "config = Envision.getYaml('{case_file}')['config']\n" \
 		   "test_setup = Envision.getYaml('{case_file}')['test_setup']\n"\
@@ -64,10 +62,29 @@ def dynamicExec(case_file,case_name):
            "def test_{case_name}(self):\n\t"\
            '\tHttpx.sendApi(auto=True, esdata=[config,test_setup["{case_name}"]])'.format(case_file=case_file,case_name=case_name)
 
-def scanCaseName():
+def scanCase():
     """
     搜索自动执行的用例文件名及对应的用例名字
     :return:
     """
+    case_list = []
     for file_path in listDir(Route.getPath("test_yaml"), "yaml"):
-        return {os.path.split(file_path)[1]:[ts for ts in Envision.getYaml(os.path.split(file_path)[1])['test_setup']]}
+        case_list.append({os.path.split(file_path)[1]:[ts for ts in Envision.getYaml(os.path.split(file_path)[1])['test_setup']]})
+    return case_list
+
+def writeCase():
+    """
+    写入py文件
+    :return:
+    """
+    for index in range(len(scanCase())):
+        usecase = scanCase()[index]
+        for key, value in usecase.items():
+            for case in value:
+                auto_exec = Route.getPath("auto_exec")
+                if not os.path.exists(auto_exec):
+                    os.makedirs(auto_exec)
+                file_path = os.path.join(auto_exec, "{}_{}.py".format(str(key).replace(".yaml",""),case))
+                with open(file_path, "w") as file:
+                    file.writelines(dynamicExec(key, case))
+                file.close()
