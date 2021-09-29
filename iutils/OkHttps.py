@@ -17,6 +17,9 @@ from typing import Text
 from urllib import parse
 from urllib.parse import urlparse
 from requests_toolbelt import MultipartEncoder
+
+from iutils.Exceptions import DependNotFoundError
+
 requests.packages.urllib3.disable_warnings()
 from BaseSetting import Route
 from iutils.Loader import Loader
@@ -40,11 +43,12 @@ class Httpx(object):
         self.address_pro = Loader.yamlFile(ADDRESS_PATH)  # url地址配置
         self.headers = Loader.yamlFile(os.path.join(Route.getPath("config"), "norm_headers.yaml"))
 
-    def getData(self, data, allures=None, headers=None, demands=None, examines=None, extracts=None, dbs=None):
+    def getData(self, data, allures=None, depends=None, headers=None, demands=None, examines=None, extracts=None, dbs=None):
         """
         获取allures配置、headers、校验值
         :param data: config+子用例 list
         :param allures: allure报告配置
+        :param depends: 用例依赖
         :param headers: 头部信息
         :param demands: 请求参数 例如：method及url
         :param examines: 校验值
@@ -53,19 +57,28 @@ class Httpx(object):
         :return:
         Example::
             >>> single = {'headers': {'accept': 'application/json, text/plain, */*', 'accept-encoding': 'gzip', 'accept-language': 'zh-CN,zh;q=0.9', 'content-type': 'application/json;charset=UTF-8', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'}}
-            >>> double = [[{'headers': {'accept': 'application/json, text/plain, */*', 'accept-encoding': 'gzip', 'accept-language': 'zh-CN,zh;q=0.9', 'content-type': 'application/json;charset=UTF-8', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'}}, {'allures': {'feature': '函数助手测试(部分参数固定值仅做测试)', 'severity': 'normal'}}, {'request': {'method': 'get', 'url': ['localhost', 8001]}}], {'allures': {'severity': 'critical', 'description': '这是继承测试的用例描述', 'story': '引用后置处理后的变量&固定值'}, 'headers': {'accept': 'application/json, text/plain, */*', 'accept-encoding': 'gzip', 'accept-language': 'zh-CN,zh;q=0.9'}, 'request': {'method': 'get', 'url': ['localhost', 8001], 'params': {'Int': 1, 'ComputeTime': '2020-09-21 15:00', 'Letters': '$VAR_TEST_001', 'Sample': '$VAR_TEST_002'}}, 'validations': {'expected_code': 200, 'expected_content': {'code': 200, 'message': '', 'error': '', 'details': None}, 'expected_time': 10}}]
-            >>> print(Httpx.getData(double, {}, {}, {}, {}, {}, {}))
+            >>> double = [[{'request': {'method': 'get', 'url': ['localhost', 8001]}}], {"depends":{"path": "test_helper.yaml", "test_case_name": "search_002"}},{'allures': {'severity': 'critical', 'description': '这是继承测试的用例描述', 'story': '引用后置处理后的变量&固定值'}, 'headers': {'accept': 'application/json, text/plain, */*', 'accept-encoding': 'gzip', 'accept-language': 'zh-CN,zh;q=0.9'}, 'request': {'method': 'get', 'url': ['localhost', 8001], 'params': {'Int': 1, 'ComputeTime': '2020-09-21 15:00', 'Letters': '$VAR_TEST_001', 'Sample': '$VAR_TEST_002'}}, 'validations': {'expected_code': 200, 'expected_content': {'code': 200, 'message': '', 'error': '', 'details': None}, 'expected_time': 10}}]
+            >>> print(Httpx.getData(double, {}, {}, {}, {}, {}, {}, {}))
         """
         if isinstance(data, list):
             for es in range(len(data)):
                 if isinstance(data[es], list):
-                    self.getData(data[es], allures, headers, demands, examines, extracts, dbs)
+                    self.getData(data[es], allures, depends, headers, demands, examines, extracts, dbs)
                 elif isinstance(data[es], dict):
                     for key, value in data[es].items():
                         if key == 'headers':
                             headers.update(data[es][key])
                         elif key == 'request':
                             demands.update(data[es][key])
+                        elif key == 'depends':
+                            if isinstance(data[es][key], dict):
+                                depends = data[es][key]
+                            elif isinstance(data[es][key], list) and len(data[es][key]) >= 2:
+                                case_name = data[es][key][1]
+                                depends.update({"path": data[es][key][0],"case": [index for index in case_name.split(",")]})
+                            else:
+                                msg = "依赖性用例格式不正确Key：{}, Value：{}".format(key, data[es][key])
+                                raise DependNotFoundError(msg)
                         elif key == 'allures':
                             allures.update(data[es][key])
                         elif key == 'validations':
@@ -74,23 +87,7 @@ class Httpx(object):
                             extracts = data[es][key]
                         elif key == "sql":
                             dbs = data[es][key]
-        elif isinstance(data, dict):
-            for key, value in data.items():
-                if key == 'headers':
-                    headers.update(data[key])
-                elif key == 'request':
-                    demands.update(data[key])
-                elif key == 'allures':
-                    allures.update(data[key])
-                elif key == 'validations':
-                    examines = data[key]
-                elif key == "extract":
-                    extracts = data[key]
-                elif key == "sql":
-                    dbs = data[key]
-        else:
-            pass
-        return allures, headers, demands, examines, extracts, dbs
+        return allures, depends, headers, demands, examines, extracts, dbs
 
     def saveData(self, enter_data, target_data):
         """
@@ -120,6 +117,20 @@ class Httpx(object):
             return params
         else:
             raise Warning("暂不支持该模式提取参数！！！")
+
+    def dependFunc(self, yaml_path, case_name):
+        """
+        动态生成调用依赖性用例的方法
+        :param yaml_path:
+        :param case_name:
+        :return:
+        """
+        return 'from iutils.OkHttps import Httpx\n' \
+               'from testings.control.init import Envision\n' \
+               'config = Envision.getYaml("{yaml_path}")["config"]\n' \
+               'test_setup = Envision.getYaml("{yaml_path}")["test_setup"]\n' \
+               'Httpx.sendApi(auto=True, esdata=[config, test_setup["{case_name}"]])'\
+            .format(yaml_path=yaml_path, case_name=case_name)
 
     def sqlOperate(self, data, method="before", order="desc"):
         """
@@ -234,7 +245,7 @@ class Httpx(object):
         return Response <Response> 对象
         """
         if auto is True or aided is True:
-            allures, _headers, demands, examines, extracts, dbs = self.getData(esdata, {}, {}, {}, {}, {}, {})
+            allures, depends, _headers, demands, examines, extracts, dbs = self.getData(esdata, {}, {}, {}, {}, {}, {}, {})
             setTag(allures)  # 打标签
             if isinstance(demands, dict):  # 读取Yaml中request字段
                 method = demands.get("method")
@@ -260,7 +271,15 @@ class Httpx(object):
                 # else:
                 #     params = None
         else:
-            _headers, examines, extracts, dbs = {}, {}, {}, {}
+            _headers, depends, examines, extracts, dbs = {}, {}, {}, {}, {}
+        if depends:
+            if isinstance(depends, dict):
+                depend_path = depends.get("path")
+                depend_cases = depends.get("case")
+                for dp_case in depend_cases:
+                    self.logger.info("执行上级关联用例：{}".format((depend_path, dp_case)))
+                    dynamic_func = self.dependFunc(depend_path, dp_case)
+                    exec(dynamic_func)
         headers = dict(_headers if isinstance(_headers, dict) else {}, **headers if isinstance(headers, dict) else {})
         content_type = headers.get("content-type")
         method = method.lower() if method is not None else method
@@ -315,6 +334,7 @@ class Httpx(object):
                 pass
             else:
                 raise Exception("%s-不是有效Url！！！" % (url))
+            # 增加前置用例自动执行、效验等功能（与手动发送是一致的）
             # allure中已经注入了日志 若开启会产生三份雷同数据 debug也用不到、暂时补个位
             response = self.session.request(method=method, url=url, headers=headers,
                                             data=data, json=json, params=params, files=files, stream=stream,

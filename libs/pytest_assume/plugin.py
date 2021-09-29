@@ -1,5 +1,6 @@
 import inspect
 import os.path
+from functools import partial
 
 try:
     # Pytest 6.x
@@ -17,7 +18,6 @@ except ImportError:
         evalxfail_key = ""
 
 import pytest
-from functools import partial
 from six import reraise as raise_
 
 try:

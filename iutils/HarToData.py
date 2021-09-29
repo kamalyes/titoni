@@ -125,6 +125,7 @@ class HarParser(object):
                                          {"request": {"method": har_method,
                                                       "url": join_url if join_url else  har_url}}],
                               "test_setup": {name: {"headers": "子级扩展头部信息（写法与父类一致）", "request": post_data,
+                                                    "depend": '["xxx.yaml","case","**kwargs"] {"path":"xxx.yaml","case":"test_setup下的case_name"}',
                                                     "allures": "子级扩展allure配置（写法与父类一致）",
                                                     "validations": {"expected_time": data.get("time"),
                                                                     "expected_code": "${expected_code}",
@@ -176,7 +177,9 @@ class HarParser(object):
         if self.checkSuffix(har_url) is True:
             case_data.update({"config": [{"headers": headers}, {"allures": self.alluer_tags},
                                       {"request": {"method": har_method, "url": join_url if join_url else  har_url}}],
-                           "test_setup": {name: {"headers": "子级扩展头部信息（写法与父类一致）","request": post_data, "allures": "子级扩展allure配置（写法与父类一致）",
+                           "test_setup": {name: {"headers": "子级扩展头部信息（写法与父类一致）","request": post_data,
+                                                 "depend": '["xxx.yaml","case","**kwargs"] {"path":"xxx.yaml","case":"test_setup下的case_name"}',
+                                                 "allures": "子级扩展allure配置（写法与父类一致）",
                                                  "validations": {"expected_time": data.get("time"),
                                                                  "expected_code": statusCode,
                                                                  "expected_reason": statusText,

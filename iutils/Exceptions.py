@@ -38,3 +38,6 @@ class PyVersion(MyBaseError):
     version = (3,7,6)
     if not sys.version_info[0:3] >= version :
         raise VersionIndexError("Python版本号必须为≥{}".format(version))
+
+class DependNotFoundError(MyBaseError):
+    pass
