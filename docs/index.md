@@ -38,6 +38,8 @@ ProtocolTest
 
 * **标准化** : 基于RestFul开放标准：<a href="https://github.com/OAI/OpenAPI-Specification" class="external-link" target="_blank">OpenAPI</a> (以前被称为 Swagger) 和 <a href="https://json-schema.org/" class="external-link" target="_blank">JSON Schema</a>。
 
+* **工具集** : 宗旨是不造轮子，尽可能多的集成、组装轮子，以及降低轮子的使用难度，集中精力把时间花在测试用例的设计上
+
 ---
 
 !!! warning  "使用ProtocolTest 你的客户端必须安装Python 3.7并配置相应的环境变量 "

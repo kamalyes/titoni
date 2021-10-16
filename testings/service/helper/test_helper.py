@@ -37,3 +37,5 @@ class TestHelper():
 
     def test_helper_not_var(self):
         Httpx.sendApi(auto=True, esdata=[config,test_setup["search_009"]])
+
+TestHelper().test_helper_test_get()

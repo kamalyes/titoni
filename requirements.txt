@@ -40,3 +40,4 @@ mkdocs==1.2.2
 mkdocs-material==7.3.0
 pymdown-extensions==8.2
 mkdocs-material-extensions==1.0.3
+pymongo==3.11.1

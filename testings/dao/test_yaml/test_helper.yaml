@@ -25,7 +25,8 @@ test_setup:
     request:
       method: post
       url:  https://www.so.com/s
-      params: {"Int": "{{Int}}","ComputeTime": "{{ComputeTime}}","Letters": "{{Letters}}","Sample": "{{Sample}}"}
+      #shader: {"path":"file_path","file":"file_name","var_key":"key", "method":"params"}
+      shader: {"file":"test_shader.yaml", "method":"params"}
     validations:
       expected_code: 200
       expected_content: {"code":200,"message":"","error":"","details":null}

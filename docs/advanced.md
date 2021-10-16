@@ -100,3 +100,55 @@ validation:
     expected_schema: json_schema # json结构体比较
     expected_time: outtime # 响应时间对比
 ```
+
+!!! question "若你想在json/data/params中引用其它的yaml动态参数，你可以使用shader"
+```
+只需在request下新增一个shader，并按照规定传值：
+request:
+  shader: {"path":"file_path","file":"file_name","var_key":"key", "method":"params"}
+  备注：
+  1. path/var_key（非必填项、默认取test_yaml下的、及整个yaml文件数据）
+  2. 若传参了则可扫描对应的目录下对应的文件、且可以指定某个键值
+简单案例如下：
+test_shader_case.yaml===>
+    config:
+      - headers:
+          accept: application/json, text/plain, */*
+          accept-encoding: gzip
+          accept-language: zh-CN,zh;q=0.9
+          content-type: application/json;charset=UTF-8
+          user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
+              like Gecko) Chrome/92.0.4515.107 Safari/537.36
+      - allures:
+          feature: 引用其它的yaml动态参数(部分参数固定值仅做测试)
+          severity: normal
+      - request:
+          method: get
+          url:  [localhost,8001]
+    test_setup:
+      shader_001:
+        headers:
+          accept: application/json, text/plain, */*
+          accept-encoding: gzip
+          accept-language: zh-CN,zh;q=0.9
+        request:
+          method: post
+          url:  https://test.com
+          shader: {"file":"shader.yaml", "method":"params"}
+        validations:
+          expected_code: 200
+          expected_content: {"code":200,"message":"","error":"","details":null}
+          expected_time: 10
+          expected_border: [left,own,right]
+shader.yaml===> 外部引用
+{"Int": "${randInt}","ComputeTime": "${randTime(10timestamp)}","Letters": "${randLetters}","Sample": "${randSample}"}
+# 备注：test_shader用例发送请求时就会把shader.yaml下所有内容当做对应的method形式发送也就是params、对应的还有data/json俩类型
+test_shader.py===>
+from iutils.OkHttps import Httpx
+from testings.control.init import Envision
+config = Envision.getYaml("test_shader_case.yaml")['config']
+test_setup = Envision.getYaml("test_shader_case.yaml")['test_setup']
+class TestHelper():
+    def test_helper_test_get(self):
+        Httpx.sendApi(auto=True, esdata=[config,test_setup["shader_001"]])
+```
