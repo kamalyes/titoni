@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： Loader.py
 # Author : YuYanQing
 # Desc: 加载文件
 # Date： 2021/6/11 15:15
-'''
+"""
 import os
 import sys
 import csv

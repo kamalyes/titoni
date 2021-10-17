@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # File  : AreaCode.py
 # Author: YuYanQing
 # Desc  : 地区代码
 # Date  : 2020/10/16 15:01
-'''
+"""
 
 # 十五位身份证号表达式
 ID_NUMBER_15_REGEX = r"^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}$"

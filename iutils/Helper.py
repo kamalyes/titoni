@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： Helper.py
 # Author : YuYanQing
 # Desc: 函数助手
 # Date： 2021/8/5 17:05
-'''
+"""
 import re
 import string
 from faker import Factory

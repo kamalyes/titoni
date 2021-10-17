@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： DataKit.py
 # Author : YuYanQing
 # Desc: 处理Json及dict中转义的问题
@@ -23,7 +23,7 @@
 +-------------------+---------------+
 | None              | null          |
 +-------------------+---------------+
-'''
+"""
 import json
 from urllib.parse import unquote
 

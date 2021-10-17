@@ -19,6 +19,7 @@
 * **简短**：使代码重复最小化。通过不同的参数声明实现丰富功能。bug 更少。
 * **健壮**：生产可用级别的代码。还有生成的交互式测试报告。
 * **标准化**：基于（并完全兼容）API 的相关开放标准：<a href="https://github.com/OAI/OpenAPI-Specification" class="external-link" target="_blank">OpenAPI</a> (以前被称为 Swagger) 和 <a href="https://json-schema.org/" class="external-link" target="_blank">JSON Schema</a>。
+* **工具集** : 宗旨是不造轮子，尽可能多的集成、组装轮子，以及降低轮子的使用难度，集中精力把时间花在测试用例的设计上
 
 <small>* 根据对某个构建线上应用的内部开发团队所进行的测试估算得出。</small>
 

@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： XmlToAllure.py
 # Author : YuYanQing
 # Desc: jmeter脚本运行的xml文件转Pytest脚本
 # Date： 2021/8/23 15:09
-'''
+"""
 import json,uuid
 from xml.etree import cElementTree
 

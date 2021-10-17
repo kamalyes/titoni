@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： AllureUtils.py
 # Author : YuYanQing
 # Desc: allure 标签
 # Date： 2021/8/2 12:56
-'''
+"""
 import os
 import allure
 import shutil

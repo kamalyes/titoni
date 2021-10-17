@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： Compute.py
 # Author : YuYanQing
 # Desc: 计算求和
 # Date： 2021/9/16 13:15 
-'''
+"""
 import re
 from math import *
 

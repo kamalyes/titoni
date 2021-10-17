@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # File  : MySQLUtils.py
 # Author: YuYanQing
 # Desc  : MySQL驱动类
 # Date  : 2020/10/15 9:11
-'''
+"""
 import allure
 import pymysql
 import pandas as pd

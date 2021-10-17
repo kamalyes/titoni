@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： Assertion.py
 # Author : YuYanQing
 # Desc: 效验结果集
 # Date： 2021/3/27 18:05
-'''
+"""
 import allure
 from jsonschema import validate
 from typing import Text, Any, Union

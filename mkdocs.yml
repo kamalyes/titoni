@@ -5,8 +5,8 @@ site_url: https://www.python-ProtocolTest.org/
 theme:
     name: 'material'
 
-repo_name: encode/ProtocolTest
-repo_url: https://github.com/encode/ProtocolTest/
+repo_name: Bravebirds/ProtocolTest
+repo_url: https://github.com/Bravebirds/ProtocolTest/
 edit_uri: ""
 
 nav:

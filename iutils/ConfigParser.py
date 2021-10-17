@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： ConfigParser.py
 # Author : YuYanQing
 # Desc: ini配置文件处理
 # Date： 2021/8/1 21:20
-'''
+"""
 import configparser
 from iutils.LogUtils import Logger
 logger = Logger.write_log()#调用日志模块

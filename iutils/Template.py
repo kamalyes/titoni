@@ -1,13 +1,15 @@
 # -*- coding:utf-8 -*-
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： Template.py
 # Author : YuYanQing
 # Desc: 数据替换
 # Date： 2021/6/6 0:37
-'''
+"""
 import re
 from iutils.DataKit import conversType
+
 
 class TemplateMeta(type):
     pattern = r"""
@@ -30,6 +32,7 @@ class TemplateMeta(type):
                 'bid': cls.braceidpattern or cls.idpattern,
             }
         cls.pattern = re.compile(pattern, cls.flags | re.VERBOSE)
+
 
 class Template(metaclass=TemplateMeta):
     """支持$-替换的字符串类"""
@@ -66,6 +69,7 @@ class Template(metaclass=TemplateMeta):
                 >>> replace_str = {"name": "test0001_name","pic": "test_0001_pic","randLetters":"test_rand_letters"}
                 >>> Template(general_data).subStitute(replace_str)
         """
+
         def convert(mo):
             named = mo.group('named') or mo.group('braced')
             if named is not None:
@@ -75,6 +79,7 @@ class Template(metaclass=TemplateMeta):
             if mo.group('invalid') is not None:
                 self._invalid(mo)
             raise ValueError('Unrecognized named group in pattern', self.pattern)
+
         return eval(
             self.pattern.sub(convert, self.template)) if genre == "dict" and disable_data is "" else conversType(
             eval(self.pattern.sub(convert, self.template)), disable_data)
