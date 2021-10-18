@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： path.py
 # Author : YuYanQing
 # Desc: PATH常量池
 # Date： 2021/8/11 13:15
-'''
+"""
 import os
 from BaseSetting import Route
 from iutils.Loader import Loader

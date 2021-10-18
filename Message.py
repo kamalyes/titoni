@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： Message.py
 # Author : YuYanQing
 # Desc: 测试报告消息推送
 # Date： 2021/8/27 20:05
-'''
+"""
 import math
 from BaseSetting import Route
 from iutils.Loader import Loader

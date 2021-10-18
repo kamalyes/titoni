@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： OkHttps.py
 # Author : YuYanQing
 # Desc: request二次封装
 # Date： 2021/6/6 0:37
-'''
+"""
 import os
 import re
 import json
@@ -18,6 +19,7 @@ from urllib import parse
 from tlackback import *
 from urllib.parse import urlparse
 from requests_toolbelt import MultipartEncoder
+
 requests.packages.urllib3.disable_warnings()
 from BaseSetting import Route
 from iutils.Loader import Loader
@@ -31,6 +33,7 @@ from iutils.DataKit import capitalToLower
 from testings.control.variables import Global
 from iutils.Exceptions import DependNotFoundError
 from testings.control.path import DNS_PATH, ADDRESS_PATH  # 需对应的配置
+
 
 class Httpx(object):
     def __init__(self):
@@ -294,7 +297,8 @@ class Httpx(object):
         return Response <Response> 对象
         """
         if auto is True or aided is True:
-            allures, depends, tracback, _headers, demands, examines, extracts, dbs = self.getData(esdata, {}, {}, {},{}, {}, {}, {}, {})
+            allures, depends, tracback, _headers, demands, examines, extracts, dbs = self.getData(esdata, {}, {}, {},
+                                                                                                  {}, {}, {}, {}, {})
             if isinstance(demands, dict):  # 读取Yaml中request字段
                 method = demands.get("method")
                 # 根据dns+address 反转得到dns地址进行拼接为正确的url

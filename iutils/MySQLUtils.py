@@ -1,15 +1,16 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # File  : MySQLUtils.py
 # Author: YuYanQing
 # Desc  : MySQL驱动类
 # Date  : 2020/10/15 9:11
-'''
+"""
 import allure
 import pymysql
 import pandas as pd
+
 
 class MysqlTools(object):
     def __init__(self, host, user, pass_word, database=None, port=3306):
@@ -84,6 +85,7 @@ class MysqlTools(object):
             self.cur.close()
         if self.conn:
             self.conn.close()
+
 
 if __name__ == '__main__':
     msq = MysqlTools(host='localhost', user='root', pass_word='1235678', database='test_api', port=3306)

@@ -2,11 +2,11 @@
     <em>ProtocolTest 接口自动化测试框架，易于学习，高效编码，生产可用</em>
 </p>
 <p align="center">
-<a href="https://codecov.io/gh/Bravebirds/ProtocolTest" target="_blank">
-    <img src="https://img.shields.io/codecov/c/github/Bravebirds/ProtocolTest?color=%2334D058" alt="Coverage">
+<a href="https://codecov.io/gh/kamalyes/protocoltest" target="_blank">
+    <img src="https://img.shields.io/codecov/c/github/kamalyes/protocoltest?color=%2334D058" alt="Coverage">
 </a>
-<a href="https://pypi.org/project/ProtocolTest" target="_blank">
-    <img src="https://img.shields.io/pypi/v/ProtocolTest?color=%2334D058&label=pypi%20package" alt="Package version">
+<a href="https://pypi.org/project/protocoltest" target="_blank">
+    <img src="https://img.shields.io/pypi/v/protocoltest?color=%2334D058&label=pypi%20package" alt="Package version">
 </a>
 </p>
 
@@ -19,6 +19,7 @@
 * **简短**：使代码重复最小化。通过不同的参数声明实现丰富功能。bug 更少。
 * **健壮**：生产可用级别的代码。还有生成的交互式测试报告。
 * **标准化**：基于（并完全兼容）API 的相关开放标准：<a href="https://github.com/OAI/OpenAPI-Specification" class="external-link" target="_blank">OpenAPI</a> (以前被称为 Swagger) 和 <a href="https://json-schema.org/" class="external-link" target="_blank">JSON Schema</a>。
+* **工具集** : 宗旨是不造轮子，尽可能多的集成、组装轮子，以及降低轮子的使用难度，集中精力把时间花在测试用例的设计上
 
 <small>* 根据对某个构建线上应用的内部开发团队所进行的测试估算得出。</small>
 
@@ -89,7 +90,7 @@ emoji	emoji代码	commit说明
 
 ## 二、实际目录结构
 ```
-InterfaceTest
+protocoltest
 ├─ config （allure、header、消息推送是的一些配置信息）
 │  ├─ allure_feature.yaml
 │  ├─ norm_headers.yaml

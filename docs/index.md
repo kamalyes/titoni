@@ -3,18 +3,18 @@
 </p>
 
 <h1 align="center" style="font-size: 3rem; margin: -15px 0">
-ProtocolTest
+protocoltest
 </h1>
 <p align="center">
     <em>接口自动化测试框架，简单易学，编码高效，可量产</em>
 </p>
 
 <p align="center">
-<a href="https://codecov.io/gh/Bravebirds/ProtocolTest" target="_blank">
-    <img src="https://img.shields.io/codecov/c/github/Bravebirds/ProtocolTest?color=%2334D058" alt="Coverage">
+<a href="https://codecov.io/gh/kamalyes/protocoltest" target="_blank">
+    <img src="https://img.shields.io/codecov/c/github/kamalyes/protocoltest?color=%2334D058" alt="Coverage">
 </a>
-<a href="https://pypi.org/project/ProtocolTest" target="_blank">
-    <img src="https://img.shields.io/pypi/v/ProtocolTest?color=%2334D058&label=pypi%20package" alt="Package version">
+<a href="https://pypi.org/project/protocoltest" target="_blank">
+    <img src="https://img.shields.io/pypi/v/protocoltest?color=%2334D058&label=pypi%20package" alt="Package version">
 </a>
 </p>
 
@@ -42,9 +42,9 @@ ProtocolTest
 
 ---
 
-!!! warning  "使用ProtocolTest 你的客户端必须安装Python 3.7并配置相应的环境变量 "
+!!! warning  "使用protocoltest 你的客户端必须安装Python 3.7并配置相应的环境变量 "
     
-    clone 项目到本地后用Idea打开或者直接解压并cd ProtocolTest项目根目录
+    clone 项目到本地后用Idea打开或者直接解压并cd protocoltest项目根目录
     
     create virtual (创建一个虚拟环境并切换使用它 可选)
     

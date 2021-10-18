@@ -79,7 +79,7 @@ def test_dependency_002():
     
 ============================= test session starts =============================
 platform win32 -- Python 3.7.6, pytest-6.2.2, py-1.10.0, pluggy-0.13.1
-rootdir: E:\WorkSpace\PycharmProjects\ProtocolTest, configfile: pytest.ini
+rootdir: E:\WorkSpace\PycharmProjects\protocoltest, configfile: pytest.ini
 plugins: allure-pytest-2.8.0, Faker-8.10.1, PyTestReport-0.2.1, assume-2.4.2, dependency-0.5.1, html-3.1.1, instafail-0.4.2, metadata-1.11.0, ordering-0.6, parallel-0.1.0, report-0.2.1, reportlog-0.1.2, rerunfailures-10.0, sugar-0.9.1, timeout-1.4.2, tmreport-1.3.7
 collected 2 items
 xxx.py .test_dependency_001 Assert 通过 所以会执行到我

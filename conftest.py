@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： conftest.py
 # Author : YuYanQing
 # Desc: 夹具
 # Date： 2021/7/6 0:37
-'''
+"""
 import os
 import sys
 import time

@@ -1,17 +1,18 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # File  : EncryptUtils.py
 # Author: YuYanQing
 # Desc  : 加解密算法
 # Date  : 2020/9/25 19:42
-'''
+"""
 import base64
 from hashlib import sha1, md5
 
+
 class CipherHelper:
-    def base64Encrypt(self,key):
+    def base64Encrypt(self, key):
         """
         base64 算法加密
         :return:加密后的字符

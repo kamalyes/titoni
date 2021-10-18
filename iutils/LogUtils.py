@@ -1,16 +1,18 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： LogUtils.py
 # Author : YuYanQing
 # Desc: 日志处理
 # Date： 2020/7/15 16:15
-'''
+"""
 import os
-import time,logging,shutil
-import datetime,BaseSetting
+import time, logging, shutil
+import datetime, BaseSetting
 from testings.control.path import LOG_SWITCH
+
+
 class Logger(object):
     def __init__(self):
         """
@@ -21,7 +23,7 @@ class Logger(object):
         """
         self.result_dir = BaseSetting.Route.getPath("output")
         self.local_date = time.strftime('%Y-%m-%d-logs', time.localtime(time.time()))
-        self.general_dir = os.path.join(self.result_dir,self.local_date)
+        self.general_dir = os.path.join(self.result_dir, self.local_date)
 
     def writeLog(self):
         """
@@ -36,11 +38,13 @@ class Logger(object):
         logger.setLevel(logging.INFO)
 
         # 创建defaul_log_handler写入所有日志
-        defaul_log = logging.FileHandler(os.path.join(self.general_dir,"%s-default.log"%(self.local_date)),encoding='utf-8')
+        defaul_log = logging.FileHandler(os.path.join(self.general_dir, "%s-default.log" % (self.local_date)),
+                                         encoding='utf-8')
         defaul_log.setLevel(logging.DEBUG)
 
         # 创建error_log_handler写入所有日志
-        error_log = logging.FileHandler(os.path.join(self.general_dir,"%s-error.log"%(self.local_date)),encoding='utf-8')
+        error_log = logging.FileHandler(os.path.join(self.general_dir, "%s-error.log" % (self.local_date)),
+                                        encoding='utf-8')
         error_log.setLevel(logging.ERROR)
 
         # 创建console_handler写入所有日志
@@ -48,9 +52,11 @@ class Logger(object):
         console.setLevel(logging.INFO)
 
         # 定义default日志输出格式 以时间-日志器名称-日志级别-日志内容的形式展示
-        all_log_formatter = logging.Formatter("%(asctime)s - %(filename)s [line:%(lineno)d] - %(levelname)s: %(message)s")
+        all_log_formatter = logging.Formatter(
+            "%(asctime)s - %(filename)s [line:%(lineno)d] - %(levelname)s: %(message)s")
         # 定义error日志输出格式  以时间-日志器名称-日志级别-文件名-函数行号-错误内容
-        error_log_formatter = logging.Formatter("%(asctime)s - %(filename)s [line:%(lineno)d] - %(levelname)s: %(message)s")
+        error_log_formatter = logging.Formatter(
+            "%(asctime)s - %(filename)s [line:%(lineno)d] - %(levelname)s: %(message)s")
         # 将定义好的输出形式添加到handler
         defaul_log.setFormatter(all_log_formatter)
         console.setFormatter(all_log_formatter)
@@ -77,12 +83,13 @@ class Logger(object):
         for dirpath, dirnames, filenames in os.walk(self.result_dir):
             timeArray = os.stat(dirpath).st_mtime
             if timeArray < re_date_unix:
-                if index!=0:
+                if index != 0:
                     # print("过期的文件：%s" % (dirpath))
                     shutil.rmtree(dirpath, ignore_errors=True)
             # else:
-                # print("不满足条件的文件：%s" % (dirpath))
-            index +=1
+            # print("不满足条件的文件：%s" % (dirpath))
+            index += 1
+
 
 Logger = Logger()
 

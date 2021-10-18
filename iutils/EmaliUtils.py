@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName：EmaliUtils.py
 # Author : YuYanQing
 # Desc:   邮件发送
 # Date： 2020/5/6 19:27
-'''
+"""
 import smtplib
 from email.header import Header
 from iutils.LogUtils import Logger
@@ -14,8 +14,9 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
+
 class EMail(object):
-    def __init__(self,user_email=None,passwd=None,title=None,smtp_server=None,addressee=None):
+    def __init__(self, user_email=None, passwd=None, title=None, smtp_server=None, addressee=None):
         '''
         :param self.user_email： 发件人邮箱
         :param self.passwd： 发件人密码

@@ -1,23 +1,24 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # File  : RandUtils.py
 # Author: YuYanQing
 # Desc  : 随机文本(id/姓名/邮箱/身份证/列表/浮点型/验证码)
 # Date  : 2020/10/11 15:01
-'''
+"""
 import uuid
 import random
 import string
 from random import choice
 from iutils.LogUtils import Logger
 
+
 class RandValue(object):
     def __init__(self):
         self.logger = Logger.writeLog()
 
-    def getEmail(self,emailtype=None,maxnum=None,rad_count=None):
+    def getEmail(self, emailtype=None, maxnum=None, rad_count=None):
         """
         :param emailtype: 邮箱类型
         :param count:     所生成的数量
@@ -37,7 +38,7 @@ class RandValue(object):
             maxnum = random.randint(6, 10)
         if rad_count == None:
             rad_count = 1
-        while count<rad_count:
+        while count < rad_count:
             for i in range(0, maxnum):
                 status = random.randint(0, 1)
                 if status == 0:
@@ -51,11 +52,11 @@ class RandValue(object):
             # 每次转化后就丢弃temp、避免出现遍历追加['VJT000Ho@qq.com', 'VJT000Ho0110fm0w@qq.com'............]
             temp.clear()
             email_list.append(temp_str + emailtype)
-            count +=1
+            count += 1
         # self.logger.info("成功生成%s个，%s个前缀，且类型为%s邮箱地址%s"%(count,maxnum,emailtype,email_list))
         return email_list
 
-    def getVerifi(self,maxnum,radcount):
+    def getVerifi(self, maxnum, radcount):
         """
         随机生成6位的验证码
         :param maxnum:  最多可生成的长度
@@ -85,7 +86,7 @@ class RandValue(object):
         else:
             return verifi_code[0]
 
-    def getPhone(self,radcount):
+    def getPhone(self, radcount):
         """
         随机生成有效手机号码
         :param radcount: 需要生成的数量
@@ -94,17 +95,17 @@ class RandValue(object):
             >>> RandValue.getPhone(radcount=6)
         """
         count = 0
-        phone_num =[]
+        phone_num = []
         while count < radcount:
             prelist = ["130", "131", "132", "133", "134", "135", "136", "137", "138", "139", "147", "150", "151", "152",
-                        "153", "155", "156", "157", "158", "159", "186", "187", "188"]
-            cell =random.choice(prelist) + "".join(random.choice("0123456789") for i in range(8))
+                       "153", "155", "156", "157", "158", "159", "186", "187", "188"]
+            cell = random.choice(prelist) + "".join(random.choice("0123456789") for i in range(8))
             phone_num.append(''.join(cell))  # list to string
-            count +=1
+            count += 1
         # self.logger.info("成功生成%s个手机号%s"%(radcount,phone_num))
         return phone_num
 
-    def getName(self,radcount,length):
+    def getName(self, radcount, length):
         """
         :param radcount: 随机产生多少个
         :param length:   名字长度
@@ -116,19 +117,19 @@ class RandValue(object):
         """
         count = 0
         name_list = []
-        surnames = '赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜戚谢邹喻柏水窦章云苏潘葛'\
-               '奚范彭郎鲁韦昌马苗凤花方俞任袁柳酆鲍史唐费廉岑薛雷贺倪汤滕殷罗毕郝邬安常乐于时傅皮卞齐康'\
-               '伍余元卜顾孟平黄和穆萧尹姚邵湛汪祁毛禹狄米贝明臧计伏成戴谈宋茅庞熊纪舒屈项祝董梁杜阮蓝闵'\
-               '席季麻强贾路娄危江童颜郭梅盛林刁钟徐邱骆高夏蔡田樊胡凌霍虞万支柯昝管卢莫经房裘缪干解应宗'\
-               '丁宣贲邓郁单杭洪包诸左石崔吉钮龚程嵇邢滑裴陆荣翁荀羊於惠甄曲家封芮羿储靳汲邴糜松井段富巫'\
-               '乌焦巴弓牧隗山谷车侯宓蓬全郗班仰秋仲伊宫宁仇栾暴甘钭厉戎祖武符刘景詹束龙叶幸司韶郜黎蓟薄'\
-               '印宿白怀蒲邰从鄂索咸籍赖卓蔺屠蒙池乔阴鬱胥能苍双闻莘党翟谭贡劳逄姬申扶堵冉宰郦雍卻璩桑桂'\
-               '濮牛寿通边扈燕冀郏浦尚农温别庄晏柴瞿阎充慕连茹习宦艾鱼容向古易慎戈廖庾终暨居衡步都耿满弘'\
-               '匡国文寇广禄阙东欧殳沃利蔚越夔隆师巩厍聂晁勾敖融冷訾辛阚那简饶空曾毋沙乜养鞠须丰巢关蒯相'\
-               '查后荆红游竺权逯盖益桓公万俟司马上官欧阳夏侯诸葛闻人东方赫连皇甫尉迟公羊澹台公冶宗政濮阳'\
-               '淳于单于太叔申屠公孙仲孙轩辕令狐钟离宇文长孙慕容鲜于闾丘司徒司空丌官司寇仉督子车颛孙端木'\
-               '巫马公西漆雕乐正壤驷公良拓跋夹谷宰父谷梁晋楚闫法汝鄢涂钦段干百里东郭南门呼延归海羊舌微生'\
-               '岳帅缑亢况郈有琴梁丘左丘东门西门商牟佘佴伯赏南宫墨哈谯笪年爱阳佟第五言福'
+        surnames = '赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜戚谢邹喻柏水窦章云苏潘葛' \
+                   '奚范彭郎鲁韦昌马苗凤花方俞任袁柳酆鲍史唐费廉岑薛雷贺倪汤滕殷罗毕郝邬安常乐于时傅皮卞齐康' \
+                   '伍余元卜顾孟平黄和穆萧尹姚邵湛汪祁毛禹狄米贝明臧计伏成戴谈宋茅庞熊纪舒屈项祝董梁杜阮蓝闵' \
+                   '席季麻强贾路娄危江童颜郭梅盛林刁钟徐邱骆高夏蔡田樊胡凌霍虞万支柯昝管卢莫经房裘缪干解应宗' \
+                   '丁宣贲邓郁单杭洪包诸左石崔吉钮龚程嵇邢滑裴陆荣翁荀羊於惠甄曲家封芮羿储靳汲邴糜松井段富巫' \
+                   '乌焦巴弓牧隗山谷车侯宓蓬全郗班仰秋仲伊宫宁仇栾暴甘钭厉戎祖武符刘景詹束龙叶幸司韶郜黎蓟薄' \
+                   '印宿白怀蒲邰从鄂索咸籍赖卓蔺屠蒙池乔阴鬱胥能苍双闻莘党翟谭贡劳逄姬申扶堵冉宰郦雍卻璩桑桂' \
+                   '濮牛寿通边扈燕冀郏浦尚农温别庄晏柴瞿阎充慕连茹习宦艾鱼容向古易慎戈廖庾终暨居衡步都耿满弘' \
+                   '匡国文寇广禄阙东欧殳沃利蔚越夔隆师巩厍聂晁勾敖融冷訾辛阚那简饶空曾毋沙乜养鞠须丰巢关蒯相' \
+                   '查后荆红游竺权逯盖益桓公万俟司马上官欧阳夏侯诸葛闻人东方赫连皇甫尉迟公羊澹台公冶宗政濮阳' \
+                   '淳于单于太叔申屠公孙仲孙轩辕令狐钟离宇文长孙慕容鲜于闾丘司徒司空丌官司寇仉督子车颛孙端木' \
+                   '巫马公西漆雕乐正壤驷公良拓跋夹谷宰父谷梁晋楚闫法汝鄢涂钦段干百里东郭南门呼延归海羊舌微生' \
+                   '岳帅缑亢况郈有琴梁丘左丘东门西门商牟佘佴伯赏南宫墨哈谯笪年爱阳佟第五言福'
         fames = '伟刚勇毅俊峰强军平保东文辉力明永健世广志义兴良海山仁波宁贵福生龙元全国胜学祥才发武新利清' \
                 '飞彬富顺信子杰涛昌成康星光天达安岩中茂进林有坚和彪博诚先敬震振壮会思群豪心邦承乐绍功松善' \
                 '厚庆磊民友裕河哲江超浩亮政谦亨奇固之轮翰朗伯宏言若鸣朋斌梁栋维启克伦翔旭鹏泽晨辰士以建家' \
@@ -139,12 +140,12 @@ class RandValue(object):
         while count < radcount:
             sur = random.choice(surnames)
             name = "".join(random.choice(fames) for i in range(length))
-            name_list.append(sur+name)
-            count +=1
+            name_list.append(sur + name)
+            count += 1
         # self.logger.info("成功生成%s个名字%s"%(radcount,name_list))
         return name_list
 
-    def getStrList(self,length):
+    def getStrList(self, length):
         """
         生成给定长度的字符串，返回列表格式
         :param length:
@@ -158,7 +159,7 @@ class RandValue(object):
         # self.logger.info("成功生成数字列表：%s"%(sample_list))
         return sample_list
 
-    def getStr(self,num_length):
+    def getStr(self, num_length):
         """
         从a-zA-Z0-9生成指定数量的随机字符
         :param num_length: 字符串长度
@@ -170,7 +171,7 @@ class RandValue(object):
         random_str = ''.join(str_list)
         return random_str
 
-    def getNum(self,num_length):
+    def getNum(self, num_length):
         """
         从0-9生成指定数量的随机数字
         :param num_length: 字符串长度
@@ -181,7 +182,7 @@ class RandValue(object):
         random_str = ''.join(str_list)
         return random_str
 
-    def getInt(self,data):
+    def getInt(self, data):
         """
         获取随机int数据
         :param data: 开始值,结束值 例如：1,5 输出：1
@@ -202,7 +203,7 @@ class RandValue(object):
         # self.logger.info("成功生成随机整型数据：%s"%(num))
         return num
 
-    def getFloat(self,data):
+    def getFloat(self, data):
         """
         获取随机浮点数据
         :param data: 开始值,结束值,浮点数 例如：1,5,3 输出：1.123
@@ -233,7 +234,7 @@ class RandValue(object):
         Example::
             >>> print(RandValue.getUuid())
         """
-        str_uuid =  str(uuid.uuid1()).upper()
+        str_uuid = str(uuid.uuid1()).upper()
         # self.logger.info("成功生成随机uuid：%s"%(str_uuid))
         return str_uuid
 
@@ -249,7 +250,8 @@ class RandValue(object):
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.3589.115 Safari/537.36"
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_0) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.56 Safari/535.11",
             "Dalvik/2.1.0 (Linux; U; Android 10; SPN-AL00 Build/HUAWEISPN-AL00)",
-            ]
+        ]
         return choice(Mozilla)
+
 
 RandValue = RandValue()

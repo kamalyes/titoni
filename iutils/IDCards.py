@@ -1,16 +1,17 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # File  : IDCards.py
 # Author: YuYanQing
 # Desc  : 身份证效验&随机生成身份证信息
 # Date  : 2020/10/15 15:01
-'''
+"""
 import re
 import random
 from iutils import AreaCode
 from datetime import datetime, timedelta
+
 
 class IdNumber(str):
     def __init__(self, id_number=None):
@@ -55,7 +56,7 @@ class IdNumber(str):
         return check_digit if check_digit < 10 else 'X'
 
     @classmethod
-    def checkVerifyId(cls, id_number) ->str:
+    def checkVerifyId(cls, id_number) -> str:
         """校验身份证是否正确"""
         if re.match(AreaCode.ID_NUMBER_18_REGEX, id_number):
             check_digit = cls(id_number).getCheckDigit()
@@ -82,7 +83,7 @@ class IdNumber(str):
 
 if __name__ == '__main__':
     random_sex = random.randint(0, 1)  # 随机生成男(1)或女(0)
-    idcard = IdNumber.getIDCard(random_sex)# 随机生成身份证号
+    idcard = IdNumber.getIDCard(random_sex)  # 随机生成身份证号
     print(IdNumber(idcard).area_id)  # 地址编码:431121
     print(IdNumber(idcard).getAreaName())  # 地址:湖南省永州市祁阳县
     print(IdNumber(idcard).getBirthday())  # 生日:1999-3-15

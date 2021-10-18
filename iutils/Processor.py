@@ -1,23 +1,25 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： Processor.py
 # Author : YuYanQing
 # Desc: An XPath for JSON 后置处理
 # Date： 2021/6/27 11:50
-'''
+"""
 import re
 import sys
 from lxml import etree
 from typing import Dict, Text
 from urllib.parse import unquote
+
 # For python3 portability
 if sys.version_info[0] == 3:
     xrange = range
 
+
 class HtmlPath(object):
-    def find(self,res, xpath, index)->Text:
+    def find(self, res, xpath, index) -> Text:
         """
         获取html中的数据
         :param res:
@@ -48,9 +50,10 @@ class HtmlPath(object):
             else:
                 return None
 
+
 class JsonPath():
 
-    def normalize(self,filter):
+    def normalize(self, filter):
         """
         normalize the path expression; outside jsonpath to allow testings
         :param filter: 需要查找的值
@@ -82,7 +85,7 @@ class JsonPath():
         filter = re.sub(r"#([0-9]+)", f2, filter)
         return filter
 
-    def find(self,obj, expr, result_type='VALUE', debug=0, use_eval=True):
+    def find(self, obj, expr, result_type='VALUE', debug=0, use_eval=True):
         """
         traverse JSON object using jsonpath expr, returning values or paths
         /	$	跟节点
@@ -311,6 +314,7 @@ class JsonPath():
                 return result
         return False
 
+
 JsonPath = JsonPath()
 HtmlPath = HtmlPath()
 
@@ -337,97 +341,96 @@ if __name__ == '__main__':
     # f.write("\n")
     # sys.exit(0)
 
-
     data = {
-            "code": 200,
-            "message": "success",
-            "data": [
-                {
-                    "year": 2016,
-                    "months": [
-                        {
-                            "url": "https://blog.csdn.net/qq_38795430/article/month/2020/07",
-                            "count": 1,
-                            "month": "07"
-                        },
-                        {
-                            "url": "https://blog.csdn.net/qq_38795430/article/month/2020/03",
-                            "count": 2,
-                            "month": "03"
-                        },
-                        {
-                            "url": "https://blog.csdn.net/qq_38795430/article/month/2020/01",
-                            "count": 1,
-                            "month": "01"
-                        }
-                    ],
-                    "count": 4,
-                    "currentYear": False
-                },
-                {
-                    "year": 2017,
-                    "months": [
-                        {
-                            "url": "https://blog.csdn.net/qq_38795430/article/month/2019/09",
-                            "count": 6,
-                            "month": "09"
-                        },
-                        {
-                            "url": "https://blog.csdn.net/qq_38795430/article/month/2019/08",
-                            "count": 3,
-                            "month": "08"
-                        },
-                        {
-                            "url": "https://blog.csdn.net/qq_38795430/article/month/2019/07",
-                            "count": 5,
-                            "month": "07"
-                        },
-                        {
-                            "url": "https://blog.csdn.net/qq_38795430/article/month/2019/06",
-                            "count": 1,
-                            "month": "06"
-                        }
-                    ],
-                    "count": 29,
-                    "currentYear": False
-                },
-                {
-                    "years": 2018,
-                    "months": [
-                        {
-                            "url": "https://blog.csdn.net/qq_38795430/article/month/2018/10",
-                            "count": 2,
-                            "month": "10"
-                        }
-                    ],
-                    "count": 2,
-                    "currentYear": False
-                }
-            ]
-        }
+        "code": 200,
+        "message": "success",
+        "data": [
+            {
+                "year": 2016,
+                "months": [
+                    {
+                        "url": "https://blog.csdn.net/qq_38795430/article/month/2020/07",
+                        "count": 1,
+                        "month": "07"
+                    },
+                    {
+                        "url": "https://blog.csdn.net/qq_38795430/article/month/2020/03",
+                        "count": 2,
+                        "month": "03"
+                    },
+                    {
+                        "url": "https://blog.csdn.net/qq_38795430/article/month/2020/01",
+                        "count": 1,
+                        "month": "01"
+                    }
+                ],
+                "count": 4,
+                "currentYear": False
+            },
+            {
+                "year": 2017,
+                "months": [
+                    {
+                        "url": "https://blog.csdn.net/qq_38795430/article/month/2019/09",
+                        "count": 6,
+                        "month": "09"
+                    },
+                    {
+                        "url": "https://blog.csdn.net/qq_38795430/article/month/2019/08",
+                        "count": 3,
+                        "month": "08"
+                    },
+                    {
+                        "url": "https://blog.csdn.net/qq_38795430/article/month/2019/07",
+                        "count": 5,
+                        "month": "07"
+                    },
+                    {
+                        "url": "https://blog.csdn.net/qq_38795430/article/month/2019/06",
+                        "count": 1,
+                        "month": "06"
+                    }
+                ],
+                "count": 29,
+                "currentYear": False
+            },
+            {
+                "years": 2018,
+                "months": [
+                    {
+                        "url": "https://blog.csdn.net/qq_38795430/article/month/2018/10",
+                        "count": 2,
+                        "month": "10"
+                    }
+                ],
+                "count": 2,
+                "currentYear": False
+            }
+        ]
+    }
     # 获取month的所有值
-    print("获取month的所有值："+str(JsonPath.find(data, '$..month')))
+    print("获取month的所有值：" + str(JsonPath.find(data, '$..month')))
 
     # 获取data下面所有元素
-    print("获取data下面所有元素："+str(JsonPath.find(data, "$.data")))
-    print("获取data下面所有元素："+str(JsonPath.find(data, "$.data.*")))
+    print("获取data下面所有元素：" + str(JsonPath.find(data, "$.data")))
+    print("获取data下面所有元素：" + str(JsonPath.find(data, "$.data.*")))
 
     # 获取data下面所有year的值
-    print("获取data下面所有year的值："+str(JsonPath.find(data, "$.data[*].year")))
-    print("获取data下面所有year的值："+str(JsonPath.find(data, "$.data..year")))
+    print("获取data下面所有year的值：" + str(JsonPath.find(data, "$.data[*].year")))
+    print("获取data下面所有year的值：" + str(JsonPath.find(data, "$.data..year")))
 
     # 获取data第1列所有数据
-    print("获取data第1列所有数据："+str(JsonPath.find(data, "$.data[0]")))
+    print("获取data第1列所有数据：" + str(JsonPath.find(data, "$.data[0]")))
 
     # 获取第2~3列所有数据
-    print("获取data第2~3列所有数据："+str(JsonPath.find(data, "$.data[1:2]")))
+    print("获取data第2~3列所有数据：" + str(JsonPath.find(data, "$.data[1:2]")))
 
     # 获取data最后一列数据
-    print("获取data最后一列数据："+str(JsonPath.find(data, "$.data[(@.length-1)]")))
+    print("获取data最后一列数据：" + str(JsonPath.find(data, "$.data[(@.length-1)]")))
 
     # 获取包含了years且条件的数据
-    print("获取包含了years且等于2018的数据："+str(JsonPath.find(data, "$.data[?(@.years==2018)]")))
-    print("获取包含了years且≥2018的数据："+str(JsonPath.find(data, "$.data[?(@.years>=2018)]")))
-    print("获取包含了year且<2018的数据："+str(JsonPath.find(data, "$.data[?(@.year<2017)]")))
+    print("获取包含了years且等于2018的数据：" + str(JsonPath.find(data, "$.data[?(@.years==2018)]")))
+    print("获取包含了years且≥2018的数据：" + str(JsonPath.find(data, "$.data[?(@.years>=2018)]")))
+    print("获取包含了year且<2018的数据：" + str(JsonPath.find(data, "$.data[?(@.year<2017)]")))
     test_str = '获取包含了year且<2018的数'
     print(HtmlPath.border(sum_str=test_str, left_str="获取", right_str="year"))

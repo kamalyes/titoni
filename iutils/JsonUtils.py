@@ -1,17 +1,19 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： JsonUtils.py
 # Author : YuYanQing
 # Date： 2021/8/1 11:56
-'''
+"""
 import json
 import difflib
 import hashlib
 from iutils.Loader import Loader
 from iutils.LogUtils import Logger
+
 logger = Logger.writeLog()
+
 
 def wirteJson(target_data, file_path, method="w"):
     """
@@ -25,6 +27,7 @@ def wirteJson(target_data, file_path, method="w"):
     """
     with open(file_path, method, encoding="utf-8") as file:
         json.dump(target_data, file, ensure_ascii=False, indent=4)
+
 
 def diffJson(filename1, filename2, targetPath):
     """
@@ -50,6 +53,7 @@ def diffJson(filename1, filename2, targetPath):
         except Exception as e:
             logger.error("写入文件失败:" + e)
 
+
 def isJsonFormat(raw_msg):
     """
     用于判断一个字符串是否符合Json格式
@@ -58,15 +62,16 @@ def isJsonFormat(raw_msg):
     Example::
         >>> print(json.dumps({"TEST_KEY":"TEST_VALUE"}) is True)
     """
-    if isinstance(raw_msg,str):
+    if isinstance(raw_msg, str):
         try:
-            json.loads(raw_msg,encoding='utf-8')
+            json.loads(raw_msg, encoding='utf-8')
         except ValueError:
             return False
         else:
             return True
     else:
         return False
+
 
 def jsonToDict(target_data):
     """
@@ -76,10 +81,53 @@ def jsonToDict(target_data):
     """
     return json.loads(target_data)
 
+
 def dictToJson(target_data):
     """
     字典转Json
     :param target_data: 数据来源
     :return:
     """
-    return json.dumps(target_data,ensure_ascii=False,separators=(',', ': '))
+    return json.dumps(target_data, ensure_ascii=False, separators=(',', ': '))
+
+
+def jsonToSchema(json_data, result=[]):
+    """
+    json递归生成schema
+    :param json_data:
+    :param result:
+    :return:
+    Example::
+        >>> json_data = {"code": 200, "message": "Success", "error": "",
+        ... "ShopInfoList": [{"shop_id": "ML0057", "shop_name": "" }]}
+        >>> print(jsonToSchema(json_data=json_data))
+    """
+    if isinstance(json_data, dict):
+        is_null = True
+        result.append("{")
+        result.append("'type': 'object',")
+        result.append("'properties': {")
+        for k, v in json_data.items():
+            is_null = False
+            result.append("'%s':" % k)
+            jsonToSchema(v, result)
+            result.append(",")
+        if not is_null:
+            result.pop()
+        result.append("}")
+        result.append("}")
+    elif isinstance(json_data, list):
+        result.append("{")
+        result.append("'type': 'array',")
+        result.append("'items': ")
+        jsonToSchema(json_data[0], result)
+        result.append("}")
+    elif isinstance(json_data, int):
+        result.append("{")
+        result.append("'type': 'number'")
+        result.append("}")
+    elif isinstance(json_data, str):
+        result.append("{")
+        result.append("'type': 'string'")
+        result.append("}")
+    return json.dumps("".join(result), indent=4)

@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： Loader.py
 # Author : YuYanQing
 # Desc: 加载文件
 # Date： 2021/6/11 15:15
-'''
+"""
 import os
 import sys
 import csv
@@ -16,14 +16,16 @@ import yaml
 from typing import Text, Dict, List
 from iutils.FolderUtils import FileHander
 from iutils.Exceptions import FileFormatError
+
 try:
     # PyYAML version >= 5.1
     yaml.warnings({"YAMLLoadWarning": False})
 except AttributeError:
     pass
 
+
 class Loader(object):
-    def yamlFile(self,file_path=None,safe_loads=True):
+    def yamlFile(self, file_path=None, safe_loads=True):
         """
         加载yaml文件(支持做特殊兼容处理、自动引入目录：test_yaml)
         :param file_path: 文件路径
@@ -45,7 +47,7 @@ class Loader(object):
             with open(file_path, 'r', encoding='utf-8') as file:
                 return yaml.safe_load(file.read())
 
-    def jsonFile(self,file_path=None) -> Dict:
+    def jsonFile(self, file_path=None) -> Dict:
         """
         加载json文件(支持做特殊兼容处理、自动引入目录：test_json)
         :param file_name: 文件名
@@ -62,9 +64,9 @@ class Loader(object):
         # except json.JSONDecodeError as ex:
         #     raise FileFormatError("JSONDecodeError:\nfile: %s\nerror: %s"%(file_path,ex))
         except json.JSONDecodeError:
-            return False # 先降级
+            return False  # 先降级
 
-    def csvFile(self,file_path: Text=None) -> List[Dict]:
+    def csvFile(self, file_path: Text = None) -> List[Dict]:
         """
         加载CSV文件(支持做特殊兼容处理、自动引入目录：test_csv)
         :param csv_name：文件名
@@ -89,7 +91,7 @@ class Loader(object):
                 csv_content_list.append(row)
         return csv_content_list
 
-    def jsonToYaml(self,json_file):
+    def jsonToYaml(self, json_file):
         """
         支持json格式转yaml
         """
@@ -103,7 +105,7 @@ class Loader(object):
         else:
             print("不是json结尾的文件!!!")
 
-    def yamlToJson(self,yaml_file):
+    def yamlToJson(self, yaml_file):
         """
         支持json格式转yaml
         """
@@ -119,17 +121,17 @@ class Loader(object):
         else:
             print("不是yaml结尾的文件!!!")
 
-    def getKeys(self,data):
+    def getKeys(self, data):
         """
         获取dict下所有的key,value
         :param data:
         :return: 元祖类型
         """
         keys = []
-        [keys.append((k,v))  for k,v in data.items()]
+        [keys.append((k, v)) for k, v in data.items()]
         return keys
 
-    def writeJson(self,data, json_path,method="w"):
+    def writeJson(self, data, json_path, method="w"):
         """
         把处理后的参数写入json文件
         :param res:
@@ -143,7 +145,7 @@ class Loader(object):
         else:
             print('\n:{} Params is not dict.\n'.format(self.writeJson.__name__))
 
-    def progress(self,length=10, refresh_sec=0.1):
+    def progress(self, length=10, refresh_sec=0.1):
         """
         进度条
         :param length: 控制进度条长度
@@ -157,5 +159,6 @@ class Loader(object):
             sys.stdout.write("\rProgress: [%s] %d%%" % (hashes + spaces, percent))
             sys.stdout.flush()
             time.sleep(refresh_sec)
+
 
 Loader = Loader()

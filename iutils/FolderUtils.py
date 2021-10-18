@@ -1,15 +1,16 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： FolderUtils.py
 # Author : YuYanQing
 # Desc: 文件管理
 # Date： 2020/5/6 19:15
-'''
+"""
 import os
 import shutil
 import zipfile
+
 
 class FileHander(object):
     def getCurrentPath(self):
@@ -230,6 +231,7 @@ class FileHander(object):
             name, suffix = os.path.splitext(tail)
             return suffix.lower()
 
+
 FileHander = FileHander()
 
 if __name__ == '__main__':
@@ -241,5 +243,6 @@ if __name__ == '__main__':
     # FileHander.makeFile(file_path)
     # FileHander.getDirList(file_path)
     from BaseSetting import Route
+
     print(FileHander.depthScanFile(Route.getPath("variables"), "yaml"))
     print(FileHander.readFileType(os.path.join(Route.getPath("variables"), "global.yaml")))

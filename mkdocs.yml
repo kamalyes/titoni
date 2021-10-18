@@ -1,12 +1,12 @@
-site_name: ProtocolTest
+site_name: protocoltest
 site_description: A next-generation ApiTest client for Python.
-site_url: https://www.python-ProtocolTest.org/
+site_url: https://www.python-protocoltest.org/
 
 theme:
     name: 'material'
 
-repo_name: encode/ProtocolTest
-repo_url: https://github.com/encode/ProtocolTest/
+repo_name: kamalyes/protocoltest
+repo_url: https://github.com/kamalyes/protocoltest/
 edit_uri: ""
 
 nav:
