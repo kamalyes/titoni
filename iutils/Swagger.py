@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： Swagger.py
 # Author : YuYanQing
 # Desc: 将Swagger文档中所有的接口解析为Case
@@ -19,16 +20,17 @@
     "definitions":
     }
 # Date： 2021/7/27 12:37
-'''
+"""
 import json
 from BaseSetting import Route
 from iutils.OkHttps import Httpx
 from iutils.Loader import Loader
 from iutils.Processor import JsonPath
 
+
 class AnalysisSwagger(object):
 
-    def __init__(self,swagger_host:str=None):
+    def __init__(self, swagger_host: str = None):
         """
         设置初始变量
 
@@ -53,7 +55,7 @@ class AnalysisSwagger(object):
                            "testcases": []}
         # 定义测试用例格式
         self.http_testcase = {"name": "", "testcase": "", "variables": {}}
-        res = Loader.jsonFile(Route.joinPath("debug","swagger-api.json"))
+        res = Loader.jsonFile(Route.joinPath("debug", "swagger-api.json"))
         print(res)
         self.data = res['paths']  # 取接口地址返回的path数据,包括了请求的路径
         self.basePath = res['basePath']  # 获取接口的根路径

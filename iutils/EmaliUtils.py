@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName：EmaliUtils.py
 # Author : YuYanQing
 # Desc:   邮件发送
 # Date： 2020/5/6 19:27
-'''
+"""
 import smtplib
 from email.header import Header
 from iutils.LogUtils import Logger

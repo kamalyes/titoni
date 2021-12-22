@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： init.py
 # Author : YuYanQing
 # Desc: 初始化运行环境
 # Date： 2021/8/11 13:25
-'''
+"""
 from BaseSetting import Route
 from iutils.Loader import Loader
 from testings.control.path import APPPROPERTIES_PATH

@@ -1,15 +1,16 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： TestRedis.py
 # Author : YuYanQing
 # Desc: Redis封装
 # Date： 2021/8/28 10:55 
-'''
+"""
 import redis
 import logging
 import threading
+
 
 class RedisClient(object):
     """
@@ -34,8 +35,10 @@ class RedisClient(object):
         decode_responses = False
         if "decode_responses" in config:
             decode_responses = config["decode_responses"]
-        temp_pool = redis.ConnectionPool(host=self.config['host'], port=self.config['port'], db=self.config['index'], password=self.config['auth'],
-                                         encoding=self.config['encoding'], max_connections=max_conn, decode_responses=decode_responses)
+        temp_pool = redis.ConnectionPool(host=self.config['host'], port=self.config['port'], db=self.config['index'],
+                                         password=self.config['auth'],
+                                         encoding=self.config['encoding'], max_connections=max_conn,
+                                         decode_responses=decode_responses)
         self.connection_pool = temp_pool
         temp_client = redis.Redis(connection_pool=self.connection_pool)
         self.connection_client = temp_client

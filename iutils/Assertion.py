@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： Assertion.py
 # Author : YuYanQing
 # Desc: 效验结果集
 # Date： 2021/3/27 18:05
-'''
+"""
 import allure
 from jsonschema import validate
 from typing import Text, Any, Union
@@ -221,7 +221,7 @@ def assertEqual(validations: dict, code=None,reason=None, time=None, content=Non
                         actual_value = HtmlPath.border(sum_str=content, left_str=value[0], right_str=value[2])
                         allure.attach(name="Assert Border", body="预期Border：{}，实际Border：{}".format(expected_value, actual_value))
                         if expected_value != actual_value:
-                            raise AssertionError("接口响应文本值不匹配！\n %s != %s" % (expected_value, actual_value))
+                            raise ("接口响应文本值不匹配！\n %s != %s" % (expected_value, actual_value))
                     else:
                         raise IndexError("格式不正确：请修改为：expected_border: [left,own,right]")
 

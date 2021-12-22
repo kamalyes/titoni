@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： OkHttps.py
 # Author : YuYanQing
 # Desc: request二次封装
 # Date： 2021/6/6 0:37
-'''
+"""
 import os
 import re
 import json
@@ -15,8 +16,10 @@ import filetype
 from uuid import uuid4
 from typing import Text
 from urllib import parse
+from tlackback import *
 from urllib.parse import urlparse
 from requests_toolbelt import MultipartEncoder
+
 requests.packages.urllib3.disable_warnings()
 from BaseSetting import Route
 from iutils.Loader import Loader
@@ -27,8 +30,10 @@ from iutils.Helper import combData
 from iutils.Assertion import assertEqual
 from iutils.DataKit import capitalToLower
 # from testings.control.sql import connModel
-from testings.control.path import DNS_PATH, ADDRESS_PATH  # 需对应的配置
 from testings.control.variables import Global
+from iutils.Exceptions import DependNotFoundError
+from testings.control.path import DNS_PATH, ADDRESS_PATH  # 需对应的配置
+
 
 class Httpx(object):
     def __init__(self):
@@ -40,11 +45,51 @@ class Httpx(object):
         self.address_pro = Loader.yamlFile(ADDRESS_PATH)  # url地址配置
         self.headers = Loader.yamlFile(os.path.join(Route.getPath("config"), "norm_headers.yaml"))
 
-    def getData(self, data, allures=None, headers=None, demands=None, examines=None, extracts=None, dbs=None):
+    def getShader(self, shader):
+        """
+        获取外部请求参数
+        :param shader
+        :return:
+        """
+        if isinstance(shader, dict):
+            shader_keys = list(shader.keys())
+            need_keys = ['path', 'file', 'method', 'var_key']
+            fm = need_keys[1:3] == [item for item in shader_keys if item in need_keys[1:3]]
+            fvm = need_keys[1:] == [item for item in shader_keys if item in need_keys[1:]]
+            pfm = need_keys[0:3] == [item for item in shader_keys if item in need_keys[0:3]]
+            pfvm = need_keys[0:] == [item for item in shader_keys if item in need_keys[0:]]
+            path, file, method, var_key = shader.get("path"), shader.get("file"), shader.get("method"), shader.get(
+                "var_key")
+            if file and method:
+                default_path = os.path.join(Route.getPath("test_yaml", True), file)
+                if fm:
+                    data_ = {"file_path": default_path, "method": method}
+                if pfm:
+                    file_path = os.path.join(Route.getPath(path, True), file)
+                    data_ = {"file_path": file_path, "method": method}
+                if fvm:
+                    data_ = {"file_path": default_path, "var_key": var_key, "method": method}
+                if pfvm:
+                    file_path = os.path.join(Route.getPath(path, True), file)
+                    data_ = {"file_path": file_path, "var_key": var_key, "method": method}
+            else:
+                raise Warning("最低必要参数为空：{}".format({"file": file, "method": method}))
+            return {"argument": Loader.yamlFile(data_["file_path"])[data_.get("var_key")] if data_.get(
+                "var_key") else Loader.yamlFile(data_["file_path"]),
+                    "method": method}
+        elif shader is None:
+            return {}
+        else:
+            raise Warning("格式必须为Dict类型")
+
+    def getData(self, data, allures=None, depends=None, tlackback=None, headers=None, demands=None, examines=None,
+                extracts=None, dbs=None):
         """
         获取allures配置、headers、校验值
         :param data: config+子用例 list
         :param allures: allure报告配置
+        :param depends: 用例依赖
+        :param tlackback: 外部函数
         :param headers: 头部信息
         :param demands: 请求参数 例如：method及url
         :param examines: 校验值
@@ -53,19 +98,31 @@ class Httpx(object):
         :return:
         Example::
             >>> single = {'headers': {'accept': 'application/json, text/plain, */*', 'accept-encoding': 'gzip', 'accept-language': 'zh-CN,zh;q=0.9', 'content-type': 'application/json;charset=UTF-8', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'}}
-            >>> double = [[{'headers': {'accept': 'application/json, text/plain, */*', 'accept-encoding': 'gzip', 'accept-language': 'zh-CN,zh;q=0.9', 'content-type': 'application/json;charset=UTF-8', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'}}, {'allures': {'feature': '函数助手测试(部分参数固定值仅做测试)', 'severity': 'normal'}}, {'request': {'method': 'get', 'url': ['localhost', 8001]}}], {'allures': {'severity': 'critical', 'description': '这是继承测试的用例描述', 'story': '引用后置处理后的变量&固定值'}, 'headers': {'accept': 'application/json, text/plain, */*', 'accept-encoding': 'gzip', 'accept-language': 'zh-CN,zh;q=0.9'}, 'request': {'method': 'get', 'url': ['localhost', 8001], 'params': {'Int': 1, 'ComputeTime': '2020-09-21 15:00', 'Letters': '$VAR_TEST_001', 'Sample': '$VAR_TEST_002'}}, 'validations': {'expected_code': 200, 'expected_content': {'code': 200, 'message': '', 'error': '', 'details': None}, 'expected_time': 10}}]
-            >>> print(Httpx.getData(double, {}, {}, {}, {}, {}, {}))
+            >>> double = [[{'request': {'method': 'get', 'url': ['localhost', 8001]}}], {"depends":{"path": "test_helper.yaml", "test_case_name": "search_002"}},{'allures': {'severity': 'critical', 'description': '这是继承测试的用例描述', 'story': '引用后置处理后的变量&固定值'}, 'headers': {'accept': 'application/json, text/plain, */*', 'accept-encoding': 'gzip', 'accept-language': 'zh-CN,zh;q=0.9'}, 'request': {'method': 'get', 'url': ['localhost', 8001], 'params': {'Int': 1, 'ComputeTime': '2020-09-21 15:00', 'Letters': '$VAR_TEST_001', 'Sample': '$VAR_TEST_002'}}, 'validations': {'expected_code': 200, 'expected_content': {'code': 200, 'message': '', 'error': '', 'details': None}, 'expected_time': 10}}]
+            >>> print(Httpx.getData(double, {}, {}, {}, {}, {}, {}, {}, {}))
         """
         if isinstance(data, list):
             for es in range(len(data)):
                 if isinstance(data[es], list):
-                    self.getData(data[es], allures, headers, demands, examines, extracts, dbs)
+                    self.getData(data[es], allures, depends, tlackback, headers, demands, examines, extracts, dbs)
                 elif isinstance(data[es], dict):
                     for key, value in data[es].items():
                         if key == 'headers':
                             headers.update(data[es][key])
                         elif key == 'request':
                             demands.update(data[es][key])
+                        elif key == "tlackback":
+                            tlackback = data[es][key]
+                        elif key == 'depends':
+                            if isinstance(data[es][key], dict):
+                                depends = data[es][key]
+                            elif isinstance(data[es][key], list) and len(data[es][key]) >= 2:
+                                case_name = data[es][key][1]
+                                depends.update(
+                                    {"path": data[es][key][0], "case": [index for index in case_name.split(",")]})
+                            else:
+                                msg = "依赖性用例格式不正确Key：{}, Value：{}".format(key, data[es][key])
+                                raise DependNotFoundError(msg)
                         elif key == 'allures':
                             allures.update(data[es][key])
                         elif key == 'validations':
@@ -74,23 +131,7 @@ class Httpx(object):
                             extracts = data[es][key]
                         elif key == "sql":
                             dbs = data[es][key]
-        elif isinstance(data, dict):
-            for key, value in data.items():
-                if key == 'headers':
-                    headers.update(data[key])
-                elif key == 'request':
-                    demands.update(data[key])
-                elif key == 'allures':
-                    allures.update(data[key])
-                elif key == 'validations':
-                    examines = data[key]
-                elif key == "extract":
-                    extracts = data[key]
-                elif key == "sql":
-                    dbs = data[key]
-        else:
-            pass
-        return allures, headers, demands, examines, extracts, dbs
+        return allures, depends, tlackback, headers, demands, examines, extracts, dbs
 
     def saveData(self, enter_data, target_data):
         """
@@ -106,20 +147,43 @@ class Httpx(object):
         if isinstance(enter_data, dict):
             params = []
             for key, value in target_data.items():
-                if (isinstance(value, list) and len(value)==1 ) or isinstance(value, str):
+                if (isinstance(value, list) and len(value) == 1) or isinstance(value, str):
                     _value = JsonPath.find(enter_data, value)
                     ivar = {"$VAR_%s" % (str(key).upper()): _value[0] if _value else None}
-                elif isinstance(value, list) and (len(value)>1) and (len(value)<=2):
+                elif isinstance(value, list) and (len(value) > 1) and (len(value) <= 2):
                     _value = JsonPath.find(enter_data, "{}".format(value[0]))
                     try:
                         ivar = {"$VAR_%s" % (str(key).upper()): _value[value[1]] if _value else None}
                     except IndexError:
-                        raise IndexError("\n需提取的参数值：{}\n目前提取到{}个参数,\n参数值：{}".format(enter_data,len(_value),_value))
+                        raise IndexError("\n需提取的参数值：{}\n目前提取到{}个参数,\n参数值：{}".format(enter_data, len(_value), _value))
                 Global.setValue(ivar)
                 params.append(ivar)
             return params
         else:
             raise Warning("暂不支持该模式提取参数！！！")
+
+    def dependFunc(self, yaml_path, case_name):
+        """
+        动态生成调用依赖性用例的方法
+        :param yaml_path:
+        :param case_name:
+        :return:
+        """
+        return 'from iutils.OkHttps import Httpx\n' \
+               'from testings.control.init import Envision\n' \
+               'config = Envision.getYaml("{yaml_path}")["config"]\n' \
+               'test_setup = Envision.getYaml("{yaml_path}")["test_setup"]\n' \
+               'Httpx.sendApi(auto=True, esdata=[config, test_setup["{case_name}"]],allure_setup="前置操作-{case_name}")' \
+            .format(yaml_path=yaml_path, case_name=case_name)
+
+    def execDepend(self, depends):
+        if isinstance(depends, dict):
+            depend_path = depends.get("path")
+            depend_cases = depends.get("case")
+            for dp_case in depend_cases:
+                self.logger.info("执行上级关联用例：{}".format((depend_path, dp_case)))
+                dynamic_func = self.dependFunc(depend_path, dp_case)
+                exec(dynamic_func)
 
     def sqlOperate(self, data, method="before", order="desc"):
         """
@@ -158,7 +222,6 @@ class Httpx(object):
                     params = {}
                     if len(val_value) == 3:
                         var_name, func, compound = val_value[0], val_value[1], val_value[2]
-                        # TODO: 还需优化 取出来的值怎么传入
                         loc = locals()
                         # 调用sql查询语句
                         exec("{var_name} = {func}(compound).to_dict()"
@@ -181,9 +244,9 @@ class Httpx(object):
         请求数据时的日志写入
         :return:
         """
-        for key,value in kwargs.items():
+        for key, value in kwargs.items():
             key = str(key).title().replace("_", "")
-            self.logger.info("Request{} ==>> {}".format(key,json.dumps(value, indent=4, ensure_ascii=False)))
+            self.logger.info("Request{} ==>> {}".format(key, json.dumps(value, indent=4, ensure_ascii=False)))
 
     def resLog(self, response):
         """
@@ -191,19 +254,19 @@ class Httpx(object):
         :param response: 接口响应数据
         :return:
         """
-        for key,value in response.items():
-            if key in ["ResponseHeaders","ResponseText"]:
+        for key, value in response.items():
+            if key in ["ResponseHeaders", "ResponseText"]:
                 value = eval(str(value))
             elif key in ["ResponseHttpxd"]:
                 value = str(value)
-            self.logger.info("{} ==>> {}".format(key,json.dumps(value, indent=4, ensure_ascii=False)))
+            self.logger.info("{} ==>> {}".format(key, json.dumps(value, indent=4, ensure_ascii=False)))
 
     def sendApi(self, method=None, url=None,
                 params=None, data=None, headers=None, cookies=None, files=None,
                 auth=None, timeout=None, allow_redirects=True, proxies=None,
                 hooks=None, stream=None, verify=None, cert=None, json=None,
                 esdata=None, auto=False, aided=False, seesion_=False,
-                assert_data=None, hook_header=None, dbs=None, allure_setup=None,**kwargs):
+                assert_data=None, hook_header=None, dbs=None, allure_setup=None, **kwargs):
         """
         数据请求
         :param method: 请求方式
@@ -234,8 +297,8 @@ class Httpx(object):
         return Response <Response> 对象
         """
         if auto is True or aided is True:
-            allures, _headers, demands, examines, extracts, dbs = self.getData(esdata, {}, {}, {}, {}, {}, {})
-            setTag(allures)  # 打标签
+            allures, depends, tracback, _headers, demands, examines, extracts, dbs = self.getData(esdata, {}, {}, {},
+                                                                                                  {}, {}, {}, {}, {})
             if isinstance(demands, dict):  # 读取Yaml中request字段
                 method = demands.get("method")
                 # 根据dns+address 反转得到dns地址进行拼接为正确的url
@@ -250,17 +313,40 @@ class Httpx(object):
                 # 前置sql
                 if dbs is not None:
                     self.sqlOperate(data)
-                parameter = ["data", "json", "params"]
+                parameter = ["data", "json", "params", "shader"]
                 loc = locals()
                 for index in parameter:
                     exec('_{} = {}'.format(index, combData(demands.get(index))))
-                data, json, params = loc["_data"], loc["_json"], loc["_params"]
-                # if method == "get":  # 拦截不合法的数据
-                #     data = json = None
-                # else:
-                #     params = None
+                data, json, params, shader = loc["_data"], loc["_json"], loc["_params"], loc["_shader"]
+                # 处理其它yaml动态参数合并
+                shader_argument, shader_method = self.getShader(shader).get("argument"), self.getShader(shader).get(
+                    "method")
+                comb_shader_argument = eval('{}'.format(combData(shader_argument)))
+                if shader_method == "data":
+                    data = comb_shader_argument
+                elif shader_method == "json":
+                    data = comb_shader_argument
+                elif shader_method == "params":
+                    params = comb_shader_argument
+                    # if method == "get":  # 拦截不合法的数据
+                    #     data = json = None
+                    # else:
+                    #     params = None
         else:
-            _headers, examines, extracts, dbs = {}, {}, {}, {}
+            allures, tracback, _headers, depends, examines, extracts, dbs = {}, {}, {}, {}, {}, {}, {}
+        if depends:
+            self.execDepend(depends)
+        if tracback:
+            for tb in tracback:
+                try:
+                    tb_result = eval(tb)
+                except NameError:
+                    tb_warn_msg = "tracback.py中找不到{tb}函数".format(tb=tb)
+                    raise Warning(tb_warn_msg)
+                with allure.step("函数引用"):
+                    allure.attach(name="tracback--{tb}".format(tb=tb),
+                                  body="{tb_result}".format(tb_result=str(tb_result)))
+        setTag(allures)  # 打标签
         headers = dict(_headers if isinstance(_headers, dict) else {}, **headers if isinstance(headers, dict) else {})
         content_type = headers.get("content-type")
         method = method.lower() if method is not None else method
@@ -293,7 +379,8 @@ class Httpx(object):
                 hook_header)
         headers = combData(temp)
         with allure.step(
-                "网络请求：{}".format(urlparse(url).path) if allure_setup is None else "网络请求：{}".format(allure_setup)):
+                "网络请求：{}".format(urlparse(url).path) if allure_setup is None else "{}：{}".format(allure_setup,
+                                                                                                 urlparse(url).path)):
             allure.attach(name="Request Url", body=str(url))
             allure.attach(name="Request Method", body=str(method))
             allure.attach(name="Request Headers", body=str(headers))
@@ -315,22 +402,25 @@ class Httpx(object):
                 pass
             else:
                 raise Exception("%s-不是有效Url！！！" % (url))
+            # 增加前置用例自动执行、效验等功能（与手动发送是一致的）
             # allure中已经注入了日志 若开启会产生三份雷同数据 debug也用不到、暂时补个位
             response = self.session.request(method=method, url=url, headers=headers,
                                             data=data, json=json, params=params, files=files, stream=stream,
                                             verify=verify,
                                             auth=auth, cookies=cookies, hooks=hooks, proxies=proxies, cert=cert,
-                                            timeout=10 if timeout is None else int(timeout))
+                                            timeout=1 if timeout is None else int(timeout))
             req_code = self.getStatusCode(response)
             req_text = self.getText(response)
             req_headers = self.getHeaders(response)
             req_encoding = self.getEncoding(response)
-            req_httpxd = self.getHttpxd(response) # 获取请求方式，实际没有意义
+            req_httpxd = self.getHttpxd(response)  # 获取请求方式，实际没有意义
             req_timeout = self.getResponseTime(response)
             req_content = self.getContent(response)
             req_reason = self.getReason(response)
-            req_datas = {"ResponseCode": [req_code, self.getNotice(req_code)],"ResponseHttpxd":req_httpxd,"ResponseReason": req_reason, "ResponseTime": req_timeout,
-                         "ResponseEncoding": req_encoding, "ResponseHeaders": req_headers, "ResponseContent": req_content, "ResponseText": req_text}
+            req_datas = {"ResponseCode": [req_code, self.getNotice(req_code)], "ResponseHttpxd": req_httpxd,
+                         "ResponseReason": req_reason, "ResponseTime": req_timeout,
+                         "ResponseEncoding": req_encoding, "ResponseHeaders": req_headers,
+                         "ResponseContent": req_content, "ResponseText": req_text}
             self.resLog(req_datas)
             # 提取变量
             if req_content is not None and extracts is not None:
@@ -349,10 +439,12 @@ class Httpx(object):
                 assertEqual(validations=examines, code=req_code, reason=req_reason, content=req_content, text=req_text,
                             time=req_timeout, variables=variables)
             elif examines == {} and assert_data is not None:  # Yaml中未定义 但是case中声明
-                assertEqual(validations=assert_data, code=req_code, reason=req_reason, content=req_content, text=req_text,
+                assertEqual(validations=assert_data, code=req_code, reason=req_reason, content=req_content,
+                            text=req_text,
                             time=req_timeout, variables=variables)
             elif examines != {} and assert_data is not None:  # 若二者都有则以最后定义的为主
-                assertEqual(validations=assert_data, code=req_code, reason=req_reason, content=req_content, text=req_text,
+                assertEqual(validations=assert_data, code=req_code, reason=req_reason, content=req_content,
+                            text=req_text,
                             time=req_timeout, variables=variables)
             if seesion_ is True:
                 self.closeSession()

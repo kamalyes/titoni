@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： LogUtils.py
 # Author : YuYanQing
 # Desc: 日志处理
 # Date： 2020/7/15 16:15
-'''
+"""
 import os
 import time,logging,shutil
 import datetime,BaseSetting

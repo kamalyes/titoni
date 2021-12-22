@@ -25,7 +25,8 @@ test_setup:
     request:
       method: post
       url:  https://www.so.com/s
-      params: {"Int": "{{Int}}","ComputeTime": "{{ComputeTime}}","Letters": "{{Letters}}","Sample": "{{Sample}}"}
+      #shader: {"path":"file_path","file":"file_name","var_key":"key", "method":"params"}
+      shader: {"file":"test_shader.yaml", "method":"params"}
     validations:
       expected_code: 200
       expected_content: {"code":200,"message":"","error":"","details":null}
@@ -88,6 +89,7 @@ test_setup:
       expected_content: {"code":200,"message":"","error":"","details":null}
       expected_time: 10
   search_006:
+    tlackback: ["randInt(1,100)","randInt(1,100)"]
     allures:
       severity: critical
       description: 这是继承测试的用例描述
@@ -105,6 +107,8 @@ test_setup:
       expected_content: {"code":200,"message":"","error":"","details":null}
       expected_time: 10
   search_007:
+    #depends: ["test_helper.yaml","search_001,search_002"]
+    depends: {"path":"test_helper.yaml","case":["search_001","search_002"]}
     allures:
       severity: critical
       description: 这是继承测试的用例描述

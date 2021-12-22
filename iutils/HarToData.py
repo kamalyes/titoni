@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： HarToData.py
 # Author : YuYanQing
 # Desc: Har数据包转换为Json或Yaml文件
 # Date： 2021/6/11 15:01
-'''
+"""
 import io
 import os
 import sys
@@ -102,12 +102,13 @@ class HarParser(object):
         join_url = self.joinUrl("{}://{}".format(_scheme, _netloc), _path)
         har_method = har_request.get("method").lower()
         har_headers = har_request.get("headers")
-        loc = locals()
-        for index in ["params", "text", "queryString"]:
-            if index == "queryString":
-                exec('post_data.update({index} = har_request.get("{index}"))'.format(index=index))
-            else:
-                exec('post_data.update({index} = har_request.get("postData").get("{index}"))'.format(index=index))
+        if har_method not in ["get"]:
+            loc = locals()
+            for index in ["params", "text", "queryString"]:
+                if index == "queryString":
+                    exec('post_data.update({index} = har_request.get("{index}"))'.format(index=index))
+                else:
+                    exec('post_data.update({index} = har_request.get("postData").get("{index}"))'.format(index=index))
         name = _path.replace("/", "_")
         for i in range(len(har_headers)):
             index = har_headers[i].get("name").lower()
@@ -115,16 +116,13 @@ class HarParser(object):
                            "accept-language", "authorization"]
             if index in header_list:
                 headers.update({index: har_headers[i].get("value")})
-        # 获取响应后的信息
-        response = data.get("response")
-        statusCode = response.get("statusCode")
-        statusText = response.get("statusText")
-        content = response.get("content").get("text").encode("utf-8")
         if self.checkSuffix(har_url) is True:
             case_data.update({"config": [{"headers": headers}, {"allures": self.alluer_tags},
                                          {"request": {"method": har_method,
                                                       "url": join_url if join_url else  har_url}}],
                               "test_setup": {name: {"headers": "子级扩展头部信息（写法与父类一致）", "request": post_data,
+                                                    "tlackback": ["**kwargs"],
+                                                    "depend": '["xxx.yaml","case","**kwargs"] {"path":"xxx.yaml","case":"test_setup下的case_name"}',
                                                     "allures": "子级扩展allure配置（写法与父类一致）",
                                                     "validations": {"expected_time": data.get("time"),
                                                                     "expected_code": "${expected_code}",
@@ -155,12 +153,13 @@ class HarParser(object):
         join_url = self.joinUrl("{}://{}".format(_scheme, _netloc), _path)
         har_method = har_request.get("method").lower()
         har_headers = har_request.get("headers")
-        loc = locals()
-        for index in ["params","text","queryString"]:
-            if  index == "queryString":
-                exec('post_data.update({index} = har_request.get("{index}"))'.format(index=index))
-            else:
-                exec('post_data.update({index} = har_request.get("postData").get("{index}"))'.format(index=index))
+        if har_method not in ["get"]:
+            loc = locals()
+            for index in ["params","text","queryString"]:
+                if  index == "queryString":
+                    exec('post_data.update({index} = har_request.get("{index}"))'.format(index=index))
+                else:
+                    exec('post_data.update({index} = har_request.get("postData").get("{index}"))'.format(index=index))
         name = _path.replace("/", "_")
         for i in range(len(har_headers)):
             index = har_headers[i].get("name").lower()
@@ -173,16 +172,20 @@ class HarParser(object):
         statusCode = response.get("statusCode")
         statusText = response.get("statusText")
         content = response.get("content").get("text").encode("utf-8")
+        content_ = "" if isinstance(content, bytes) else str(eval(content))
         if self.checkSuffix(har_url) is True:
             case_data.update({"config": [{"headers": headers}, {"allures": self.alluer_tags},
                                       {"request": {"method": har_method, "url": join_url if join_url else  har_url}}],
-                           "test_setup": {name: {"headers": "子级扩展头部信息（写法与父类一致）","request": post_data, "allures": "子级扩展allure配置（写法与父类一致）",
+                           "test_setup": {name: {"headers": "子级扩展头部信息（写法与父类一致）","request": post_data,
+                                                 "tlackback": ["**kwargs"],
+                                                 "depend": '["xxx.yaml","case","**kwargs"] {"path":"xxx.yaml","case":"test_setup下的case_name"}',
+                                                 "allures": "子级扩展allure配置（写法与父类一致）",
                                                  "validations": {"expected_time": data.get("time"),
                                                                  "expected_code": statusCode,
                                                                  "expected_reason": statusText,
-                                                                 "expected_text": str(eval(content)),
+                                                                 "expected_text": content_,
                                                                  "expected_border": "[left, own, right]",
-                                                                 "expected_content": str(eval(content)),
+                                                                 "expected_content": content_,
                                                                  "expected_field": [{"$.variables1": "value1"},
                                                                                         {"$.variables2": "value2"}],
                                                                  "expected_schema": "json_schema"},
@@ -226,7 +229,7 @@ class HarParser(object):
             har_info = self.getHarInfo(har_entries[i])
             head, tail = os.path.split(file_path)
             out_path = Route.getPath("debug") if head is "" else head
-            out_file = os.path.join(out_path,tail.replace(".har", ""))
+            out_file = os.path.join(out_path,list(har_info["test_setup"].keys())[0])
             if os.path.exists(out_path) is False:
                 os.makedirs(out_path)
             self.writeFile(har_info, r"%s.%s" % (out_file, out_type), out_type)

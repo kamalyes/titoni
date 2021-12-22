@@ -3,7 +3,7 @@
 pytest默认按字母顺序去执行的（小写英文--->大写英文--->0-9数字）按照ASCLL码排序，文件内的用例按照从上往下执行
 
 ```
-setup_module->setup_claas->setup_function->testcase->teardown_function->teardown_claas->teardown_module
+setup_module->setup_class->setup_function->testcase->teardown_function->teardown_claas->teardown_module
 ```
 
 可以通过第三方插件pytest-ordering实现自定义用例执行顺序 [官方文档](https://pytest-ordering.readthedocs.io/en/develop/)

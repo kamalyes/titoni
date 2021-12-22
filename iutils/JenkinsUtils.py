@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
 '''
 # FileName： Jenkins.py
@@ -77,9 +77,9 @@ BUILD_WITH_PARAMS_JOB = '%(folder_url)sjob/%(short_name)s/buildWithParameters'
 BUILD_INFO = '%(folder_url)sjob/%(short_name)s/%(number)d/api/json?depth=%(depth)s'
 BUILD_CONSOLE_OUTPUT = '%(folder_url)sjob/%(short_name)s/%(number)d/consoleText'
 BUILD_ENV_VARS = '%(folder_url)sjob/%(short_name)s/%(number)d/injectedEnvVars/api/json' + \
-    '?depth=%(depth)s'
+                 '?depth=%(depth)s'
 BUILD_TEST_REPORT = '%(folder_url)sjob/%(short_name)s/%(number)d/testReport/api/json' + \
-    '?depth=%(depth)s'
+                    '?depth=%(depth)s'
 DELETE_BUILD = '%(folder_url)sjob/%(short_name)s/%(number)s/doDelete'
 WIPEOUT_JOB_WORKSPACE = '%(folder_url)sjob/%(short_name)s/doWipeOutWorkspace'
 NODE_LIST = 'computer/api/json?depth=%(depth)s'
@@ -102,14 +102,15 @@ DELETE_PROMOTION = '%(folder_url)sjob/%(short_name)s/promotion/process/%(name)s/
 CREATE_PROMOTION = '%(folder_url)sjob/%(short_name)s/promotion/createProcess?name=%(name)s'
 CONFIG_PROMOTION = '%(folder_url)sjob/%(short_name)s/promotion/process/%(name)s/config.xml'
 LIST_CREDENTIALS = '%(folder_url)sjob/%(short_name)s/credentials/store/folder/' \
-                    'domain/%(domain_name)s/api/json?tree=credentials[id]'
+                   'domain/%(domain_name)s/api/json?tree=credentials[id]'
 CREATE_CREDENTIAL = '%(folder_url)sjob/%(short_name)s/credentials/store/folder/' \
                     'domain/%(domain_name)s/createCredentials'
 CONFIG_CREDENTIAL = '%(folder_url)sjob/%(short_name)s/credentials/store/folder/' \
                     'domain/%(domain_name)s/credential/%(name)s/config.xml'
 CREDENTIAL_INFO = '%(folder_url)sjob/%(short_name)s/credentials/store/folder/' \
-                    'domain/%(domain_name)s/credential/%(name)s/api/json?depth=0'
+                  'domain/%(domain_name)s/credential/%(name)s/api/json?depth=0'
 QUIET_DOWN = 'quietDown'
+
 
 class JenkinsException(Exception):
     '''General exception type for jenkins-API-related failures.'''
@@ -140,11 +141,12 @@ class WrappedSession(requests.Session):
     """
 
     def mergeEnvSettings(self, url, proxies, stream, verify, *args,
-                                   **kwargs):
+                         **kwargs):
         if self.verify is False:
             verify = False
 
-        return super(WrappedSession, self).merge_environment_settings(url,proxies,stream,verify,*args,**kwargs)
+        return super(WrappedSession, self).merge_environment_settings(url, proxies, stream, verify, *args, **kwargs)
+
 
 class Plugin(dict):
     '''Dictionary object containing plugin metadata.'''
@@ -166,6 +168,7 @@ class Plugin(dict):
         if key == 'version':
             value = PluginVersion(value)
         super(Plugin, self).__setitem__(key, value)
+
 
 class PluginVersion(str):
     '''Class providing comparison capabilities for plugin versions.'''
@@ -395,7 +398,7 @@ class Jenkins(object):
                 "Could not parse JSON info for job[%s]" % name)
 
     def getJobInfoRegex(self, pattern, depth=0, folder_depth=0,
-                           folder_depth_per_request=10):
+                        folder_depth_per_request=10):
         '''Get a list of jobs information that contain names which match the
            regex pattern.
 
@@ -408,7 +411,7 @@ class Jenkins(object):
         '''
         result = []
         jobs = self.getAllJobs(folder_depth=folder_depth,
-                                 folder_depth_per_request=folder_depth_per_request)
+                               folder_depth_per_request=folder_depth_per_request)
         for job in jobs:
             if re.search(pattern, job['name']):
                 result.append(self.getJobInfo(job['name'], depth=depth))
@@ -891,7 +894,7 @@ class Jenkins(object):
             return self.getViewJobs(name=view_name)
         else:
             return self.getAllJobs(folder_depth=folder_depth,
-                                     folder_depth_per_request=folder_depth_per_request)
+                                   folder_depth_per_request=folder_depth_per_request)
 
     def getAllJobs(self, folder_depth=None, folder_depth_per_request=10):
         """Get list of all jobs recursively to the given folder depth.
@@ -950,7 +953,7 @@ class Jenkins(object):
                         if any('url' not in child for child in job['jobs']):
                             url_path = ''.join(['/job/' + p for p in path])
                             children = self.getInfo(url_path,
-                                                     query=jobs_query)['jobs']
+                                                    query=jobs_query)['jobs']
                         jobs.append((lvl + 1, path, children))
         return jobs_list
 
@@ -1074,7 +1077,7 @@ class Jenkins(object):
         return len(self.getAllJobs())
 
     def assertJobExists(self, name,
-                          exception_message='job[%s] does not exist'):
+                        exception_message='job[%s] does not exist'):
         '''Raise an exception if a job does not exist
 
         :param name: Name of Jenkins job, ``str``
@@ -1197,7 +1200,7 @@ class Jenkins(object):
         if parameters:
             if token:
                 if isinstance(parameters, list):
-                    parameters.append(('token', token, ))
+                    parameters.append(('token', token,))
                 elif isinstance(parameters, dict):
                     parameters.update({'token': token})
                 else:
@@ -1291,10 +1294,10 @@ class Jenkins(object):
         # using a groovy script because Jenkins does not provide a REST endpoint
         # for installing plugins.
         install = ('Jenkins.instance.updateCenter.getPlugin(\"' + name + '\")'
-                   '.deploy();')
+                                                                         '.deploy();')
         if include_dependencies:
             install = ('Jenkins.instance.updateCenter.getPlugin(\"' + name + '\")'
-                       '.getNeededDependencies().each{it.deploy()};') + install
+                                                                             '.getNeededDependencies().each{it.deploy()};') + install
 
         self.runScript(install)
         # runScript is an async call to run groovy. we need to wait a little
@@ -1327,7 +1330,7 @@ class Jenkins(object):
         """
         folder_url, short_name = self.getJobFolder(name)
         self.jenkinsOpen(requests.Request('POST',
-                          self.buildUrl(DELETE_BUILD, locals()), b''))
+                                          self.buildUrl(DELETE_BUILD, locals()), b''))
 
     def wipeoutJobWorkspace(self, name):
         """Wipe out workspace for given Jenkins job.
@@ -1336,8 +1339,8 @@ class Jenkins(object):
         """
         folder_url, short_name = self.getJobFolder(name)
         self.jenkinsOpen(requests.Request('POST',
-                          self.buildUrl(WIPEOUT_JOB_WORKSPACE,
-                                          locals()), b''))
+                                          self.buildUrl(WIPEOUT_JOB_WORKSPACE,
+                                                        locals()), b''))
 
     def getRunningBuilds(self):
         '''Return list of running builds.
@@ -1441,7 +1444,7 @@ class Jenkins(object):
             return False
 
     def assertNodeExists(self, name,
-                           exception_message='node[%s] does not exist'):
+                         exception_message='node[%s] does not exist'):
         '''Raise an exception if a node does not exist
 
         :param name: Name of Jenkins node, ``str``
@@ -1491,8 +1494,8 @@ class Jenkins(object):
         ))
 
     def createNode(self, name, numExecutors=2, nodeDescription=None,
-                    remoteFS='/var/lib/jenkins', labels=None, exclusive=False,
-                    launcher=LAUNCHER_COMMAND, launcher_params={}):
+                   remoteFS='/var/lib/jenkins', labels=None, exclusive=False,
+                   launcher=LAUNCHER_COMMAND, launcher_params={}):
         '''Create a node
 
         :param name: name of node to create, ``str``
@@ -1522,7 +1525,7 @@ class Jenkins(object):
             'mode': mode,
             'retentionStrategy': {
                 'stapler-class':
-                'hudson.slaves.RetentionStrategy$Always'
+                    'hudson.slaves.RetentionStrategy$Always'
             },
             'nodeProperties': {'stapler-class-bag': 'true'},
             'launcher': launcher_params
@@ -1660,7 +1663,7 @@ class Jenkins(object):
             return name
 
     def assertViewExists(self, name,
-                           exception_message='view[%s] does not exist'):
+                         exception_message='view[%s] does not exist'):
         '''Raise an exception if a view does not exist
 
         :param name: Name of Jenkins view, ``str``
@@ -1770,8 +1773,8 @@ class Jenkins(object):
             return actual
 
     def assertPromotionExists(self, name, job_name,
-                                exception_message='promotion[%s] does not '
-                                'exist for job[%s]'):
+                              exception_message='promotion[%s] does not '
+                                                'exist for job[%s]'):
         '''Raise an exception if a job lacks a promotion
 
         :param name: Name of Jenkins promotion, ``str``
@@ -1854,7 +1857,7 @@ class Jenkins(object):
             'POST', self.buildUrl(CREATE_PROMOTION, locals()),
             data=config_xml.encode('utf-8'), headers=DEFAULT_HEADERS))
         self.assertPromotionExists(name, job_name, 'create[%s] at '
-                                     'job[%s] failed')
+                                                   'job[%s] failed')
 
     def reconfigPromotion(self, name, job_name, config_xml):
         '''Change configuration of existing Jenkins promotion.
@@ -1921,11 +1924,11 @@ class Jenkins(object):
         :returns: ``True`` if job is folder, ``False`` otherwise
         '''
         return 'com.cloudbees.hudson.plugins.folder.Folder' \
-            == self.getJobInfo(name)['_class']
+               == self.getJobInfo(name)['_class']
 
     def assertCredentialExists(self, name, folder_name, domain_name='_',
-                                 exception_message='credential[%s] does not '
-                                 'exist in the domain[%s] of [%s]'):
+                               exception_message='credential[%s] does not '
+                                                 'exist in the domain[%s] of [%s]'):
         '''Raise an exception if credential does not exist in domain of folder
 
         :param name: Name of credential, ``str``
@@ -1951,7 +1954,7 @@ class Jenkins(object):
         '''
         try:
             return self.getCredentialInfo(name, folder_name,
-                                            domain_name)['id'] == name
+                                          domain_name)['id'] == name
         except JenkinsException:
             return False
 
@@ -1998,10 +2001,10 @@ class Jenkins(object):
         folder_url, short_name = self.getJobFolder(folder_name)
         return self.jenkinsOpen(requests.Request(
             'GET', self.buildUrl(CONFIG_CREDENTIAL, locals())
-            ))
+        ))
 
     def createCredential(self, folder_name, config_xml,
-                          domain_name='_'):
+                         domain_name='_'):
         '''Create credentail in domain of folder
 
         :param folder_name: Folder name, ``str``
@@ -2021,8 +2024,8 @@ class Jenkins(object):
             headers=DEFAULT_HEADERS
         ))
         self.assertCredentialExists(name, folder_name, domain_name,
-                                      'create[%s] failed in the '
-                                      'domain[%s] of [%s]')
+                                    'create[%s] failed in the '
+                                    'domain[%s] of [%s]')
 
     def deleteCredential(self, name, folder_name, domain_name='_'):
         '''Delete credential from domain of folder
@@ -2034,7 +2037,7 @@ class Jenkins(object):
         folder_url, short_name = self.getJobFolder(folder_name)
         self.jenkinsOpen(requests.Request(
             'DELETE', self.buildUrl(CONFIG_CREDENTIAL, locals())
-            ))
+        ))
         if self.credentialExists(name, folder_name, domain_name):
             raise JenkinsException('delete credential[%s] from '
                                    'domain[%s] of [%s] failed'
@@ -2143,7 +2146,8 @@ class Jenkins(object):
 
         return False
 
+
 if __name__ == '__main__':
-    jk = Jenkins(url=r"http://localhost:8080/jenkins",username="Bravebirds",password="QINg0201$")
+    jk = Jenkins(url=r"http://localhost:8080/jenkins", username="Bravebirds", password="QINg0201$")
     print(jk.getAllJobs())
-    print(jk.getBuildInfo(name="YamlInterfaceTests",number=9))
+    print(jk.getBuildInfo(name="YamlInterfaceTests", number=9))

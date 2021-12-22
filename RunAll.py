@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： RunAllCase.py
 # Author : YuYanQing
 # Desc: PyCharm
 # Date： 2021/3/27 17:28
-'''
+"""
 import os
 import sys
 import time
@@ -15,8 +15,11 @@ from BaseSetting import Route
 from iutils.Shell import Shell
 from iutils.LogUtils import Logger
 from iutils.DateUtils import Moment
+from iutils.AwmCase import writeCase
+from iutils.Exceptions import PyVersion
 
 if __name__ == '__main__':
+    PyVersion()
     shell = Shell()
     Logger.deleteLog(30)
     path = Route.getPath("report_data")

@@ -1,20 +1,24 @@
 # -*- coding:utf-8 -*-
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： Wrapper.py
 # Author : YuYanQing
 # Desc: 语法糖（装饰器模块）
 # Date： 2021/7/5 11:37
-'''
+"""
 import time
 from iutils.LogUtils import Logger
 from functools import (wraps, WRAPPER_ASSIGNMENTS, WRAPPER_UPDATES)
+
 logger = Logger.writeLog()
+
 
 def countTime(model):
     """
     给目标函数加上计算运行时间统计
     """
+
     # 这个装上器和update_wrapper一样，默认参数WRAPPER_ASSIGNMENTS, WRAPPER_UPDATES
     def init_wrapper(func):
         @wraps(func)
@@ -23,17 +27,20 @@ def countTime(model):
             # 定义result接收函数返回值，并且在装饰函数最后返回回去
             resutl = func(*args, **kwargs)
             elapsed_time = time.time() - start_time
-            if elapsed_time<3:
+            if elapsed_time < 3:
                 logger.info('%s-总耗时：%s(正常范围内)' % (model, elapsed_time))
-            elif elapsed_time>5 and elapsed_time<15:
+            elif elapsed_time > 5 and elapsed_time < 15:
                 logger.warning('%s-总耗时：%s(需要注意)' % (model, elapsed_time))
             else:
                 logger.error('%s-总耗时：%s(超时)' % (model, elapsed_time))
             return resutl
+
         # 其中默认参数 WRAPPER_ASSIGNMENTS, WRAPPER_UPDATES
         # update_wrapper(wrapper, func)
         return wrapper
+
     return init_wrapper
+
 
 if __name__ == '__main__':
     @countTime("（自定义模块名）")
@@ -43,6 +50,7 @@ if __name__ == '__main__':
         """
         time.sleep(1)
         return sum([x for x in range(num + 1)])
+
 
     print('函数名：', add.__name__)
     print('属性字典：', add.__dict__)

@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
-#!/usr/bin/env python 3.7
+# !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： Loader.py
 # Author : YuYanQing
 # Desc: 加载文件
 # Date： 2021/6/11 15:15
-'''
+"""
 import os
 import sys
 import csv
@@ -59,8 +59,10 @@ class Loader(object):
                     return json_content
             else:
                 raise FileNotFoundError("本地没有这个文件")
-        except json.JSONDecodeError as ex:
-            raise FileFormatError("JSONDecodeError:\nfile: %s\nerror: %s"%(file_path,ex))
+        # except json.JSONDecodeError as ex:
+        #     raise FileFormatError("JSONDecodeError:\nfile: %s\nerror: %s"%(file_path,ex))
+        except json.JSONDecodeError:
+            return False # 先降级
 
     def csvFile(self,file_path: Text=None) -> List[Dict]:
         """
