@@ -78,7 +78,8 @@ def conversType(dict_map: dict, disable_data: list = []) -> dict:
                 dict_map[key] = int(dict_map[key])
             elif str(dict_map[key]) == "null":  # 统一处理str无法转化None
                 dict_map[key] = None
-        return json.dumps(dict_map, ensure_ascii=False).replace('\\"', '"').replace('"{', "{").replace('}"',"}")  # 临时打个补丁 后续若报错则需再次做兼容
+        return json.dumps(dict_map, ensure_ascii=False).replace('\\"', '"').replace('"{', "{").replace('}"',
+                                                                                                       "}")  # 临时打个补丁 后续若报错则需再次做兼容
     else:
         raise TypeError("传入的参数不是dict类型 %s" % (type(dict_map)))
 
@@ -93,6 +94,7 @@ def convertDictToXFrom(post_data):
         return "&".join(["{}={}".format(key, value) for key, value in post_data.items()])
     else:
         return post_data
+
 
 def convertXFormToDict(post_data):
     """
@@ -112,6 +114,7 @@ def convertXFormToDict(post_data):
     else:
         return post_data
 
+
 def convertListToDict(origin_list):
     """
     list转dict
@@ -119,6 +122,7 @@ def convertListToDict(origin_list):
     :return: dict:{"v": "1", "w": "2"}
     """
     return {item["name"]: item.get("value") for item in origin_list}
+
 
 def capitalToLower(dict_map):
     """
@@ -130,6 +134,7 @@ def capitalToLower(dict_map):
     for key in list(dict_map.keys()):
         new_dict[key.lower()] = dict_map[key]
     return new_dict
+
 
 def lowerToCapital(dict_map):
     """

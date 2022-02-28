@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # FileName： Processor.py
 # Author : YuYanQing
 # Desc: An XPath for JSON 后置处理
 # Date： 2021/6/27 11:50
-'''
+"""
 import re
 import sys
 from lxml import etree

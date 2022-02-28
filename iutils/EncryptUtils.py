@@ -10,8 +10,9 @@
 import base64
 from hashlib import sha1, md5
 
+
 class CipherHelper:
-    def base64Encrypt(self,key):
+    def base64Encrypt(self, key):
         """
         base64 算法加密
         :return:加密后的字符

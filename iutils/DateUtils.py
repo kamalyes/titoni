@@ -10,8 +10,9 @@
 import time
 import datetime
 
+
 class Moment(object):
-    def getTime(self,layout)->str:
+    def getTime(self, layout) -> str:
         """
         获取时间
         :param time_type: 现在的时间now， 其他时间else_time
@@ -32,14 +33,14 @@ class Moment(object):
             datetime_object = datetime.datetime.now()
             now_timetuple = datetime_object.timetuple()
             now_second = time.mktime(now_timetuple)
-            tim =int(now_second*1000 + datetime_object.microsecond/1000)
+            tim = int(now_second * 1000 + datetime_object.microsecond / 1000)
         # 按传入格式获取时间
         else:
             tim = tim.strftime(layout)
         return tim
 
-    def computeDate(self, days=0,seconds=0, microseconds=0,
-                milliseconds=0, minutes=0, hours=0, weeks=0,custom=None):
+    def computeDate(self, days=0, seconds=0, microseconds=0,
+                    milliseconds=0, minutes=0, hours=0, weeks=0, custom=None):
         """
         日期偏移
         :param days:
@@ -55,10 +56,11 @@ class Moment(object):
             >>> print(Moment.computeDate(-6))
         """
         if custom is not None:
-            today = datetime.datetime.strptime(custom,'%Y-%m-%d %H:%M:%S')
+            today = datetime.datetime.strptime(custom, '%Y-%m-%d %H:%M:%S')
         else:
             today = datetime.datetime.now()
-        return (today + datetime.timedelta(days, seconds, microseconds, milliseconds, minutes, hours, weeks)).strftime('%Y-%m-%d %H:%M:%S')
+        return (today + datetime.timedelta(days, seconds, microseconds, milliseconds, minutes, hours, weeks)).strftime(
+            '%Y-%m-%d %H:%M:%S')
 
     def timestampToDate(self, timestamp):
         """
@@ -92,7 +94,7 @@ class Moment(object):
             date_str = begin_date.strftime("%Y-%m-%d")
             date_list.append(date_str)
             begin_date += datetime.timedelta(days=1)
-        print('中间共计%s天' %str(len(date_list)))
+        print('中间共计%s天' % str(len(date_list)))
         return date_list
 
     def getSingletime(self, singletime):
@@ -107,7 +109,7 @@ class Moment(object):
         time_stamp = int(time.mktime(singletime))
         return time_stamp
 
-    def setSleepTime(self,timestamp):
+    def setSleepTime(self, timestamp):
         """
         休眠xx时间
         :param timestamp:
@@ -115,7 +117,7 @@ class Moment(object):
         """
         time.sleep(timestamp)
 
-    def compareTime(self,time1,time2):
+    def compareTime(self, time1, time2):
         """
         时间比较
         :param time1:
@@ -124,11 +126,12 @@ class Moment(object):
         Example::
             >>> print(Moment.compareTime("2021-08-23 17:11:37", "2021-08-22 17:11:37"))
         """
-        time1 = datetime.datetime.strptime(time1,'%Y-%m-%d %H:%M:%S')
-        time2 = datetime.datetime.strptime(time2,'%Y-%m-%d %H:%M:%S')
-        if time1>time2:
+        time1 = datetime.datetime.strptime(time1, '%Y-%m-%d %H:%M:%S')
+        time2 = datetime.datetime.strptime(time2, '%Y-%m-%d %H:%M:%S')
+        if time1 > time2:
             return True
         else:
             return False
+
 
 Moment = Moment()

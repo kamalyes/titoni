@@ -13,6 +13,7 @@ from iutils.Loader import Loader
 from iutils.LogUtils import Logger
 from iutils.Processor import JsonPath
 
+
 class YamlHandle(object):
     def __init__(self):
         self.logger = Logger.writeLog()

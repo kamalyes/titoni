@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 # !/usr/bin/env python 3.7
 # Python version 2.7.16 or 3.7.6
-'''
+"""
 # File  : IDCards.py
 # Author: YuYanQing
 # Desc  : 身份证效验&随机生成身份证信息
 # Date  : 2020/10/15 15:01
-'''
+"""
 import re
 import random
 from iutils import AreaCode

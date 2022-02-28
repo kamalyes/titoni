@@ -11,6 +11,7 @@ import os
 import shutil
 import zipfile
 
+
 class FileHander(object):
     def getCurrentPath(self):
         """
@@ -230,6 +231,7 @@ class FileHander(object):
             name, suffix = os.path.splitext(tail)
             return suffix.lower()
 
+
 FileHander = FileHander()
 
 if __name__ == '__main__':
@@ -241,5 +243,6 @@ if __name__ == '__main__':
     # FileHander.makeFile(file_path)
     # FileHander.getDirList(file_path)
     from BaseSetting import Route
+
     print(FileHander.depthScanFile(Route.getPath("variables"), "yaml"))
     print(FileHander.readFileType(os.path.join(Route.getPath("variables"), "global.yaml")))

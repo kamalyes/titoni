@@ -13,6 +13,7 @@ from typing import Text, Any, Union
 from iutils.Helper import citeHelper
 from iutils.Processor import HtmlPath
 
+
 def numMatch(method, actual_value: Union[int, float], expect_value: Union[int, float], message: Text = ""):
     """
     number比较
@@ -36,6 +37,7 @@ def numMatch(method, actual_value: Union[int, float], expect_value: Union[int, f
     elif method == "notEqual":
         assert actual_value != expect_value, message
 
+
 def strMatch(method, actual_value: Text, expect_value: Any, message: Text = ""):
     """
     字符串比较
@@ -56,6 +58,7 @@ def strMatch(method, actual_value: Text, expect_value: Any, message: Text = ""):
     elif method == "strLength":
         assert len(actual_value) == len(expect_value), message
 
+
 def typeMatch(actual_value: Any, expect_value: Any, message: Text = ""):
     """
     俩值类型比较
@@ -69,6 +72,7 @@ def typeMatch(actual_value: Any, expect_value: Any, message: Text = ""):
     """
     assert type(actual_value) == type(expect_value), message
 
+
 def startSwith(actual_value: Any, expect_value: Any, message: Text = ""):
     """
     实际值的开头等于预期
@@ -79,6 +83,7 @@ def startSwith(actual_value: Any, expect_value: Any, message: Text = ""):
     """
     assert str(actual_value).startswith(str(expect_value)), message
 
+
 def endSwith(actual_value: Text, expect_value: Any, message: Text = ""):
     """
     实际值的结尾等于预期
@@ -88,6 +93,7 @@ def endSwith(actual_value: Text, expect_value: Any, message: Text = ""):
     :return:
     """
     assert str(actual_value).endswith(str(expect_value)), message
+
 
 def legalValues(contrast: Text):
     """
@@ -123,6 +129,7 @@ def legalValues(contrast: Text):
     else:
         return contrast
 
+
 def dimMethod(contrast: Text):
     """
     通过模糊值返回指定func及内部method
@@ -138,6 +145,7 @@ def dimMethod(contrast: Text):
         return ["numMatch", method]
     else:
         return method
+
 
 def equalData(method, actual_value: Any, expect_value: Any, message: Text = ""):
     """
@@ -163,11 +171,12 @@ def equalData(method, actual_value: Any, expect_value: Any, message: Text = ""):
                              expect_value, "实际值", actual_value)
     except TypeError:
         raise TypeError("{}比较函数错误".format(func + "-" if 'func' in locals().keys() else "",
-                        method if 'method' in locals().keys() else "")
+                                          method if 'method' in locals().keys() else "")
                         if isinstance(dim_method, list) else "{}比较函数错误".format(
             func if 'func' in locals().keys() else ""))
 
-def assertEqual(validations: dict, code=None,reason=None, time=None, content=None, text=None, variables=None):
+
+def assertEqual(validations: dict, code=None, reason=None, time=None, content=None, text=None, variables=None):
     """
     校验测试结果 （备注 有局限 若多重效验后者不会执行 程序直接跳出）
     :param validations: 预期效验值
@@ -216,10 +225,11 @@ def assertEqual(validations: dict, code=None,reason=None, time=None, content=Non
                         raise AssertionError("接口响应文本值不匹配！\n %s != %s" % (value, text))
 
                 elif "expected_border" == key:
-                    if isinstance(value,list) and len(value)==3:
+                    if isinstance(value, list) and len(value) == 3:
                         expected_value = value[1]
                         actual_value = HtmlPath.border(sum_str=content, left_str=value[0], right_str=value[2])
-                        allure.attach(name="Assert Border", body="预期Border：{}，实际Border：{}".format(expected_value, actual_value))
+                        allure.attach(name="Assert Border",
+                                      body="预期Border：{}，实际Border：{}".format(expected_value, actual_value))
                         if expected_value != actual_value:
                             raise ("接口响应文本值不匹配！\n %s != %s" % (expected_value, actual_value))
                     else:

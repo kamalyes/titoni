@@ -10,6 +10,7 @@
 from pymongo import MongoClient
 from urllib.parse import quote_plus
 
+
 class MongoTool(object):
     def __init__(self, host, port=27017, username=None, password=None, db_name=None, set_name=None):
         self.db_name = db_name

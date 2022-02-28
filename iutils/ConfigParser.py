@@ -9,15 +9,17 @@
 """
 import configparser
 from iutils.LogUtils import Logger
-logger = Logger.write_log()#调用日志模块
+
+logger = Logger.write_log()  # 调用日志模块
+
 
 class IniHandle():
-    def __init__(self,filepath=None):
+    def __init__(self, filepath=None):
         self.conf = configparser.ConfigParser()
         self.conf.read(filepath, encoding="utf-8")
 
     @classmethod
-    def openConfig(self,filepath=None):
+    def openConfig(self, filepath=None):
         """
         打开指定的ini文件
         :param filepath:
@@ -28,9 +30,9 @@ class IniHandle():
             conf.read(filepath, encoding="utf-8")
             return conf
         except Exception as FileNotFoundError:
-            logger.error("文件读取失败，请检查%s是否存在,错误信息：%s"%(filepath,FileNotFoundError))
+            logger.error("文件读取失败，请检查%s是否存在,错误信息：%s" % (filepath, FileNotFoundError))
 
-    def checkSection(self, section,option=None):
+    def checkSection(self, section, option=None):
         """
         检查节点
         :param section:
@@ -41,8 +43,8 @@ class IniHandle():
                 self.conf.has_section(section)
             else:
                 self.conf.has_option(section, option)
-        except Exception as  e:
-            logger.info("无此节点，错误信息%s"%(e))
+        except Exception as e:
+            logger.info("无此节点，错误信息%s" % (e))
 
     def allSection(self):
         """
@@ -51,7 +53,7 @@ class IniHandle():
         """
         return self.conf.sections()
 
-    def options(self,section):
+    def options(self, section):
         """
         获取指定section的所有option的Key
         :return:
@@ -61,7 +63,7 @@ class IniHandle():
         else:
             raise ValueError(section)
 
-    def sectOption(self,section):
+    def sectOption(self, section):
         """
         获取指定section下的option的键值对
         :return: List形式的 [('a', 'b'),('aa', 'bb')]
@@ -69,7 +71,7 @@ class IniHandle():
         if self.conf.has_section(section):
             return self.conf.items(section)
 
-    def optValue(self,node,key):
+    def optValue(self, node, key):
         """
         获取指定section下option的value值
         :param filepath 需要读取的文件
@@ -141,5 +143,6 @@ class IniHandle():
         conf = configparser.ConfigParser()
         conf.read(conf_ini, encoding="utf-8")
         return conf
+
 
 IniHandle = IniHandle()

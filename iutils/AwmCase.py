@@ -12,6 +12,7 @@ from BaseSetting import Route
 from iutils.Loader import Loader
 from testings.control.init import Envision
 
+
 def listDir(path, file_type: str, target_files: list = []):
     """
     列出xx文件目录下所有符合的类型文件绝对路径
@@ -45,7 +46,8 @@ def listDir(path, file_type: str, target_files: list = []):
 
     return target_files
 
-def dynamicExec(case_file,case_name):
+
+def dynamicExec(case_file, case_name):
     """
     动态执行测试用例
     :param case_name:
@@ -55,12 +57,14 @@ def dynamicExec(case_file,case_name):
         >>> print(dynamicExec("test_helper.yaml","search_001"))
     """
     return "from iutils.OkHttps import Httpx\n" \
-		   "from testings.control.init import Envision\n" \
-		   "config = Envision.getYaml('{case_file}')['config']\n" \
-		   "test_setup = Envision.getYaml('{case_file}')['test_setup']\n"\
-           "class TestAutoExec:\n\t"\
-           "def test_{case_name}(self):\n\t"\
-           '\tHttpx.sendApi(auto=True, esdata=[config,test_setup["{case_name}"]])'.format(case_file=case_file,case_name=case_name)
+           "from testings.control.init import Envision\n" \
+           "config = Envision.getYaml('{case_file}')['config']\n" \
+           "test_setup = Envision.getYaml('{case_file}')['test_setup']\n" \
+           "class TestAutoExec:\n\t" \
+           "def test_{case_name}(self):\n\t" \
+           '\tHttpx.sendApi(auto=True, esdata=[config,test_setup["{case_name}"]])'.format(case_file=case_file,
+                                                                                          case_name=case_name)
+
 
 def scanCase():
     """
@@ -69,8 +73,10 @@ def scanCase():
     """
     case_list = []
     for file_path in listDir(Route.getPath("test_yaml"), "yaml"):
-        case_list.append({os.path.split(file_path)[1]:[ts for ts in Envision.getYaml(os.path.split(file_path)[1])['test_setup']]})
+        case_list.append(
+            {os.path.split(file_path)[1]: [ts for ts in Envision.getYaml(os.path.split(file_path)[1])['test_setup']]})
     return case_list
+
 
 def writeCase():
     """
@@ -84,7 +90,7 @@ def writeCase():
                 auto_exec = Route.getPath("auto_exec")
                 if not os.path.exists(auto_exec):
                     os.makedirs(auto_exec)
-                file_path = os.path.join(auto_exec, "{}_{}.py".format(str(key).replace(".yaml",""),case))
+                file_path = os.path.join(auto_exec, "{}_{}.py".format(str(key).replace(".yaml", ""), case))
                 with open(file_path, "w") as file:
                     file.writelines(dynamicExec(key, case))
                 file.close()

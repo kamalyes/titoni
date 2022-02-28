@@ -15,6 +15,7 @@ from BaseSetting import Route
 allure_result = Route.getPath("allure_result")
 allure_report = Route.getPath("allure_report")
 
+
 def setTag(data):
     """
     设置allure标签
@@ -43,9 +44,11 @@ def setTag(data):
         elif key == 'description':
             allure.dynamic.description(value)
 
+
 def delOldResult():
     if os.path.exists(allure_result):
         shutil.rmtree(allure_result)
+
 
 def copyHistory():
     # 复制history文件夹，在本地生成趋势图
@@ -58,6 +61,7 @@ def copyHistory():
         os.makedirs(result_history_dir)
     for file in os.listdir(report_history_dir):
         shutil.copy(os.path.join(allure_report, "history", file), result_history_dir)
+
 
 def runAllureServer():
     os.system("allure open {}".format(allure_report))

@@ -4,75 +4,100 @@
 """
 # FileName： Swagger.py
 # Author : YuYanQing
-# Desc: 将Swagger文档中所有的接口解析为Case
-{
-    "schemes": [],
-    "swagger": "2.0",
-    "info": {
-        "description": "这里是描述",
-        "title": "这里是标题",
-        "contact": {},
-        "version": "1.0"
-    },
-    "host": "10.1.1.242:11001",
-    "basePath": "",
-    "paths":,
-    "definitions":
-    }
-# Date： 2021/7/27 12:37
+# Desc:
+# Date： 2022/2/17 10:15
 """
-import json
-from BaseSetting import Route
+import re
+
+import requests
+from jsonschema import validate
+
 from iutils.OkHttps import Httpx
-from iutils.Loader import Loader
-from iutils.Processor import JsonPath
 
 
-class AnalysisSwagger(object):
+class SwaggerMange:
+    def __init__(self, swagger_docs_url):
+        self.session = requests.session()
+        self.swagger_docs_url = swagger_docs_url
+        self.request_method = ['get', 'head', 'patch', 'options', 'post', 'put', 'delete']
 
-    def __init__(self, swagger_host: str = None):
+    def loadSwaggerDocs(self):
         """
-        设置初始变量
-
-        :param swagger_host
-        """
-        print("""
-             _____      ____ _  __ _  __ _  ___ _ __
-            / __\ \ /\ / / _` |/ _` |/ _` |/ _ \ '__|
-            \__ \\ V  V / (_| | (_| | (_| |  __/ |
-            |___/ \_/\_/ \__,_|\__, |\__, |\___|_|
-                               |___/ |___/
-        """)
-        # swagger_url = swagger_host+"/swagger/doc.json" if isinstance(swagger_host,str) else "http://10.1.1.248:11001"+"/swagger/doc.json"
-        # res = json.loads(Httpx.sendApi(method="get",url=str(swagger_url)).content.decode('UTF-8'))
-        # Loader.writeJson(res, '../debug/swagger-api.json')
-        # return res
-        self.interface = {}  # json接口测试用例类型
-        self.case_list = []  # 测试用例名称
-        self.tags_list = []  # 测试模块标签
-        # 定义测试用例集格式
-        self.http_suite = {"config": {"name": "", "base_url": "", "variables": {}},
-                           "testcases": []}
-        # 定义测试用例格式
-        self.http_testcase = {"name": "", "testcase": "", "variables": {}}
-        res = Loader.jsonFile(Route.joinPath("debug", "swagger-api.json"))
-        print(res)
-        self.data = res['paths']  # 取接口地址返回的path数据,包括了请求的路径
-        self.basePath = res['basePath']  # 获取接口的根路径
-        # 第一错，swagger文档是ip地址，使用https协议会错误,注意接口地址的请求协议
-        self.url = 'http://' + res['host']
-        self.title = res['info']['title']  # 获取接口的标题
-        self.http_suite['config']['name'] = self.title  # 在初始化用例集字典更新值
-        self.http_suite['config']['base_url'] = self.url  # 全局url
-        self.definitions = res['definitions']  # body参数
-
-    def cleanPath(self):
-        """
-        清洗Path
+        加载swagger数据、标准的格式: https://swagger.io/docs/specification/basic-structure/
         :return:
         """
-        pass
+        if re.match(r'^https?:/{2}\w.+$', str(self.swagger_docs_url)):
+            response = self.session.request(method="get", url=self.swagger_docs_url)
+        schema_ = {
+            "type": "object",
+            "required": ["swagger", "host", "basePath", "paths", "definitions", "schemes"],
+            "properties": {
+                "swagger": {"type": "string"},
+                "host": {"type": "string"},
+                "basePath": {"type": "string"},
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "string"}},
+                "paths": {
+                    "type": "object",
+                    "required": [],
+                    "properties": {}
+                },
+                "definitions": {
+                    "type": "object",
+                    "required": [],
+                    "properties": {}
+                },
+                "schemes": {
+                    "type": "array",
+                    "required": [],
+                    "properties": {}
+                }
+            }
+        }
+        res_content = Httpx.getContent(response)
+        validate(instance=res_content, schema=schema_)
+        return res_content
+
+    def breakUpPath(self, data):
+        """
+        拆分path
+        :param data:
+        :return:
+        """
+        consumes = data.get("consumes", None)
+        produces = data.get("produces", None)
+        tags = data.get("tags", None)
+        summary = data.get("summary", None)
+        parameters = data.get("parameters", None)
+        return consumes, produces, tags, summary, parameters
+
+    def subApiInfo(self, swagger_data, grep_path=None, paths_name=None):
+        """
+        过滤并组合相关的接口信息
+        :param paths_name:
+        :param swagger_data:
+        :param grep_path:
+        :return:
+        """
+        for key, value in swagger_data.items():
+            if "/" in key[0]:
+                self.subApiInfo(swagger_data=value, paths_name=key)
+            if key.lower() in self.request_method and not paths_name is None:
+                consumes, produces, tags, summary, parameters = self.breakUpPath(value)
+                # print(paths_name, key, consumes, produces, tags, summary, parameters)
+            if key.lower() == "schema":
+                definitions = value.get("$ref", None)
+                print(definitions)
+            if isinstance(value, dict):
+                self.subApiInfo(swagger_data=value)
+            # path = JsonPath.find(swagger_data, f"$.paths..{grep_path}")
 
 
 if __name__ == '__main__':
-    AnalysisSwagger().cleanPath()
+    swagger_docs_url = "https://gateway.sit.rvet.cn/doctor-api/swagger/doc.json"
+    swagger_mange = SwaggerMange(swagger_docs_url)
+    swagger_docs = swagger_mange.loadSwaggerDocs()
+    grep_path = "/doctor-api/area/list"
+    # swagger_mange.subApiInfo(swagger_data=swagger_docs, grep_path=grep_path)
+    swagger_mange.subApiInfo(swagger_data=swagger_docs)

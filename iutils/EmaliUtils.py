@@ -14,8 +14,9 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
+
 class EMail(object):
-    def __init__(self,user_email=None,passwd=None,title=None,smtp_server=None,addressee=None):
+    def __init__(self, user_email=None, passwd=None, title=None, smtp_server=None, addressee=None):
         '''
         :param self.user_email： 发件人邮箱
         :param self.passwd： 发件人密码

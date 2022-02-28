@@ -10,6 +10,7 @@
 import re
 from math import *
 
+
 def formulaFormat(formula):
     """
     将算式从字符串处理成列表，解决横杠是负号还是减号的问题
@@ -35,6 +36,7 @@ def formulaFormat(formula):
         final_formula += item_split
     return final_formula
 
+
 def isOperator(e):
     """
     判断是否是运算符，如果是返回True
@@ -43,6 +45,7 @@ def isOperator(e):
     """
     opers = ['+', '-', '*', '/', '(', ')', '%', '^', '√', 'sin', 'arcsin', 'ln']
     return True if e in opers else False  # 在for循环中嵌套使用if和else语句
+
 
 def decision(tail_op, now_op):
     """
@@ -82,6 +85,7 @@ def decision(tail_op, now_op):
         else:
             return -1  # 只要栈顶元素为'('且当前元素不是')'，都应压入栈中
 
+
 def calculate(n1, n2, operator):
     """
     传入两个数字，一个运算符，根据运算符不同返回相应结果
@@ -104,6 +108,7 @@ def calculate(n1, n2, operator):
     if operator == '^':
         result = n1 ** n2
     return result
+
 
 def advanced(op_stack, num_stack):
     """
@@ -128,6 +133,7 @@ def advanced(op_stack, num_stack):
         op = op_stack.pop()
         num2 = num_stack.pop()
         num_stack.append(log(num2))
+
 
 def finalCalc(formula_list):
     """

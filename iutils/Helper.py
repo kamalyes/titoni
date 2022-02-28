@@ -20,6 +20,7 @@ from testings.control.path import USER_VARS_PATH, GLOBAL_VAR_PATH
 faker = Factory().create('zh_CN')
 default_elements = string.ascii_letters + string.digits
 
+
 def randInt(min_=1, max_=100):
     """
     随机生成整数
@@ -28,6 +29,7 @@ def randInt(min_=1, max_=100):
     :return:
     """
     return faker.random.randint(min_, max_)
+
 
 def randFloat(min=0, max=1, length=2):
     """
@@ -39,12 +41,14 @@ def randFloat(min=0, max=1, length=2):
     """
     return RandValue.getFloat("{},{},{}".format(min, max, length))
 
+
 def randTime(layout):
     """
     随机生成时间
     :return:
     """
     return str(Moment.getTime(layout))
+
 
 def randComputeTime(days=0, seconds=0, microseconds=0,
                     milliseconds=0, minutes=0, hours=0, weeks=0, custom=None):
@@ -63,6 +67,7 @@ def randComputeTime(days=0, seconds=0, microseconds=0,
     return str(Moment.computeDate(days=days, seconds=seconds, microseconds=microseconds,
                                   milliseconds=milliseconds, minutes=minutes, hours=hours, weeks=weeks, custom=custom))
 
+
 def randLetters(length=10):
     """
     随机生成字母
@@ -70,6 +75,7 @@ def randLetters(length=10):
     :return:
     """
     return ''.join(faker.random_letters(length=length))
+
 
 def randSample(elements=default_elements, length=10):
     """
@@ -80,12 +86,14 @@ def randSample(elements=default_elements, length=10):
     """
     return ''.join(faker.random_choices(elements=str(elements), length=length))
 
+
 def randNumber():
     """
     随机生成手机号
     :return:
     """
     return faker.phone_number()
+
 
 def randName():
     """
@@ -94,12 +102,14 @@ def randName():
     """
     return faker.name()
 
+
 def randAddress():
     """
     随机生成所在地址
     :return:
     """
     return faker.address()
+
 
 def randCountry():
     """
@@ -108,12 +118,14 @@ def randCountry():
     """
     return faker.country()
 
+
 def randCountryCode():
     """
     随机生成国家代码
     :return:
     """
     return ''.join(faker.country_code())
+
 
 def randCityName():
     """
@@ -122,12 +134,14 @@ def randCityName():
     """
     return faker.city_name()
 
+
 def randCity():
     """
     随机生成城市
     :return:
     """
     return faker.city()
+
 
 def randProvince():
     """
@@ -136,12 +150,14 @@ def randProvince():
     """
     return faker.province()
 
+
 def randEmail():
     """
     随机生成email
     :return:
     """
     return faker.email()
+
 
 def randIpv4():
     """
@@ -150,12 +166,14 @@ def randIpv4():
     """
     return faker.ipv4()
 
+
 def randLipate():
     """
     随机生成车牌号
     :return:
     """
     return faker.license_plate()
+
 
 def randColor():
     """
@@ -164,12 +182,14 @@ def randColor():
     """
     return faker.rgb_color()
 
+
 def randSafeHexColor():
     """
     随机生成16进制的颜色
     :return:
     """
     return faker.safe_hex_color()
+
 
 def randColorName():
     """
@@ -178,6 +198,7 @@ def randColorName():
     """
     return faker.color_name()
 
+
 def randCompanyName():
     """
     随机生成公司名
@@ -185,12 +206,14 @@ def randCompanyName():
     """
     return faker.company()
 
+
 def randJob():
     """
     随机生成工作岗位
     :return:
     """
     return faker.job()
+
 
 def randPwd(length=10, special_chars=True, digits=True, upper_case=True, lower_case=True):
     """
@@ -205,12 +228,14 @@ def randPwd(length=10, special_chars=True, digits=True, upper_case=True, lower_c
     return faker.password(length=length, special_chars=special_chars, digits=digits, upper_case=upper_case,
                           lower_case=lower_case)
 
+
 def randUuid4():
     """
     随机生成uuid
     :return:
     """
     return faker.uuid4()
+
 
 def randSha1(raw_output=False):
     """
@@ -219,12 +244,14 @@ def randSha1(raw_output=False):
     """
     return faker.sha1(raw_output=raw_output)
 
+
 def randMd5(raw_output=False):
     """
     随机生成md5
     :return:
     """
     return faker.md5(raw_output=raw_output)
+
 
 def randFemale():
     """
@@ -233,12 +260,14 @@ def randFemale():
     """
     return faker.name_female()
 
+
 def randMale():
     """
     随机生成男性名字
     :return:
     """
     return faker.name_male()
+
 
 def randUserInfo(sex=None):
     """
@@ -247,12 +276,14 @@ def randUserInfo(sex=None):
     """
     return faker.simple_profile(sex=sex)
 
+
 def randUserInfoPro(fields=None, sex=None):
     """
     随机生成详细的基本信息
     :return:
     """
     return faker.profile(fields=fields, sex=sex)
+
 
 def randUserAgent():
     """
@@ -261,12 +292,14 @@ def randUserAgent():
     """
     return faker.user_agent()
 
+
 def randIdCard(random_sex):
     """
     随机生成有效身份证
     :return:
     """
     return IdNumber.getIDCard(random_sex)
+
 
 def getUserVars(target_key=None):
     """
@@ -284,6 +317,7 @@ def getUserVars(target_key=None):
         else:
             return None
 
+
 def getExtractVars(target_key=None):
     """
     获取提取后的参数
@@ -300,7 +334,8 @@ def getExtractVars(target_key=None):
         else:
             return None
 
-def setEncryptVars(method,target_key):
+
+def setEncryptVars(method, target_key):
     """
     给参数加密
     :param method: 加密风格 base64 md5 sha1
@@ -313,46 +348,49 @@ def setEncryptVars(method,target_key):
     """
     func_list = ["base64", "md5", "sha1"]
     if method in func_list:
-        exec('_var = CipherHelper().{method}Encrypt("{target_key}")'.format(method=method, target_key=citeHelper(target_key)))
+        exec('_var = CipherHelper().{method}Encrypt("{target_key}")'.format(method=method,
+                                                                            target_key=citeHelper(target_key)))
         var = locals()["_var"]
-        return var.decode() if isinstance(var,bytes) else var
+        return var.decode() if isinstance(var, bytes) else var
     else:
-        raise ModuleNotFoundError("暂时仅支持：%s"%(", ".join(func_list)))
+        raise ModuleNotFoundError("暂时仅支持：%s" % (", ".join(func_list)))
+
 
 func_dict = {"Int": randInt,
-               "Float": randFloat,
-               "Time": randTime,
-               "ComputeTime": randComputeTime,
-               "Letters": randLetters,
-               "Sample": randSample,
-               "Number": randNumber,
-               "Name": randName,
-               "Address": randAddress,
-               "Country": randCountry,
-               "CountryCode": randCountryCode,
-               "CityName": randCityName,
-               "City": randCity,
-               "Province": randProvince,
-               "Email": randEmail,
-               "Ipv4": randIpv4,
-               "Lipate": randLipate,
-               "Color": randColor,
-               "SafeHexColor": randSafeHexColor,
-               "ColorName": randColorName,
-               "CompanyName": randCompanyName,
-               "Job": randJob,
-               "Pwd": randPwd,
-               "Uuid4": randUuid4,
-               "Sha1": randSha1,
-               "Md5": randMd5,
-               "Female": randFemale,
-               "Male": randMale,
-               "UserInfo": randUserInfo,
-               "UserInfoPro": randUserInfoPro,
-               "UserAgent": randUserAgent,
-               "IdCard": randIdCard,
-               "UserVars": getUserVars,
-               "ExtractVars": getExtractVars}
+             "Float": randFloat,
+             "Time": randTime,
+             "ComputeTime": randComputeTime,
+             "Letters": randLetters,
+             "Sample": randSample,
+             "Number": randNumber,
+             "Name": randName,
+             "Address": randAddress,
+             "Country": randCountry,
+             "CountryCode": randCountryCode,
+             "CityName": randCityName,
+             "City": randCity,
+             "Province": randProvince,
+             "Email": randEmail,
+             "Ipv4": randIpv4,
+             "Lipate": randLipate,
+             "Color": randColor,
+             "SafeHexColor": randSafeHexColor,
+             "ColorName": randColorName,
+             "CompanyName": randCompanyName,
+             "Job": randJob,
+             "Pwd": randPwd,
+             "Uuid4": randUuid4,
+             "Sha1": randSha1,
+             "Md5": randMd5,
+             "Female": randFemale,
+             "Male": randMale,
+             "UserInfo": randUserInfo,
+             "UserInfoPro": randUserInfoPro,
+             "UserAgent": randUserAgent,
+             "IdCard": randIdCard,
+             "UserVars": getUserVars,
+             "ExtractVars": getExtractVars}
+
 
 def citeHelper(name: str):
     """
@@ -399,12 +437,13 @@ def citeHelper(name: str):
         return func_dict[rand_no_vars.group().strip("${rand}")].__call__()
     elif lock_vars:
         _lock_param = [eval(x) if x.strip().isdigit() else x for x in lock_vars.group().strip("$ENC_()").split(',')]
-        if len(_lock_param) <2:
+        if len(_lock_param) < 2:
             raise IndexError(_lock_param)
         else:
             return setEncryptVars.__call__(*_lock_param)
     else:
         return name  # 函数名不存在返回原始值
+
 
 def combData(dict_map: dict) -> dict:
     """

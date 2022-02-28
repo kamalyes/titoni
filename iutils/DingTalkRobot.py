@@ -18,6 +18,7 @@ import hmac
 import base64
 import hashlib
 import queue
+
 _ver = sys.version_info
 is_py3 = (_ver[0] == 3)
 try:
@@ -28,6 +29,8 @@ try:
     JSONDecodeError = json.decoder.JSONDecodeError
 except AttributeError:
     JSONDecodeError = ValueError
+
+
 class DingtalkChatbot(object):
     """
     钉钉群自定义机器人（每个机器人每分钟最多发送20条），支持文本（text）、连接（link）、markdown三种消息类型！
@@ -94,7 +97,7 @@ class DingtalkChatbot(object):
         :return: 返回消息发送结果
         """
         data = {"msgtype": "text", "at": {}}
-        if msg !=None:
+        if msg != None:
             data["text"] = {"content": msg}
         else:
             logging.error("text类型，消息内容不能为空！")
@@ -123,7 +126,7 @@ class DingtalkChatbot(object):
         :param pic_url: 图片链接
         :return: 返回消息发送结果
         """
-        if pic_url !=None:
+        if pic_url != None:
             data = {
                 "msgtype": "image",
                 "image": {
@@ -146,7 +149,7 @@ class DingtalkChatbot(object):
         :return: 返回消息发送结果
 
         """
-        if all(map([title, text, message_url]!=None)):
+        if all(map([title, text, message_url] != None)):
             data = {
                 "msgtype": "link",
                 "link": {
@@ -173,7 +176,7 @@ class DingtalkChatbot(object):
         :param is_auto_at: 是否自动在text内容末尾添加@手机号，默认自动添加，可设置为False取消（可选）
         :return: 返回消息发送结果
         """
-        if all(map([title, text]!=None)):
+        if all(map([title, text] != None)):
             # 给Mardown文本消息中的跳转链接添加上跳转方式
             text = re.sub(r'(?<!!)\[.*?\]\((.*?)\)',
                           lambda m: m.group(0).replace(m.group(1), self.msg_open_type(m.group(1))), text)
@@ -346,7 +349,7 @@ class ActionCard(object):
         获取ActionCard类型消息数据（字典）
         :return: 返回ActionCard数据
         """
-        if all(map([self.title, self.text]!=None)) and len(self.btns):
+        if all(map([self.title, self.text] != None)) and len(self.btns):
             if len(self.btns) == 1:
                 # 整体跳转ActionCard类型
                 data = {
@@ -401,7 +404,7 @@ class FeedLink(object):
         获取FeedLink消息数据（字典）
         :return: 本FeedLink消息的数据
         """
-        if all(map([self.title, self.message_url, self.pic_url]!=None)):
+        if all(map([self.title, self.message_url, self.pic_url] != None)):
             data = {
                 "title": self.title,
                 "messageURL": self.message_url,
@@ -438,7 +441,7 @@ class CardItem(object):
         获取CardItem子控件数据（字典）
         @return: 子控件的数据
         """
-        if all(map([self.title, self.url, self.pic_url]!=None)):
+        if all(map([self.title, self.url, self.pic_url] != None)):
             # FeedCard类型
             data = {
                 "title": self.title,
@@ -446,7 +449,7 @@ class CardItem(object):
                 "picURL": self.pic_url
             }
             return data
-        elif all(map([self.title, self.url]!=None)):
+        elif all(map([self.title, self.url] != None)):
             # ActionCard类型
             data = {
                 "title": self.title,
